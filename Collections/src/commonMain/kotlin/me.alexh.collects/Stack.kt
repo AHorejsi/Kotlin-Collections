@@ -5,7 +5,7 @@ class Stack<TElement>(
 ) {
     private companion object {
         const val DEFAULT_CAPACITY: Int = 16
-        val EMPTY_EXCEPTION: RuntimeException = NoSuchElementException()
+        val EMPTY_EXCEPTION: NoSuchElementException = NoSuchElementException()
     }
 
     private var elementData: Array<Any?> = arrayOfNulls(initialCapacity)

@@ -6,7 +6,7 @@ private class CountNode<TElement>(
     var element: TElement,
     var amount: Int = 0,
     var next: CountNode<TElement>? = null,
-    val prev: CountNode<TElement>? = null
+    var prev: CountNode<TElement>? = null
 )
 
 class CountList<TElement> : SealedMutableCollection<TElement>(), SelfOrgList<TElement> {
@@ -33,5 +33,44 @@ class CountList<TElement> : SealedMutableCollection<TElement>(), SelfOrgList<TEl
         }
 
         return currentNode!!
+    }
+
+    override fun add(element: TElement): Boolean {
+        val newNode = CountNode(element)
+
+        newNode.prev = this.tail
+
+        this.tail?.let {
+            it.next = newNode
+            this.tail = newNode
+        } ?: run {
+            this.head = newNode
+            this.tail = newNode
+        }
+
+        ++(this.size)
+        ++(this.modCount)
+
+        return true
+    }
+
+    override fun find(predicate: Predicate<in TElement>): ListIterator<TElement> {
+        if (super.isEmpty()) {
+            return this.back()
+        }
+
+        val iter = this.front()
+
+        while (iter.hasNext()) {
+            val item = iter.next()
+
+            if (predicate(item)) {
+                iter.previous()
+
+                break
+            }
+        }
+
+        return iter
     }
 }

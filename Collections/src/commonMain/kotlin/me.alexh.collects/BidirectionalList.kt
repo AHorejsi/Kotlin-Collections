@@ -17,7 +17,7 @@ class BidirectionalList<TElement> : SealedMutableLinkedList<TElement>() {
 
     private fun insertIntoEmptyList(newNode: MutableLinkedListNode<TElement>) {
         super.first = newNode
-        super.first = newNode
+        super.last = newNode
 
         super.size = 1
         ++(super.modCount)
@@ -48,42 +48,6 @@ class BidirectionalList<TElement> : SealedMutableLinkedList<TElement>() {
         ++(super.size)
         ++(super.modCount)
     }
-
-    override fun spliceBefore(node: MutableLinkedListNode<TElement>, other: MutableLinkedList<TElement>) {
-        node.spliceBefore(other)
-
-        super.size += other.size
-        ++(super.modCount)
-
-        other.clear()
-
-        this.reassignSource(other)
-    }
-
-    override fun spliceAfter(node: MutableLinkedListNode<TElement>, other: MutableLinkedList<TElement>) {
-        node.spliceAfter(other)
-
-        super.size += other.size
-        ++(super.modCount)
-
-        other.clear()
-
-        this.reassignSource(other)
-    }
-
-    override fun splice(other: MutableLinkedList<TElement>) =
-        super.last?.let {
-            this.spliceAfter(it, other)
-        } ?: run {
-            super.first = other.first
-            super.last = other.last
-            super.size = other.size
-            ++(super.modCount)
-
-            other.clear()
-
-            this.reassignSource(other)
-        }
 
     private fun reassignSource(other: MutableLinkedList<TElement>) {
         var node = other.first

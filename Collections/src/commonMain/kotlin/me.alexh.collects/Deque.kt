@@ -5,6 +5,7 @@ class Deque<TElement>(
 ) {
     private companion object {
         const val DEFAULT_CAPACITY: Int = 16
+        val EMPTY_EXCEPTION: NoSuchElementException = NoSuchElementException()
     }
 
     private var elementData: Array<Any?> = arrayOfNulls(initialCapacity)
@@ -52,7 +53,7 @@ class Deque<TElement>(
     @Suppress("UNCHECKED_CAST")
     fun tryRemoveFirst(): Result<TElement> {
         if (this.isEmpty()) {
-            return Result.failure(NoSuchElementException())
+            return Result.failure(Deque.EMPTY_EXCEPTION)
         }
 
         val elem = this.elementData[this.frontIndex] as TElement
@@ -70,7 +71,7 @@ class Deque<TElement>(
     @Suppress("UNCHECKED_CAST")
     fun tryRemoveLast(): Result<TElement> {
         if (this.isEmpty()) {
-            return Result.failure(NoSuchElementException())
+            return Result.failure(Deque.EMPTY_EXCEPTION)
         }
 
         val elem = this.elementData[this.endIndex] as TElement
@@ -90,7 +91,7 @@ class Deque<TElement>(
     @Suppress("UNCHECKED_CAST")
     fun tryFirst(): Result<TElement> =
         if (this.isEmpty())
-            Result.failure(NoSuchElementException())
+            Result.failure(Deque.EMPTY_EXCEPTION)
         else
             Result.success(this.elementData[this.frontIndex] as TElement)
 
@@ -102,7 +103,7 @@ class Deque<TElement>(
     @Suppress("UNCHECKED_CAST")
     fun tryLast(): Result<TElement> =
         if (this.isEmpty())
-            Result.failure(NoSuchElementException())
+            Result.failure(Deque.EMPTY_EXCEPTION)
         else
             Result.success(this.elementData[this.endIndex] as TElement)
 

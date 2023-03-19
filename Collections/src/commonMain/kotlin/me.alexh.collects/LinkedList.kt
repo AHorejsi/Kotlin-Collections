@@ -40,44 +40,6 @@ class MutableLinkedListNode<TElement>(
         this.next = node
     }
 
-    internal fun spliceBefore(list: MutableLinkedList<TElement>) {
-        if (list === this.source) {
-            throw IllegalArgumentException()
-        }
-
-        if (!list.isEmpty()) {
-            val firstNode = list.first!!
-            val lastNode = list.last!!
-
-            val prevNode = this.prev
-
-            this.prev = firstNode
-            prevNode?.next = lastNode
-
-            firstNode.prev = prevNode
-            lastNode.next = this
-        }
-    }
-
-    internal fun spliceAfter(list: MutableLinkedList<TElement>) {
-        if (list === this.source) {
-            throw IllegalArgumentException()
-        }
-
-        if (!list.isEmpty()) {
-            val firstNode = list.first!!
-            val lastNode = list.last!!
-
-            val nextNode = this.next
-
-            this.next = firstNode
-            nextNode?.prev = lastNode
-
-            firstNode.prev = this
-            lastNode.next = nextNode
-        }
-    }
-
     internal fun remove() {
         val prevNode = this.prev
         val nextNode = this.next
@@ -179,12 +141,6 @@ interface MutableLinkedList<TElement> : LinkedList<TElement>, MutableCollection<
 
         this.addAfter(node, newNode)
     }
-
-    fun spliceBefore(node: MutableLinkedListNode<TElement>, other: MutableLinkedList<TElement>)
-
-    fun spliceAfter(node: MutableLinkedListNode<TElement>, other: MutableLinkedList<TElement>)
-
-    fun splice(other: MutableLinkedList<TElement>)
 
     override fun find(element: TElement): MutableLinkedListNode<TElement>? = super.find(element) as MutableLinkedListNode?
 
