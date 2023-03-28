@@ -3,12 +3,10 @@ package me.alexh.collects
 fun <TElement> MutableCollection<TElement>.addAll(vararg elements: TElement): Boolean = this.addAll(elements.iterator())
 
 fun <TElement> MutableCollection<TElement>.addAll(elements: Iterable<TElement>): Boolean =
-    if (elements is Collection<TElement>) {
+    if (elements is Collection<TElement>)
         this.addAll(elements)
-    }
-    else {
+    else
         this.addAll(elements.iterator())
-    }
 
 fun <TElement> MutableCollection<TElement>.addAll(iter: Iterator<TElement>): Boolean {
     var change = false
