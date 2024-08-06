@@ -2,9 +2,7 @@ package collections
 
 import java.io.Serializable
 
-open class LinkedListNode<out TElement>(
-    open val item: TElement
-) : Serializable {
+open class LinkedListNode<out TElement>(open val item: TElement) : Serializable {
     private companion object {
         @Suppress("ConstPropertyName")
         const val serialVersionUID: Long = 1L
@@ -16,9 +14,7 @@ open class LinkedListNode<out TElement>(
     open val next: LinkedListNode<TElement>? = null
 }
 
-class MutableLinkedListNode<TElement>(
-    override var item: TElement,
-) : LinkedListNode<TElement>(item), Serializable {
+class MutableLinkedListNode<TElement>(override var item: TElement) : LinkedListNode<TElement>(item), Serializable {
     private companion object {
         @Suppress("ConstPropertyName")
         const val serialVersionUID: Long = 1L

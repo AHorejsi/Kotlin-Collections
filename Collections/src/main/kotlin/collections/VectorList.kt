@@ -131,17 +131,17 @@ class VectorList<TElement>(
         }
     }
 
-    private fun resizeIfNeededAfterRemoval() {
-        if (this.size <= this.capacity / 2) {
-            this.reallocate(if (0 == this.size) VectorList.DEFAULT_CAPACITY else this.size * 3 / 2)
-        }
-    }
-
     override fun clear() {
         this.size = 0
         ++(super.modCount)
 
         this.resizeIfNeededAfterRemoval()
+    }
+
+    private fun resizeIfNeededAfterRemoval() {
+        if (this.capacity > VectorList.DEFAULT_CAPACITY && this.size <= this.capacity / 2) {
+            this.reallocate(if (0 == this.size) VectorList.DEFAULT_CAPACITY else this.size * 3 / 2)
+        }
     }
 
     fun ensureCapacity(newCapacity: Int) {

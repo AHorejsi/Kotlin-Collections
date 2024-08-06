@@ -242,8 +242,7 @@ class ProbeMap<TKey, TValue>(
                     if (null === this@ProbeMap.removeByIndex(this.lastIndex)) {
                         throw IllegalStateException()
                     }
-
-                    if (null !== this@ProbeMap.removeByIndex(this.lastIndex)) {
+                    else {
                         ++(this.modCount)
                         this.lastIndex = null
                     }

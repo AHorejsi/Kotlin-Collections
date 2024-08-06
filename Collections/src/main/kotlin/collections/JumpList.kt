@@ -26,6 +26,9 @@ class JumpList<TElement>(
     override var size: Int = 0
         private set
 
+    override val isRandomAccess: Boolean
+        get() = false
+
     override fun add(element: TElement): Boolean {
         val newNode = OrgNode.Item(element, null)
 

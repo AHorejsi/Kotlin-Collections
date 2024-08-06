@@ -18,10 +18,13 @@ class CountList<TElement> : SelfOrgList<TElement>, Serializable {
         const val serialVersionUID: Long = 1L
     }
 
-    private val jump: JumpList<Counter<TElement>> = JumpList{ past, now -> past.value.amount > now.value.amount }
+    private val jump: JumpList<Counter<TElement>> = JumpList{ past, now -> past.value.amount != now.value.amount }
 
     override val size: Int
         get() = this.jump.size
+
+    override val isRandomAccess: Boolean
+        get() = this.jump.isRandomAccess
 
     override fun isEmpty(): Boolean = this.jump.isEmpty()
 

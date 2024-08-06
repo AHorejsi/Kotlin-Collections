@@ -128,56 +128,6 @@ class LinkedQueue<TElement> : Queue<TElement>, Serializable {
     }
 }
 
-class UnrolledQueue<TElement>(private val nodeSize: Int) : Queue<TElement>, Serializable {
-    private companion object {
-        @Suppress("ConstPropertyName")
-        const val serialVersionUID: Long = 1L
-    }
-
-    init {
-        require(this.nodeSize > 0)
-    }
-
-    private val base: LinkedQueue<VectorQueue<TElement>> = LinkedQueue()
-
-    override var size: Int = 0
-        private set
-
-    override fun enqueue(element: TElement) {
-        var array = this.base.front()
-
-        if (this.nodeSize == array.size) {
-            array = VectorQueue(this.nodeSize)
-
-            this.base.enqueue(array)
-        }
-
-        array.enqueue(element)
-
-        ++(this.size)
-    }
-
-    override fun dequeue(): TElement {
-        val array = this.base.front()
-        val item = array.dequeue()
-
-        if (array.isEmpty()) {
-            this.base.dequeue()
-        }
-
-        --(this.size)
-
-        return item
-    }
-
-    override fun front(): TElement = this.base.front().front()
-
-    override fun clear() {
-        this.base.clear()
-        this.size = 0
-    }
-}
-
 fun Queue<*>.isEmpty(): Boolean = 0 == this.size
 
 fun <TElement> Queue<TElement>.tryDequeue(): Result<TElement> = runCatching { this.dequeue() }

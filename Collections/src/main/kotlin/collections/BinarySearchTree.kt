@@ -220,6 +220,10 @@ class BinarySearchTree<TKey, TValue>(val comp: (TKey, TKey) -> Int) : Serializab
         node.right = grandchild
         node.parent = child
         grandchild?.parent = node
+
+        if (node === this.root) {
+            this.root = child
+        }
     }
 
     fun rightRotate(node: BstNode<TKey, TValue>) {
@@ -230,5 +234,9 @@ class BinarySearchTree<TKey, TValue>(val comp: (TKey, TKey) -> Int) : Serializab
         node.left = grandchild
         node.parent = child
         grandchild?.parent = node
+
+        if (node === this.root) {
+            this.root = child
+        }
     }
 }

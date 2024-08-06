@@ -2,7 +2,7 @@ package collections
 
 @Suppress("RemoveRedundantQualifierName")
 abstract class AbstractMultiset<TElement>(
-    private val base: MutableMap<TElement, MutableList<TElement>>,
+    private val base: MutableMap<TElement, DequeList<TElement>>,
 ) : AbstractCollection<TElement>(), MutableMultiset<TElement> {
     private companion object {
         private fun checkAmount(amount: Int) {
@@ -38,33 +38,36 @@ abstract class AbstractMultiset<TElement>(
         return true
     }
 
-    override fun remove(element: TElement): Boolean = this.remove(element, 1) > 0
+    override fun remove(element: TElement): Boolean {
+        val (_, changed) = this.remove(element, 1)
 
-    override fun remove(element: TElement, amount: Int): Int {
+        return changed
+    }
+
+    override fun remove(element: TElement, amount: Int): Pair<Int, Boolean> {
         AbstractMultiset.checkAmount(amount)
 
         val list = this.base[element]
 
-        if (null === list) {
-            return 0
-        }
+        return if (null === list)
+            0 to false
+        else
+            this.deleteItems(element, list, amount)
+    }
 
-        val amountRemoved = this.deleteItems(element, list, amount)
+    private fun deleteItems(element: TElement, list: DequeList<TElement>, amount: Int): Pair<Int, Boolean> {
+        val amountRemoved = list.removeFromFront(amount)
+        var changed = false
+
+        if (list.isEmpty()) {
+            this.base.remove(element)
+            changed = true
+        }
 
         this.size -= amountRemoved
         ++(super.modCount)
 
-        return amountRemoved
-    }
-
-    private fun deleteItems(element: TElement, list: MutableList<TElement>, amount: Int): Int {
-        val amountRemoved = list.removeFromBack(amount)
-
-        if (list.isEmpty()) {
-            this.base.remove(element)
-        }
-
-        return amountRemoved
+        return amountRemoved to changed
     }
 
     override fun clear() {

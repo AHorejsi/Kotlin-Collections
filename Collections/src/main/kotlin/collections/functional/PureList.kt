@@ -1,5 +1,9 @@
 package collections.functional
 
+import arrow.core.None
+import arrow.core.Option
+import arrow.core.Some
+
 interface PureList<TElement> : List<TElement> {
     val head: TElement
 
@@ -27,7 +31,7 @@ interface PureList<TElement> : List<TElement> {
 
     fun removeAt(index: Int): PureList<TElement>
 
-    fun removeAt(indices: Iterable<Int>): PureList<TElement>
+    fun removeAt(indices: Collection<Int>): PureList<TElement>
 
     fun drawFirst(amount: Int): PureList<TElement>
 
@@ -56,6 +60,12 @@ interface PureList<TElement> : List<TElement> {
     fun partition(predicate: (TElement) -> Boolean): Pair<PureList<TElement>, PureList<TElement>>
 }
 
-fun <TElement, TOther> pair(left: PureList<TElement>, right: PureList<TElement>): PureList<Pair<TElement, TOther>> {
-    TODO()
-}
+operator fun <TElement> TElement.plus(list: PureList<TElement>): PureList<TElement> = list.prepend(this)
+
+operator fun <TElement> PureList<TElement>.plus(element: TElement): PureList<TElement> = this.append(element)
+
+fun <TElement> PureList<TElement>.safeSet(index: Int, element: TElement): Option<PureList<TElement>> =
+    if (index < 0 || index >= this.size)
+        None
+    else
+        Some(this.set(index, element))

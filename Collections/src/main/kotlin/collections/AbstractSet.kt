@@ -8,7 +8,7 @@ abstract class AbstractSet<TElement>(
 
     override fun add(element: TElement): Boolean = null === this.base.putIfAbsent(element, Unit)
 
-    override fun remove(element: TElement): Boolean = Unit === this.base.remove(element)
+    override fun remove(element: TElement): Boolean = null !== this.base.remove(element)
 
     override fun clear() = this.base.clear()
 

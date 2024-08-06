@@ -8,6 +8,8 @@ internal sealed class OrgNode<TElement> {
 }
 
 interface SelfOrgList<TElement> : MutableCollection<TElement> {
+    val isRandomAccess: Boolean
+
     fun at(index: Int): TElement {
         if (index < 0 || index >= this.size) {
             throw IndexOutOfBoundsException()
@@ -39,7 +41,7 @@ interface SelfOrgList<TElement> : MutableCollection<TElement> {
     }
 
     override fun retainAll(elements: Collection<TElement>): Boolean {
-        var changed = false
+        val oldSize = this.size
         val iter = this.iterator()
 
         while (iter.hasNext()) {
@@ -47,12 +49,10 @@ interface SelfOrgList<TElement> : MutableCollection<TElement> {
 
             if (item !in elements) {
                 iter.remove()
-
-                changed = true
             }
         }
 
-        return changed
+        return oldSize > this.size
     }
 
     fun find(element: @UnsafeVariance TElement): IndexedValue<TElement>? = this.find{ it == element }

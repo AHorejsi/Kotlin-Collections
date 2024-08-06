@@ -10,23 +10,10 @@ abstract class AbstractCollection<TElement> : MutableCollection<TElement> {
 
     override fun removeAll(elements: Collection<TElement>): Boolean = this.delete(elements) > 0
 
-    override fun retainAll(elements: Collection<TElement>): Boolean {
-        val oldSize = this.size
-        val iter = this.iterator()
-
-        while (iter.hasNext()) {
-            val item = iter.next()
-
-            if (item !in elements) {
-                iter.remove()
-            }
-        }
-
-        return oldSize > this.size
-    }
+    override fun retainAll(elements: Collection<TElement>): Boolean = this.keep(elements) > 0
 
     override fun containsAll(elements: Collection<@UnsafeVariance TElement>): Boolean =
-        elements.all{ this.contains(it) }
+        elements.all{ it in this }
 
     override fun toString(): String {
         if (this.isEmpty()) {

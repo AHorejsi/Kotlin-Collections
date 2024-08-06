@@ -3,7 +3,7 @@ package collections
 fun <TElement> MutableIterable<TElement>.removeFirstOf(element: @UnsafeVariance TElement): Boolean =
     when (this) {
         is MutableSet<TElement> -> this.remove(element)
-        is MutableMultiset<TElement> -> 1 == this.remove(element, 1)
+        is MutableMultiset<TElement> -> 1 == this.remove(element, 1).first
         else -> this.removeFirstOf{ it == element }
     }
 
@@ -13,7 +13,7 @@ inline fun <TElement> MutableIterable<TElement>.removeFirstOf(predicate: (TEleme
 fun <TElement> MutableIterable<TElement>.removeAmount(amount: Int, element: @UnsafeVariance TElement): Int =
     when (this) {
         is MutableSet<TElement> -> this.removeAmount(amount, element)
-        is MutableMultiset<TElement> -> this.remove(element, amount)
+        is MutableMultiset<TElement> -> this.remove(element, amount).first
         else -> this.removeAmount(amount) { it == element }
     }
 

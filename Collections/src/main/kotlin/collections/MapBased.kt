@@ -21,7 +21,7 @@ class MapBasedSortedSet<TElement>(
 }
 
 class MapBasedMultiset<TElement>(
-    base: MutableMap<TElement, MutableList<TElement>>
+    base: MutableMap<TElement, DequeList<TElement>>
 ) : AbstractMultiset<TElement>(base), Serializable {
     private companion object {
         @Suppress("ConstPropertyName")

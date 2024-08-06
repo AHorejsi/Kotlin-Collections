@@ -17,20 +17,6 @@ class DequeList<TElement>(
         require(initialCapacity >= 0)
     }
 
-    constructor(elements: Sequence<TElement>) : this(elements.asIterable())
-
-    constructor(elements: Collection<TElement>) : this(elements.size) {
-        this.addToBack(elements)
-    }
-
-    constructor(elements: Iterable<TElement>) : this(elements.count()) {
-        this.addAll(elements)
-    }
-
-    constructor(vararg elements: TElement) : this(elements.size) {
-        this.addAll(elements)
-    }
-
     private var data: Array<Any?> = arrayOfNulls(initialCapacity)
     private var startIndex: Int = 0
 
@@ -249,10 +235,39 @@ fun <TElement> dequeListOf(): DequeList<TElement> = DequeList()
 
 fun <TElement> dequeListOf(vararg elements: TElement): DequeList<TElement> = elements.toDequeList()
 
-fun <TElement> Iterable<TElement>.toDequeList(): DequeList<TElement> = DequeList(this)
+fun <TElement> Iterable<TElement>.toDequeList(): DequeList<TElement> {
+    val size = this.count()
+    val deque = DequeList<TElement>(size)
 
-fun <TElement> Sequence<TElement>.toDequeList(): DequeList<TElement> = DequeList(this)
+    for (item in this) {
+        deque.addLast(item)
+    }
 
-fun <TElement> Collection<TElement>.toDequeList(): DequeList<TElement> = DequeList(this)
+    return deque
+}
 
-fun <TElement> Array<out TElement>.toDequeList(): DequeList<TElement> = DequeList(*this)
+fun <TElement> Sequence<TElement>.toDequeList(): DequeList<TElement> {
+    val deque = DequeList<TElement>()
+
+    for (item in this) {
+        deque.addLast(item)
+    }
+
+    return deque
+}
+
+fun <TElement> Collection<TElement>.toDequeList(): DequeList<TElement> {
+    val deque = DequeList<TElement>(this.size)
+
+    deque.addAll(this)
+
+    return deque
+}
+
+fun <TElement> Array<out TElement>.toDequeList(): DequeList<TElement> {
+    val deque = DequeList<TElement>(this.size)
+
+    deque.addAll(this)
+
+    return deque
+}

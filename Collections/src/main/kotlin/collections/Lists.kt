@@ -1,31 +1,25 @@
 package collections
 
-import arrow.core.None
 import arrow.core.Option
-import arrow.core.Some
-import kotlin.math.min
 
 val List<*>.isRandomAccess: Boolean
     get() = this is RandomAccess
 
-fun <TElement> List<TElement>.safeGet(index: Int): Option<TElement> =
-    if (index < 0 || index >= this.size)
-        None
-    else
-        Some(this[index])
+fun <TElement> List<TElement>.safeGet(index: Int): Option<TElement> = this.tryGet(index).toOption()
 
 fun <TElement> MutableList<TElement>.safeSet(index: Int, element: TElement): Option<TElement> =
-    if (index < 0 || index >= this.size)
-        None
-    else
-        Some(this.set(index, element))
+    this.trySet(index, element).toOption()
 
 fun <TElement> List<TElement>.tryGet(index: Int): Result<TElement> = runCatching { this[index] }
 
 fun <TElement> MutableList<TElement>.trySet(index: Int, element: TElement): Result<TElement> =
     runCatching { this.set(index, element) }
 
-fun <TElement> List<TElement>.wrapGet(index: Int): TElement = this[index.mod(this.size)]
+fun <TElement> List<TElement>.wrapGet(index: Int): TElement {
+    val actualIndex = index.mod(this.size)
+
+    return this[actualIndex]
+}
 
 fun <TElement> MutableList<TElement>.wrapSet(index: Int, element: TElement): TElement {
     val actualIndex = index.mod(this.size)
@@ -34,7 +28,7 @@ fun <TElement> MutableList<TElement>.wrapSet(index: Int, element: TElement): TEl
 }
 
 fun <TElement> MutableList<TElement>.removeFromBack(amount: Int): Int {
-    require(amount >= 0) { "Amount of elements to remove must be positive. Amount: $amount" }
+    require(amount >= 0) { "Amount of elements to remove must be non-negative. Amount: $amount" }
 
     if (0 == amount) {
         return 0
@@ -48,9 +42,7 @@ fun <TElement> MutableList<TElement>.removeFromBack(amount: Int): Int {
                 return clearElements(this)
             }
             else {
-                repeat(amount) {
-                    this.removeLast()
-                }
+                this.removeRange(this.size - amount, this.size)
 
                 return amount
             }
@@ -65,6 +57,9 @@ private fun <TElement> clearElements(list: MutableList<TElement>): Int {
 
     return amountRemoved
 }
+
+fun <TElement> MutableList<TElement>.removeRange(fromIndex: Int, toIndex: Int) =
+    this.subList(fromIndex, toIndex).clear()
 
 fun <TElement> List<TElement>.index(fromIndex: Int, element: @UnsafeVariance TElement): Int =
     this.index(fromIndex) { it == element }
@@ -100,18 +95,40 @@ fun <TElement> List<TElement>.lastIndex(fromIndex: Int, predicate: (TElement) ->
     return -1
 }
 
-fun <TElement> compare(leftList: List<TElement>, rightList: List<TElement>, comp: (TElement, TElement) -> Int): Int {
-    val leftSize = leftList.size
-    val rightSize = rightList.size
-    val smallerSize = min(leftSize, rightSize)
+fun <TElement> List<TElement>.indices(element: @UnsafeVariance TElement): Sequence<Int> = this.indices(0, element)
 
-    for (index in 0 until smallerSize) {
-        val comparison = comp(leftList[index], rightList[index])
+fun <TElement> List<TElement>.indices(predicate: (TElement) -> Boolean): Sequence<Int> = this.indices(0, predicate)
+
+fun <TElement> List<TElement>.indices(fromIndex: Int, element: @UnsafeVariance TElement): Sequence<Int> =
+    this.indices(fromIndex) { it == element }
+
+fun <TElement> List<TElement>.indices(fromIndex: Int, predicate: (TElement) -> Boolean): Sequence<Int> =
+    sequence {
+        val iter = this@indices.listIterator(fromIndex)
+
+        while (iter.hasNext()) {
+            val item = iter.next()
+
+            if (predicate(item)) {
+                yield(iter.previousIndex())
+            }
+        }
+    }
+
+fun <TElement> compare(leftList: List<TElement>, rightList: List<TElement>, comp: (TElement, TElement) -> Int): Int {
+    val leftIter = leftList.iterator()
+    val rightIter = rightList.iterator()
+
+    while (leftIter.hasNext() && rightIter.hasNext()) {
+        val leftElem = leftIter.next()
+        val rightElem = rightIter.next()
+
+        val comparison = comp(leftElem, rightElem)
 
         if (0 != comparison) {
             return comparison
         }
     }
 
-    return leftSize.compareTo(rightSize)
+    return leftList.size - rightList.size
 }

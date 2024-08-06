@@ -165,10 +165,10 @@ class ArraySegment<TElement> internal constructor(
     }
 }
 
-fun <TElement> Array<TElement>.segment(fromIndex: Int, toIndex: Int): ArraySegment<TElement> =
+fun <TElement> Array<TElement>.segment(fromIndex: Int = 0, toIndex: Int = this.size): ArraySegment<TElement> =
     ArraySegment(this, fromIndex, toIndex)
 
-fun <TElement> ArraySegment<TElement>.segment(fromIndex: Int, toIndex: Int): ArraySegment<TElement> =
+fun <TElement> ArraySegment<TElement>.segment(fromIndex: Int = 0, toIndex: Int = this.size): ArraySegment<TElement> =
     ArraySegment(this, fromIndex, toIndex)
 
 fun <TElement> ArraySegment<TElement>.isEmpty(): Boolean = 0 == this.size

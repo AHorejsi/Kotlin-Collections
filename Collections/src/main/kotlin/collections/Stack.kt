@@ -113,56 +113,6 @@ class LinkedStack<TElement> : Stack<TElement>, Serializable {
     }
 }
 
-class UnrolledStack<TElement>(private val nodeSize: Int) : Stack<TElement>, Serializable {
-    private companion object {
-        @Suppress("ConstPropertyName")
-        const val serialVersionUID: Long = 1L
-    }
-
-    init {
-        require(this.nodeSize > 0) { "Node size must be positive but was ${this.nodeSize}" }
-    }
-
-    private val base: LinkedStack<VectorStack<TElement>> = LinkedStack()
-
-    override var size: Int = 0
-        private set
-
-    override fun push(element: TElement) {
-        var array = this.base.peek()
-
-        if (this.nodeSize == array.size) {
-            array = VectorStack(this.nodeSize)
-
-            this.base.push(array)
-        }
-
-        array.push(element)
-
-        ++(this.size)
-    }
-
-    override fun pop(): TElement {
-        val array = this.base.peek()
-        val item = array.pop()
-
-        if (array.isEmpty()) {
-            this.base.pop()
-        }
-
-        --(this.size)
-
-        return item
-    }
-
-    override fun peek(): TElement = this.base.peek().peek()
-
-    override fun clear() {
-        this.base.clear()
-        this.size = 0
-    }
-}
-
 fun Stack<*>.isEmpty(): Boolean = 0 == this.size
 
 fun <TElement> Stack<TElement>.tryPop(): Result<TElement> = runCatching { this.pop() }

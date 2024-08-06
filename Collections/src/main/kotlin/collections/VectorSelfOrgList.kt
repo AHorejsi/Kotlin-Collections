@@ -18,6 +18,9 @@ class VectorSelfOrgList<TElement>(
     override val size: Int
         get() = this.data.size
 
+    override val isRandomAccess: Boolean
+        get() = true
+
     override fun isEmpty(): Boolean = this.data.isEmpty()
 
     override fun at(index: Int): TElement {
