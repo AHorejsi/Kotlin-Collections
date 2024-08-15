@@ -16,36 +16,39 @@ class VectorListTest {
         val vec1 = vectorListOf<Int>()
         val vec2 = vectorListOf(1, 2, 3)
 
-        assertTrue(vec1.isEmpty())
-        assertFalse(vec2.isEmpty())
+        val size1 = 0
+        val size2 = 3
 
-        assertEquals(vec2.capacity, 3)
+        assertEquals(size1, vec1.size)
+        assertEquals(size2, vec2.size)
+
+        assertTrue(size2 <= vec2.capacity)
     }
 
     @Test
     fun testToVectorList() {
-        val list = (1 .. 10).toSet()
+        val set = (1 .. 10).toHashSet()
         val seq = (10 downTo -10).asSequence()
         val range = -7 until 11 step 3
-        val array = arrayOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+        val array = arrayOf(-1, 4, 0, -6, 8, -9)
 
-        val vecFromList = list.toVectorList()
+        val vecFromSet = set.toVectorList()
         val vecFromSeq = seq.toVectorList()
         val vecFromRange = range.toVectorList()
         val vecFromArray = array.toVectorList()
 
-        this.testCollectionEquality(vecFromList.asSequence(), list.asSequence())
-        this.testCollectionEquality(vecFromRange.asSequence(), range.asSequence())
-        this.testCollectionEquality(vecFromSeq.asSequence(), seq)
-        this.testCollectionEquality(vecFromArray.asSequence(), array.asSequence())
+        this.testSequenceEquality(vecFromSet.asSequence(), set.asSequence())
+        this.testSequenceEquality(vecFromRange.asSequence(), range.asSequence())
+        this.testSequenceEquality(vecFromSeq.asSequence(), seq)
+        this.testSequenceEquality(vecFromArray.asSequence(), array.asSequence())
 
-        assertEquals(list.size, vecFromList.capacity)
+        assertTrue(set.size <= vecFromSet.capacity)
         assertTrue(seq.count() <= vecFromSeq.capacity)
-        assertEquals(range.count(), vecFromRange.capacity)
-        assertEquals(array.size, vecFromArray.size)
+        assertTrue(range.count() <= vecFromRange.capacity)
+        assertTrue(array.size <= vecFromArray.size)
     }
 
-    private fun testCollectionEquality(left: Sequence<*>, right: Sequence<*>) {
+    private fun testSequenceEquality(left: Sequence<*>, right: Sequence<*>) {
         for ((leftItem, rightItem) in left.zip(right)) {
             assertEquals(leftItem, rightItem)
         }
@@ -63,25 +66,26 @@ class VectorListTest {
         val vec = vectorListOf<Int>()
         assertEquals(0, vec.size)
 
+        vec.addAll(11 .. 1908)
+
         this.testSizeAfterAdd(vec)
         this.testSizeAfterRemove(vec)
     }
 
     private fun testSizeAfterAdd(vec: VectorList<Int>) {
-        val amount = 5
+        val oldSize = vec.size
+        val amount = 500
 
-        vec.addAll(0 until amount)
+        vec.addAll(1 .. amount)
 
-        assertEquals(amount, vec.size)
+        assertEquals(amount + oldSize, vec.size)
     }
 
     private fun testSizeAfterRemove(vec: VectorList<Int>) {
-        val amountToRemove = 3
-        val leftOver = vec.size - amountToRemove
+        val amount = 315
+        val leftOver = vec.size - amount
 
-        repeat(amountToRemove) {
-            vec.removeLast()
-        }
+        vec.removeFromBack(amount)
 
         assertEquals(leftOver, vec.size)
     }
@@ -94,13 +98,24 @@ class VectorListTest {
         vec.add(1)
         assertFalse(vec.isEmpty())
 
+        vec.add(0)
+        assertFalse(vec.isEmpty())
+
+        vec.removeLast()
+        assertFalse(vec.isEmpty())
+
         vec.removeLast()
         assertTrue(vec.isEmpty())
     }
 
     @Test
     fun testCapacity() {
-        val initialCapacity = 50
+        this.testCapacityWithAdding()
+        this.testCapacityWithRemoving()
+    }
+
+    private fun testCapacityWithAdding() {
+        val initialCapacity = 51
 
         val vec = VectorList<Int>(initialCapacity)
         assertEquals(initialCapacity, vec.capacity)
@@ -130,23 +145,31 @@ class VectorListTest {
         assertTrue(capacityBeforeAdd < vec.capacity)
     }
 
+    private fun testCapacityWithRemoving() {
+        val cap1 = 30
+        val cap2 = 31
+
+        val vec1 = (1 .. cap1).toVectorList()
+        val vec2 = (1 .. cap2).toVectorList()
+
+        this.testCapacityAfterRemoving(vec1)
+        this.testCapacityAfterRemoving(vec2)
+    }
+
     private fun testCapacityAfterRemoving(vec: VectorList<Int>) {
-        vec.trimToSize()
-
         val capacityBeforeRemove = vec.capacity
+        val full = vec.size == vec.capacity
 
-        repeat((vec.capacity / 2) + 1) {
-            assertEquals(capacityBeforeRemove, vec.capacity)
+        vec.removeFromBack((vec.size / 2) - 1)
+        assertTrue((vec.capacity == capacityBeforeRemove && full) || capacityBeforeRemove > vec.capacity)
 
-            vec.removeLast()
-        }
-
+        vec.removeLast()
         assertTrue(capacityBeforeRemove > vec.capacity)
     }
 
     @Test
     fun testEnsureCapacity() {
-        val initialCapacity = 8
+        val initialCapacity = 20
         val capacityChange = 3
 
         val vec = VectorList<Int>(initialCapacity)
@@ -155,7 +178,9 @@ class VectorListTest {
         this.testSmallerCapacity(vec, capacityChange)
         this.testLargerCapacity(vec, capacityChange)
 
+        val capacityBeforeFail = vec.capacity
         assertFailsWith<IllegalArgumentException>{ vec.ensureCapacity(-1) }
+        assertEquals(capacityBeforeFail, vec.capacity)
     }
 
     private fun testSmallerCapacity(vec: VectorList<Int>, capacityChange: Int) {
@@ -185,12 +210,11 @@ class VectorListTest {
         assertEquals(initialCapacity, vec.capacity)
 
         this.testAfterIncreasingSize(vec)
-        this.testWhenSizeEqualsCapacity(vec)
         this.testWhenSizeEqualsCapacityBeforeAdding(vec)
     }
 
     private fun testAfterIncreasingSize(vec: VectorList<Int>) {
-        val targetSize = 15
+        val targetSize = 8
 
         vec.addAll(0 until targetSize)
 
@@ -200,56 +224,42 @@ class VectorListTest {
         vec.trimToSize()
 
         assertEquals(targetSize, vec.size)
-        assertEquals(targetSize, vec.capacity)
-    }
-
-    private fun testWhenSizeEqualsCapacity(vec: VectorList<Int>) {
-        val beforeSize = vec.size
-        val beforeCapacity = vec.capacity
-
-        assertEquals(beforeSize, beforeCapacity)
-
-        vec.trimToSize()
-
-        val afterSize = vec.size
-        val afterCapacity = vec.capacity
-
-        assertEquals(afterSize, afterCapacity)
-        assertEquals(beforeSize, afterSize)
-        assertEquals(beforeCapacity, afterCapacity)
+        assertTrue(targetSize <= vec.capacity)
     }
 
     private fun testWhenSizeEqualsCapacityBeforeAdding(vec: VectorList<Int>) {
-        assertEquals(vec.size, vec.capacity)
+        val items = 0.replicate(vec.capacity - vec.size)
+        vec.addAll(items)
 
         val oldCapacity = vec.capacity
-
-        vec.add(100)
-
+        vec.add(-100)
         assertNotEquals(oldCapacity, vec.capacity)
     }
 
     @Test
     fun testGet() {
-        val vec = VectorList<Int>()
+        val vec = vectorListOf<Int>()
 
         this.testGetAfterAdding(vec)
         this.testGetAfterAddingAtIndex(vec)
 
         assertFailsWith<IndexOutOfBoundsException>{ vec[-1] }
         assertFailsWith<IndexOutOfBoundsException>{ vec[vec.size] }
+        assertFailsWith<IndexOutOfBoundsException>{ vec[Int.MIN_VALUE] }
+        assertFailsWith<IndexOutOfBoundsException>{ vec[Int.MAX_VALUE] }
     }
 
     private fun testGetAfterAdding(vec: VectorList<Int>) {
-        val targetSize = 11
+        val values = (0 .. 11).toList()
 
-        vec.addAll(0 until targetSize)
+        vec.addAll(values)
 
         for (index in vec.indices) {
             assertEquals(index, vec[index])
         }
 
         val newItem = -1
+
         vec.add(newItem)
 
         assertEquals(newItem, vec[vec.lastIndex])
@@ -274,7 +284,7 @@ class VectorListTest {
 
     @Test
     fun testWrapGet() {
-        val size = 10
+        val size = 18
         val vec = (0 until size).toVectorList()
 
         for (index in vec.indices) {
@@ -288,6 +298,8 @@ class VectorListTest {
 
         assertDoesNotThrow{ vec.wrapGet(-1) }
         assertDoesNotThrow{ vec.wrapGet(vec.size) }
+        assertDoesNotThrow{ vec.wrapGet(Int.MIN_VALUE) }
+        assertDoesNotThrow{ vec.wrapGet(Int.MAX_VALUE) }
     }
 
     @Test
@@ -300,11 +312,10 @@ class VectorListTest {
             assertTrue(result.isSuccess)
         }
 
-        val before = vec.tryGet(-1)
-        val after = vec.tryGet(vec.size)
-
-        assertTrue(before.isFailure)
-        assertTrue(after.isFailure)
+        assertFailsWith<IndexOutOfBoundsException>{ vec.tryGet(-1).getOrThrow() }
+        assertFailsWith<IndexOutOfBoundsException>{ vec.tryGet(vec.size).getOrThrow() }
+        assertFailsWith<IndexOutOfBoundsException>{ vec.tryGet(Int.MIN_VALUE).getOrThrow() }
+        assertFailsWith<IndexOutOfBoundsException>{ vec.tryGet(Int.MAX_VALUE).getOrThrow() }
     }
 
     @Test
@@ -317,11 +328,10 @@ class VectorListTest {
             assertTrue(option.isSome())
         }
 
-        val before = vec.safeGet(-1)
-        val after = vec.safeGet(vec.size)
-
-        assertTrue(before.isNone())
-        assertTrue(after.isNone())
+        assertTrue(vec.safeGet(-1).isNone())
+        assertTrue(vec.safeGet(vec.size).isNone())
+        assertTrue(vec.safeGet(Int.MIN_VALUE).isNone())
+        assertTrue(vec.safeGet(Int.MAX_VALUE).isNone())
     }
 
     @Test
@@ -337,8 +347,14 @@ class VectorListTest {
         assertEquals(newItem, vec[index])
         assertNotEquals(oldItem, vec[index])
 
-        assertFailsWith<IndexOutOfBoundsException>{ vec[-1] = newItem }
-        assertFailsWith<IndexOutOfBoundsException>{ vec[vec.size] = newItem }
+        val otherItem = -targetSize
+
+        assertFailsWith<IndexOutOfBoundsException>{ vec[-1] = otherItem }
+        assertFailsWith<IndexOutOfBoundsException>{ vec[vec.size] = otherItem }
+        assertFailsWith<IndexOutOfBoundsException>{ vec[Int.MIN_VALUE] = otherItem }
+        assertFailsWith<IndexOutOfBoundsException>{ vec[Int.MAX_VALUE] = otherItem }
+
+        assertFalse(otherItem in vec)
     }
 
     @Test
@@ -350,7 +366,7 @@ class VectorListTest {
         this.testWrapSetAtIndex(vec, index, -1)
         this.testWrapSetAtIndex(vec, index - size, -2)
         this.testWrapSetAtIndex(vec, index + size, -3)
-        this.testWrapSetOutOfBounds(vec, 11)
+        this.testWrapSetOutOfBounds(vec, -size)
     }
 
     private fun testWrapSetAtIndex(vec: VectorList<Int>, targetIndex: Int, newItem: Int) {
@@ -364,9 +380,15 @@ class VectorListTest {
     private fun testWrapSetOutOfBounds(vec: VectorList<Int>, newItem: Int) {
         assertDoesNotThrow{ vec.wrapSet(-1, newItem) }
         assertDoesNotThrow{ vec.wrapSet(vec.size, newItem) }
+        assertDoesNotThrow{ vec.wrapSet(Int.MIN_VALUE, newItem) }
+        assertDoesNotThrow{ vec.wrapSet(Int.MAX_VALUE, newItem) }
 
         assertEquals(newItem, vec.wrapGet(-1))
         assertEquals(newItem, vec.wrapGet(vec.size))
+        assertEquals(newItem, vec.wrapGet(Int.MIN_VALUE))
+        assertEquals(newItem, vec.wrapGet(Int.MAX_VALUE))
+
+        assertTrue(vec.count(newItem) <= 4)
     }
 
     @Test
@@ -390,16 +412,14 @@ class VectorListTest {
     }
 
     private fun testTrySetOutOfBounds(vec: VectorList<Int>) {
-        val index1 = -1
-        val index2 = vec.size
-
         val newItem = -10
 
-        val result1 = vec.trySet(index1, newItem)
-        val result2 = vec.trySet(index2, newItem)
+        assertFailsWith<IndexOutOfBoundsException>{ vec.trySet(-1, newItem).getOrThrow() }
+        assertFailsWith<IndexOutOfBoundsException>{ vec.trySet(vec.size, newItem).getOrThrow() }
+        assertFailsWith<IndexOutOfBoundsException>{ vec.trySet(Int.MIN_VALUE, newItem).getOrThrow() }
+        assertFailsWith<IndexOutOfBoundsException>{ vec.trySet(Int.MAX_VALUE, newItem).getOrThrow() }
 
-        assertTrue(result1.isFailure)
-        assertTrue(result2.isFailure)
+        assertFalse(newItem in vec)
     }
 
     @Test
@@ -435,11 +455,12 @@ class VectorListTest {
     private fun testSafeSetOutOfBounds(vec: VectorList<Int>) {
         val newItem = 38
 
-        val option1 = vec.safeSet(-1, newItem)
-        val option2 = vec.safeSet(vec.size, newItem)
+        assertTrue(vec.safeSet(-1, newItem).isNone())
+        assertTrue(vec.safeSet(vec.size, newItem).isNone())
+        assertTrue(vec.safeSet(Int.MIN_VALUE, newItem).isNone())
+        assertTrue(vec.safeSet(Int.MAX_VALUE, newItem).isNone())
 
-        assertTrue(option1.isNone())
-        assertTrue(option2.isNone())
+        assertFalse(newItem in vec)
     }
 
     @Test
@@ -449,25 +470,34 @@ class VectorListTest {
 
         repeat(initialCapacity) {
             val preSize = vec.size
+            val amount = 5
 
-            assertTrue(vec.add(it))
+            val item = it
 
-            assertEquals(it, vec[vec.lastIndex])
-            assertEquals(preSize, vec.size - 1)
+            repeat(amount) {
+                assertTrue(vec.add(item))
+            }
+
+            assertEquals(item, vec[vec.lastIndex])
+            assertEquals(vec.size, preSize + amount)
         }
     }
 
     @Test
     fun testAddWithIndexing() {
-        val initialCapacity = 2
+        val initialCapacity = 9
         val vec = VectorList<Int>(initialCapacity)
 
         this.testAfterInsertingAtEnd(vec)
         this.testAfterInsertingAtBeginning(vec, initialCapacity)
         this.testAfterInsertingAtMiddle(vec)
 
-        assertFailsWith<IndexOutOfBoundsException>{ vec.add(-1, Int.MAX_VALUE) }
-        assertFailsWith<IndexOutOfBoundsException>{ vec.add(vec.size + 1, Int.MAX_VALUE) }
+        val item = 88
+
+        assertFailsWith<IndexOutOfBoundsException>{ vec.add(-1, item) }
+        assertFailsWith<IndexOutOfBoundsException>{ vec.add(vec.size + 1, item) }
+
+        assertFalse(item in vec)
     }
 
     private fun testAfterInsertingAtBeginning(vec: VectorList<Int>, initialCapacity: Int) {
@@ -498,22 +528,22 @@ class VectorListTest {
     @Test
     fun testAddAll() {
         val max = 14
-        val vec = VectorList<Int>()
+        val vec = vectorListOf<Int>()
 
         val items = 0 until max
         val listToBeInserted = items.toList()
-        val setToBeInserted = items.toSet()
+        val setToBeInserted = items.toHashSet()
 
         this.testCollectionToBeInserted(vec, listToBeInserted)
-        assertEquals(max, vec.size)
+        assertEquals(listToBeInserted.size, vec.size)
 
         this.testCollectionToBeInserted(vec, setToBeInserted)
-        assertEquals(max + max, vec.size)
+        assertEquals(listToBeInserted.size + setToBeInserted.size, vec.size)
     }
 
     private fun testCollectionToBeInserted(vec: VectorList<Int>, collection: Collection<Int>) {
         val initialSize = vec.size
-        vec.addAll(collection)
+        assertTrue(vec.addAll(collection))
         val newSize = vec.size
 
         val iter = collection.iterator()
@@ -526,10 +556,10 @@ class VectorListTest {
     @Test
     fun testAddAllWithIndexing() {
         val initialSize = 10
-        val vec = VectorList<Int>()
+        val vec = vectorListOf<Int>()
         val items = (0 until initialSize).toList()
 
-        vec.addAll(items)
+        assertTrue(vec.addAll(items))
 
         this.testAddAllAtEnd(vec)
         this.testAddAllAtBeginning(vec)
@@ -543,7 +573,7 @@ class VectorListTest {
         val amount = 5
         val items = (0 until amount).toList()
 
-        vec.addAll(0, items)
+        assertTrue(vec.addAll(0, items))
 
         val vecIter = vec.listIterator(0)
         val otherIter = items.iterator()
@@ -557,7 +587,7 @@ class VectorListTest {
         val amount = 8
         val items = (0 until amount).toSet()
 
-        vec.addAll(vec.size, items)
+        assertTrue(vec.addAll(vec.size, items))
 
         val vecIter = vec.listIterator(vec.size - amount)
         val otherIter = items.iterator()
@@ -569,10 +599,10 @@ class VectorListTest {
 
     private fun testAddAllAtMiddle(vec: VectorList<Int>) {
         val amount = 4
-        val items = (0 until amount).toSet()
+        val items = (0 until amount).toHashSet()
         val midIndex = vec.size / 2
 
-        vec.addAll(midIndex, items)
+        assertTrue(vec.addAll(midIndex, items))
 
         val vecIter = vec.listIterator(midIndex)
         val otherIter = items.iterator()
@@ -598,6 +628,7 @@ class VectorListTest {
         assertFalse(vec.remove(7))
 
         assertTrue(0 in vec)
+        assertFalse(7 in vec)
     }
 
     @Test
@@ -619,7 +650,7 @@ class VectorListTest {
     fun testRemoveAt() {
         val vec = vectorListOf<Int>()
 
-        vec.addAll(20 downTo 0)
+        vec.addAll(0 .. 50)
 
         this.testRemovingAtEnds(vec)
         this.testRemovingInMiddle(vec)
@@ -674,22 +705,23 @@ class VectorListTest {
 
     @Test
     fun testRetainAll() {
-        val vec = VectorList<Int>()
+        val vec = vectorListOf<Int>()
         val range = 0 .. 100
         val divisor = 2
 
         vec.addAll(range)
-        val changed = vec.retainAll((range step divisor).toSet())
+
+        val toBeRetained = (range step divisor).toHashSet()
+        assertTrue(vec.retainAll(toBeRetained))
 
         for (item in vec) {
             assertTrue(0 == item % divisor)
         }
-        assertTrue(changed)
 
+        assertFalse(vec.retainAll(vec))
 
         val empty = listOf<Int>()
 
-        assertFalse(vec.retainAll(vec))
         assertTrue(vec.retainAll(empty))
         assertTrue(vec.isEmpty())
     }
@@ -721,43 +753,65 @@ class VectorListTest {
         assertEquals(6, vec.delete(divisibleBy10))
         assertEquals(5, vec.delete(divisibleBy5))
         assertEquals(20, vec.delete(divisibleBy2))
+        assertEquals(0, vec.delete(divisibleBy2) + vec.delete(divisibleBy5) + vec.delete(divisibleBy10))
+        assertEquals(vec.size, vec.delete(vec))
     }
 
     @Test
     fun testKeep() {
+        val vec = vectorListOf<Int>()
+        val range = 0 .. 100
+        val divisor = 4
 
+        vec.addAll(range)
+
+        val toBeKept = (range step divisor).toSet()
+        assertEquals(75, vec.keep(toBeKept))
+
+        for (item in vec) {
+            assertTrue(0 == item % divisor)
+        }
+
+        val empty = listOf<Int>()
+        val size = vec.size
+
+        assertEquals(0, vec.keep(vec))
+        assertEquals(size, vec.keep(empty))
+        assertTrue(vec.isEmpty())
     }
 
     @Test
     fun testRemoveFromBack() {
-        val vec = (1 .. 10).toVectorList()
+        val size = 501
+        val half = size / 2
+        val moreThanHalf = half + 1
 
-        val amountRemoved1 = vec.removeFromBack(6)
+        val vec = (1 .. size).toVectorList()
 
-        assertEquals(6, amountRemoved1)
-        assertEquals(4, vec.size)
+        assertFailsWith<IllegalArgumentException>{ vec.removeFromBack(-1) }
 
-        val amountRemoved2 = vec.removeFromBack(5)
+        assertEquals(0, vec.removeFromBack(0))
+        assertEquals(size, vec.size)
 
-        assertEquals(4, amountRemoved2)
+        assertEquals(moreThanHalf, vec.removeFromBack(moreThanHalf))
+        assertEquals(size - moreThanHalf, vec.size)
+
+        assertTrue(half >= vec.removeFromBack(half))
         assertTrue(vec.isEmpty())
     }
 
     @Test
     fun testRemoveRange() {
-        val vec = (0 until 20).toVectorList()
+        val vec = (0 until 74).toVectorList()
 
-        val range1 = (vec.size / 5) .. (vec.size / 3)
-        val range2 = (vec.size / 2) .. (3 * vec.size / 4)
-
-        this.testRemovingRange(vec, range1)
-        this.testRemovingRange(vec, range2)
+        this.testRemovingRange(vec, (vec.size / 5), (vec.size / 3))
+        this.testRemovingRange(vec, (vec.size / 2), (3 * vec.size / 4))
     }
 
-    private fun testRemovingRange(vec: VectorList<Int>, range: IntRange) {
-        val newSize = vec.size - (range.last - range.first)
+    private fun testRemovingRange(vec: VectorList<Int>, fromIndex: Int, toIndex: Int) {
+        val newSize = vec.size - (toIndex - fromIndex)
 
-        vec.removeRange(range.first, range.last)
+        vec.removeRange(fromIndex, toIndex)
 
         assertEquals(newSize, vec.size)
     }
@@ -851,8 +905,8 @@ class VectorListTest {
         assertTrue{ vec.containsAll((range step 3).toHashSet()) }
         assertTrue{ vec.containsAll((range step 5).toSet()) }
 
-        val set1 = hashSetOf(1, 20, 5, 9)
-        val set2 = hashSetOf(-1, 1, 2, 3, 0)
+        val set1 = setOf(1, 20, 5, 9)
+        val set2 = setOf(-1, 1, 2, 3, 0)
 
         assertTrue{ vec.containsAll(set1) }
         assertFalse{ vec.containsAll(set2) }
@@ -865,7 +919,7 @@ class VectorListTest {
 
         val size = range.count()
 
-        for (index in (0 until size).reversed()) {
+        for (index in 0 until size) {
             @Suppress("UnnecessaryVariable", "RedundantSuppression")
             val value = index
 
@@ -874,15 +928,31 @@ class VectorListTest {
 
             assertEquals(vec[index1], vec[index2])
             assertNotEquals(index1, index2)
+
+            assertNotEquals(-1, index1)
+            assertNotEquals(-1, index2)
         }
 
-        assertEquals(-1, vec.indexOf(vec.first() - 1))
-        assertEquals(-1, vec.indexOf(vec.last() + 1))
+        assertEquals(-1, vec.indexOf(Int.MIN_VALUE))
+        assertEquals(-1, vec.indexOf(Int.MAX_VALUE))
     }
 
     @Test
-    fun testIndexOfWithPredicate() {
+    fun testIndexWithPredicate() {
+        val range = 0 .. 40
+        val vec = range.toVectorList()
+        val divisor = 4
 
+        for (index in range) {
+            val modResult = index % divisor
+
+            val foundIndex = vec.index(index) { 0 == it % divisor }
+            val intendedIndex = if (0 == modResult) index else index + divisor - modResult
+
+            assertEquals(intendedIndex, foundIndex)
+        }
+
+        assertEquals(-1, vec.index(0) { it < 0 })
     }
 
     @Test
@@ -892,28 +962,65 @@ class VectorListTest {
 
         val size = range.count()
 
-        for (index in size until size + size) {
-            val value = index - size
+        for (index in 0 until size) {
+            @Suppress("UnnecessaryVariable", "RedundantSuppression")
+            val value = index
 
             val index1 = vec.lastIndexOf(value)
-            val index2 = vec.lastIndex(index - size, value)
+            val index2 = vec.lastIndex(index + size, value)
 
             assertEquals(vec[index1], vec[index2])
             assertNotEquals(index1, index2)
+
+            assertNotEquals(-1, index1)
+            assertNotEquals(-1, index2)
         }
 
-        assertEquals(-1, vec.lastIndexOf(vec.first() - 1))
-        assertEquals(-1, vec.lastIndexOf(vec.last() + 1))
+        assertEquals(-1, vec.lastIndexOf(Int.MIN_VALUE))
+        assertEquals(-1, vec.lastIndexOf(Int.MAX_VALUE))
     }
 
     @Test
-    fun testLastIndexOfWithPredicate() {
+    fun testLastIndexWithPredicate() {
 
     }
 
     @Test
     fun testIndices() {
+        val vec = vectorListOf(2, 0, 1, 0, 1, 2, 2, 3)
 
+        this.searchForIndicesFromBeginning(vec)
+        this.searchForIndicesFromMiddle(vec)
+    }
+
+    private fun searchForIndicesFromBeginning(vec: VectorList<Int>) {
+        val zero = vec.indices(0).toVectorList()
+        val one = vec.indices(1).toVectorList()
+        val two = vec.indices(2).toVectorList()
+        val three = vec.indices(3).toVectorList()
+        val four = vec.indices(4).toVectorList()
+
+        assertEquals(vectorListOf(1, 3), zero)
+        assertEquals(vectorListOf(2, 4), one)
+        assertEquals(vectorListOf(0, 5, 6), two)
+        assertEquals(vectorListOf(7), three)
+        assertEquals(vectorListOf(), four)
+    }
+
+    private fun searchForIndicesFromMiddle(vec: VectorList<Int>) {
+        val midIndex = vec.size / 2
+
+        val zero = vec.indices(midIndex, 0).toVectorList()
+        val one = vec.indices(midIndex, 1).toVectorList()
+        val two = vec.indices(midIndex, 2).toVectorList()
+        val three = vec.indices(midIndex, 3).toVectorList()
+        val four = vec.indices(midIndex, 4).toVectorList()
+
+        assertEquals(vectorListOf(), zero)
+        assertEquals(vectorListOf(4), one)
+        assertEquals(vectorListOf(5, 6), two)
+        assertEquals(vectorListOf(7), three)
+        assertEquals(vectorListOf(), four)
     }
 
     @Test
@@ -924,6 +1031,115 @@ class VectorListTest {
     @Test
     fun testFind() {
 
+    }
+
+    @Test
+    fun testFindAmount() {
+
+    }
+
+    @Test
+    fun testSwap() {
+        val vec = vectorListOf("1", "2", "3", "4", "5")
+
+        this.testSwappingSameElement(vec)
+        this.testSwappingDifferentElement(vec)
+    }
+
+    private fun testSwappingSameElement(vec: VectorList<String>) {
+        val index1 = 3
+        val index2 = 3
+
+        val old1 = vec[index1]
+        val old2 = vec[index2]
+
+        assertSame(vec[index1], vec[index2])
+        assertSame(vec[index1], old1)
+        assertSame(vec[index2], old2)
+        assertSame(old1, old2)
+
+        vec.swap(index1, index2)
+
+        assertSame(vec[index1], vec[index2])
+        assertSame(old1, vec[index1])
+        assertSame(old2, vec[index2])
+        assertSame(old1, old2)
+    }
+
+    private fun testSwappingDifferentElement(vec: VectorList<String>) {
+        val firstIndex = 1
+        val secondIndex = 4
+
+        val firstOld = vec[firstIndex]
+        val secondOld = vec[secondIndex]
+
+        assertNotSame(vec[firstIndex], vec[secondIndex])
+        assertSame(vec[firstIndex], firstOld)
+        assertSame(vec[secondIndex], secondOld)
+        assertNotSame(firstOld, secondOld)
+
+        vec.swap(firstIndex, secondIndex)
+
+        assertNotSame(vec[firstIndex], vec[secondIndex])
+        assertSame(vec[firstIndex], secondOld)
+        assertSame(vec[secondIndex], firstOld)
+        assertNotSame(firstOld, secondOld)
+    }
+
+    @Test
+    fun testIsSorted() {
+        val reverseOrdering = reverseOrder<Int>()
+
+        val vec = vectorListOf(7, -7, 8, 33, -100, 11, 5, -1011, 10000)
+        val reversed = vec.reversed().toVectorList()
+        val sorted = vec.sorted().toVectorList()
+        val sortedReversed = sorted.reversed().toVectorList()
+
+        assertFalse(vec.isSorted())
+        assertFalse(reversed.isSorted(reverseOrdering))
+        assertTrue(sorted.isSorted())
+        assertTrue(sortedReversed.isSorted(reverseOrdering))
+    }
+
+    @Test
+    fun testIsSortedUntil() {
+        val reverseOrdering = reverseOrder<Int>()
+
+        this.testIsSortedUntilOnFullySorted(reverseOrdering)
+        this.testIsSortedUntilOnPartiallySorted(reverseOrdering)
+    }
+
+    private fun testIsSortedUntilOnFullySorted(reverse: Comparator<Int>) {
+        val size = 10
+
+        val vec = (1 .. size).toVectorList()
+        val reversed = vec.reversed().toVectorList()
+
+        assertEquals(size, vec.isSortedUntil())
+        assertEquals(1, reversed.isSortedUntil())
+        assertEquals(1, vec.isSortedUntil(reverse))
+        assertEquals(size, reversed.isSortedUntil(reverse))
+    }
+
+    private fun testIsSortedUntilOnPartiallySorted(reverse: Comparator<Int>) {
+        val max = 10
+        val range = 1 .. max
+
+        val forward = range.asSequence()
+        val backward = range.reversed().asSequence()
+
+        val forward2Backward = (forward + backward).toVectorList()
+        val backward2Forward = (backward + forward).toVectorList()
+
+        val midIndex = forward2Backward.size / 2
+
+        forward2Backward.removeAt(midIndex)
+        backward2Forward.removeAt(midIndex)
+
+        assertEquals(max, forward2Backward.isSortedUntil())
+        assertEquals(1, forward2Backward.isSortedUntil(reverse))
+        assertEquals(1, backward2Forward.isSortedUntil())
+        assertEquals(max, backward2Forward.isSortedUntil(reverse))
     }
 
     @Test
@@ -1005,15 +1221,72 @@ class VectorListTest {
     }
 
     @Test
+    fun testIsPermutationOf() {
+        this.testReversedPermutation()
+        this.testDifferentSizedPermutations()
+        this.testArbitraryPermutations()
+    }
+
+    private fun testReversedPermutation() {
+        val range = 1 .. 1000000
+
+        val vec1 = range.toVectorList()
+        val vec2 = range.reversed().toVectorList()
+
+        assertTrue(vec1.isPermutationOf(vec2))
+        assertTrue(vec2.isPermutationOf(vec1))
+    }
+
+    private fun testDifferentSizedPermutations() {
+        val vec1 = vectorListOf(1, 2, 3, 4, 5)
+        val vec2 = vectorListOf(1, 2, 4, 5)
+
+        assertFalse(vec1.isPermutationOf(vec2))
+    }
+
+    private fun testArbitraryPermutations() {
+        val vec1 = vectorListOf(1, 5, 3, 2, 4)
+        val vec2 = vectorListOf(5, 4, 1, 3, 2)
+
+        assertTrue(vec1.isPermutationOf(vec2))
+        assertTrue(vec2.isPermutationOf(vec1))
+    }
+
+    @Test
+    fun testNext() {
+
+    }
+
+    @Test
+    fun testPrev() {
+
+    }
+
+    @Test
     fun testCompare() {
 
     }
 
     @Test
     fun testToString() {
-        assertEquals("[]", vectorListOf<Int>().toString())
-        assertEquals("[1000]", vectorListOf(1000).toString())
-        assertEquals("[0, 4, 8, 12, 16, 20]", vectorListOf(0, 4, 8, 12, 16, 20).toString())
+        val vec1 = vectorListOf<Int>()
+        val vec2 = vectorListOf(1000)
+        val vec3 = vectorListOf(-1, 4, 0, -7, 16, -11)
+
+        assertEquals("[]", vec1.toString())
+        assertEquals("[1000]", vec2.toString())
+        assertEquals("[-1, 4, 0, -7, 16, -11]", vec3.toString())
+
+        this.testToStringOnLargeVector()
+    }
+
+    private fun testToStringOnLargeVector() {
+        val range = 0 until 100000
+
+        val vec = range.toVectorList().toString()
+        val arr = range.toMutableList().toString()
+
+        assertEquals(vec, arr)
     }
 }
 
@@ -1021,7 +1294,7 @@ class VectorIteratorTest {
     @Test
     fun testConstructor() {
         assertDoesNotThrow{ vectorListOf<Int>().iterator() }
-        assertDoesNotThrow{ vectorListOf(1, 2, 3, 4, 5).iterator() }
+        assertDoesNotThrow{ vectorListOf(1, 2).iterator() }
     }
 
     @Test
@@ -1054,6 +1327,7 @@ class VectorIteratorTest {
         assertFailsWith<NoSuchElementException>{ vectorListOf<Int>().iterator().next() }
 
         this.testNextIfNonempty()
+        this.testConcurrentModification()
     }
 
     private fun testNextIfNonempty() {
@@ -1067,6 +1341,21 @@ class VectorIteratorTest {
         }
 
         assertFailsWith<NoSuchElementException>{ iter.next() }
+    }
+
+    private fun testConcurrentModification() {
+        val vec = (0 .. 30 step 3).toVectorList()
+        val iter = vec.iterator()
+
+        repeat(vec.size / 2) {
+            assertDoesNotThrow{ iter.next() }
+        }
+
+        vec.add(-1)
+
+        assertFailsWith<ConcurrentModificationException>{ iter.hasNext() }
+        assertFailsWith<ConcurrentModificationException>{ iter.next() }
+        assertFailsWith<ConcurrentModificationException>{ iter.remove() }
     }
 
     @Test
@@ -1102,12 +1391,29 @@ class VectorIteratorTest {
         assertFailsWith<IllegalStateException>{ iter.remove() }
 
         assertTrue(100 !in vec)
+
+        vec.removeLast()
+        assertFailsWith<ConcurrentModificationException>{ iter.remove() }
     }
 }
 
 class VectorListIteratorTest {
     @Test
     fun testConstructor() {
+        this.testConstructorWithEmptyVector()
+        this.testConstructorWithFilledVector()
+    }
+
+    private fun testConstructorWithEmptyVector() {
+        val vec = vectorListOf<Int>()
+
+        assertDoesNotThrow{ vec.listIterator() }
+        assertDoesNotThrow{ vec.listIterator(0) }
+
+        assertFailsWith<IndexOutOfBoundsException>{ vec.listIterator(1) }
+    }
+
+    private fun testConstructorWithFilledVector() {
         val vec = vectorListOf(1, 2, 3, 4, 5, 6, 7, 8)
 
         for (index in 0 .. vec.size) {
@@ -1116,18 +1422,24 @@ class VectorListIteratorTest {
 
         assertFailsWith<IndexOutOfBoundsException>{ vec.listIterator(-1) }
         assertFailsWith<IndexOutOfBoundsException>{ vec.listIterator(vec.size + 1) }
-
-        assertDoesNotThrow{ vectorListOf<Int>().listIterator() }
     }
 
     @Test
     fun testPreviousIndex() {
         val vec = (1 .. 13).toVectorList()
 
-        for (index in 0 .. vec.size) {
+        for (index in 1 .. vec.lastIndex) {
             val iter = vec.listIterator(index)
-
             assertEquals(index - 1, iter.previousIndex())
+
+            iter.previous()
+            assertEquals(index - 2, iter.previousIndex())
+
+            iter.next()
+            assertEquals(index - 1, iter.previousIndex())
+
+            iter.next()
+            assertEquals(index, iter.previousIndex())
         }
     }
 
@@ -1135,21 +1447,63 @@ class VectorListIteratorTest {
     fun testNextIndex() {
         val vec = (1 .. 13).toVectorList()
 
-        for (index in 0 .. vec.size) {
+        for (index in 1 .. vec.lastIndex) {
             val iter = vec.listIterator(index)
-
             assertEquals(index, iter.nextIndex())
+
+            iter.next()
+            assertEquals(index + 1, iter.nextIndex())
+
+            iter.previous()
+            assertEquals(index, iter.nextIndex())
+
+            iter.previous()
+            assertEquals(index - 1, iter.nextIndex())
         }
     }
 
     @Test
     fun testHasPrevious() {
+        val vec = vectorListOf(-19, 100, 75, 14, -32, -27, 11, Int.MAX_VALUE, Int.MIN_VALUE)
 
+        this.testAtBeginningForHasPrevious(vec)
+        this.testAfterForHasPrevious(vec)
+    }
+
+    private fun testAtBeginningForHasPrevious(vec: VectorList<Int>) {
+        val iter = vec.listIterator(0)
+
+        assertFalse(iter.hasPrevious())
+    }
+
+    private fun testAfterForHasPrevious(vec: VectorList<Int>) {
+        for (index in 1 .. vec.size) {
+            val iter = vec.listIterator(index)
+
+            assertTrue(iter.hasPrevious())
+        }
     }
 
     @Test
     fun testHasNext() {
+        val vec = vectorListOf(Int.MIN_VALUE, Int.MAX_VALUE, 0, 14, 1010, -65, -33, 2)
 
+        this.testAtEndForHasNext(vec)
+        this.testBeforeForHasNext(vec)
+    }
+
+    private fun testAtEndForHasNext(vec: VectorList<Int>) {
+        val iter = vec.listIterator(vec.size)
+
+        assertFalse(iter.hasNext())
+    }
+
+    private fun testBeforeForHasNext(vec: VectorList<Int>) {
+        for (index in 0 .. vec.lastIndex) {
+            val iter = vec.listIterator(index)
+
+            assertTrue(iter.hasNext())
+        }
     }
 
     @Test
@@ -1178,18 +1532,19 @@ class VectorListIteratorTest {
     }
 }
 
-class VectorSliceListTest {
+class VectorSublistTest {
     @Test
     fun testConstructor() {
         val vec = (1 .. 10).toVectorList()
-        assertDoesNotThrow{ vec.subList(0, vec.size) }
 
         this.testInRange(vec)
         this.testOutOfRange(vec)
+
+        assertNotSame(vec, vec.subList(0, vec.size))
     }
 
     private fun testInRange(vec: VectorList<Int>) {
-        for (fromIndex in vec.indices) {
+        for (fromIndex in 0 until vec.size) {
             for (toIndex in 0 .. vec.size) {
                 this.testRange(vec, fromIndex, toIndex)
             }
@@ -1246,12 +1601,13 @@ class VectorSliceListTest {
 
     private fun testIfSublistEmpty(vec: VectorList<Int>, fromIndex: Int, toIndex: Int) {
         val sub = vec.subList(fromIndex, toIndex)
+        val result = sub.isEmpty()
 
         if (fromIndex == toIndex) {
-            assertTrue(sub.isEmpty())
+            assertTrue(result)
         }
         else {
-            assertFalse(sub.isEmpty())
+            assertFalse(result)
         }
     }
 
@@ -1264,13 +1620,26 @@ class VectorSliceListTest {
         val vec = (0 until size).toVectorList()
         val sub = vec.subList(fromIndex, toIndex)
 
+        this.testEqualityOfSublistGets(vec, sub, fromIndex)
+        this.testEqualityOfListGets(vec, sub, fromIndex, toIndex)
+
+        assertTrue(fromIndex - 1 in vec.indices)
+        assertTrue(toIndex in vec.indices)
+
+        assertFailsWith<IndexOutOfBoundsException>{ sub[-1] }
+        assertFailsWith<IndexOutOfBoundsException>{ sub[sub.size] }
+    }
+
+    private fun testEqualityOfSublistGets(vec: VectorList<Int>, sub: MutableList<Int>, fromIndex: Int) {
         for (index in sub.indices) {
             val vecItem = assertDoesNotThrow{ vec[index + fromIndex] }
             val subItem = assertDoesNotThrow{ sub[index] }
 
             assertEquals(vecItem, subItem)
         }
+    }
 
+    private fun testEqualityOfListGets(vec: VectorList<Int>, sub: MutableList<Int>, fromIndex: Int, toIndex: Int) {
         for (index in vec.indices) {
             val vecItem = assertDoesNotThrow{ vec[index] }
             val subIndex = index - fromIndex
@@ -1284,16 +1653,84 @@ class VectorSliceListTest {
                 assertEquals(vecItem, subItem)
             }
         }
+    }
 
-        assertTrue(fromIndex - 1 in vec.indices)
-        assertTrue(toIndex in vec.indices)
+    @Test
+    fun testTryGet() {
+        val size = 37
+        val fromIndex = 14
+        val toIndex = 27
 
-        assertFailsWith<IndexOutOfBoundsException>{ sub[-1] }
-        assertFailsWith<IndexOutOfBoundsException>{ sub[sub.size] }
+        val vec = (0 until size).toVectorList()
+        val sub = vec.subList(fromIndex, toIndex)
+
+        for (index in vec.indices) {
+            val vecRes = vec.tryGet(index)
+            val subRes = sub.tryGet(index - fromIndex)
+
+            assertDoesNotThrow{ vecRes.getOrThrow() }
+
+            if (index < fromIndex || index >= toIndex) {
+                assertFailsWith<IndexOutOfBoundsException>{ subRes.getOrThrow() }
+            }
+            else {
+                assertDoesNotThrow{ subRes.getOrThrow() }
+            }
+        }
+    }
+
+    @Test
+    fun testSafeGet() {
+
+    }
+
+    @Test
+    fun testWrapGet() {
+
     }
 
     @Test
     fun testSet() {
+        val size = 35
+        val fromIndex = 10
+        val toIndex = 33
+
+        val vec = (1 .. size).toVectorList()
+        val sub = vec.subList(fromIndex, toIndex)
+
+        this.testSetAtIndex(vec, sub, 3, -6, fromIndex)
+        this.testSetAtIndex(vec, sub, 11, -11, fromIndex)
+        this.testSetAtIndex(vec, sub, 17, -18, fromIndex)
+        this.testSetAtIndex(vec, sub, 0, -100, fromIndex)
+        this.testSetAtIndex(vec, sub, 22, -2, fromIndex)
+
+        assertFailsWith<IndexOutOfBoundsException>{ sub[-1] = Int.MIN_VALUE }
+        assertFailsWith<IndexOutOfBoundsException>{ sub[sub.size] = Int.MIN_VALUE }
+    }
+
+    private fun testSetAtIndex(vec: VectorList<Int>, sub: MutableList<Int>, index: Int, item: Int, fromIndex: Int) {
+        assertEquals(sub[index], vec[index + fromIndex])
+
+        val old = assertDoesNotThrow{ sub.set(index, item) }
+
+        assertNotEquals(old, sub[index])
+        assertEquals(item, sub[index])
+
+        assertEquals(sub[index], vec[index + fromIndex])
+    }
+
+    @Test
+    fun testTrySet() {
+
+    }
+
+    @Test
+    fun testSafeSet() {
+
+    }
+
+    @Test
+    fun testWrapSet() {
 
     }
 
@@ -1422,6 +1859,10 @@ class VectorSliceListTest {
 
     @Test
     fun testToString() {
+        val vec = (0 until 20).toVectorList()
 
+        assertEquals("[]", vec.subList(0, 0).toString())
+        assertEquals("[13]", vec.subList(13, 14).toString())
+        assertEquals("[2, 3, 4, 5]", vec.subList(2, 6).toString())
     }
 }

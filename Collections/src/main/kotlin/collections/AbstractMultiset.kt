@@ -1,17 +1,8 @@
 package collections
 
-@Suppress("RemoveRedundantQualifierName")
 abstract class AbstractMultiset<TElement>(
     private val base: MutableMap<TElement, DequeList<TElement>>,
 ) : AbstractCollection<TElement>(), MutableMultiset<TElement> {
-    private companion object {
-        private fun checkAmount(amount: Int) {
-            if (amount < 0) {
-                throw IllegalArgumentException("Negative amount: $amount")
-            }
-        }
-    }
-
     override var size: Int = 0
         protected set
 
@@ -25,11 +16,11 @@ abstract class AbstractMultiset<TElement>(
     override fun add(element: TElement): Boolean {
         val list = this.base[element]
 
-        if (null !== list) {
-            list.add(element)
+        if (null === list) {
+            this.base[element] = dequeListOf(element)
         }
         else {
-            this.base[element] = dequeListOf(element)
+            list.add(element)
         }
 
         ++(this.size)
@@ -45,7 +36,7 @@ abstract class AbstractMultiset<TElement>(
     }
 
     override fun remove(element: TElement, amount: Int): Pair<Int, Boolean> {
-        AbstractMultiset.checkAmount(amount)
+        checkIfNegativeAmount(amount)
 
         val list = this.base[element]
 

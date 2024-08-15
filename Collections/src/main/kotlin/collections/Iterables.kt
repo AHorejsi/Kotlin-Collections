@@ -1,5 +1,11 @@
 package collections
 
+fun <TElement> Iterable<TElement>.withIndex(startIndex: Int): Iterable<IndexedValue<TElement>> =
+    this.asSequence().withIndex(startIndex).asIterable()
+
+fun <TElement> Iterable<*>.hasAtLeast(size: Int): Boolean =
+    this.asSequence().hasAtLeast(size)
+
 fun <TElement> MutableIterable<TElement>.removeFirstOf(element: @UnsafeVariance TElement): Boolean =
     when (this) {
         is MutableSet<TElement> -> this.remove(element)
@@ -58,3 +64,13 @@ fun <TElement> Iterable<TElement>.count(element: @UnsafeVariance TElement): Int 
             amountFound
         }
     }
+
+fun <TElement> Iterable<TElement>.tryFirst(): Result<TElement> = runCatching { this.first() }
+
+inline fun <TElement> Iterable<TElement>.tryFirst(predicate: (TElement) -> Boolean): Result<TElement> =
+    runCatching { this.first(predicate) }
+
+fun <TElement> Iterable<TElement>.tryLast(): Result<TElement> = runCatching { this.last() }
+
+inline fun <TElement> Iterable<TElement>.tryLast(predicate: (TElement) -> Boolean): Result<TElement> =
+    runCatching { this.last(predicate) }

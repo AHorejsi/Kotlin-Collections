@@ -37,7 +37,7 @@ class BinaryHeap<TElement>(
         require(initialCapacity >= 0)
     }
 
-    private val data: MutableList<TElement> = ArrayList(initialCapacity)
+    private val data: MutableList<TElement> = VectorList(initialCapacity)
 
     override val size: Int
         get() = this.data.size

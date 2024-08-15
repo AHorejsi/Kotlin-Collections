@@ -8,12 +8,11 @@ abstract class AbstractCollection<TElement> : MutableCollection<TElement> {
 
     override fun addAll(elements: Collection<TElement>): Boolean = this.insert(elements) > 0
 
-    override fun removeAll(elements: Collection<TElement>): Boolean = this.delete(elements) > 0
+    override fun removeAll(elements: Collection<@UnsafeVariance TElement>): Boolean = this.delete(elements) > 0
 
     override fun retainAll(elements: Collection<TElement>): Boolean = this.keep(elements) > 0
 
-    override fun containsAll(elements: Collection<@UnsafeVariance TElement>): Boolean =
-        elements.all{ it in this }
+    override fun containsAll(elements: Collection<@UnsafeVariance TElement>): Boolean = elements.all(this::contains)
 
     override fun toString(): String {
         if (this.isEmpty()) {
@@ -24,9 +23,11 @@ abstract class AbstractCollection<TElement> : MutableCollection<TElement> {
 
         sb.append('[')
         for (item in this.asSequence().take(this.size - 1)) {
-            sb.append("$item, ")
+            sb.append(item)
+            sb.append(", ")
         }
-        sb.append("${this.last()}]")
+        sb.append(this.last())
+        sb.append(']')
 
         return sb.toString()
     }

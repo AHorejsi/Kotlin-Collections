@@ -13,6 +13,9 @@ class FuncComparator<TElement>(private val func: (TElement, TElement) -> Int) : 
     override fun compare(p0: TElement, p1: TElement): Int = this.func(p0, p1)
 }
 
+val <TElement> Comparator<TElement>?.function: (TElement, TElement) -> Int
+    get() = (this ?: DefaultComparator())::compare
+
 fun <TElement> reverseOrder(comp: (TElement, TElement) -> Int): (TElement, TElement) -> Int {
     return { left, right -> comp(right, left) }
 }

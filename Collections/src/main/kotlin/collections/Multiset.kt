@@ -7,13 +7,13 @@ interface Multiset<TElement> : Collection<TElement>{
 
     fun multiplicity(element: TElement): Int
 
+    override operator fun contains(element: TElement): Boolean = this.multiplicity(element) > 0
+
     fun distinctIterator(): Iterator<TElement>
 }
 
 interface MutableMultiset<TElement> : Multiset<TElement>, MutableCollection<TElement> {
     fun remove(element: TElement, amount: Int): Pair<Int, Boolean>
-
-    override operator fun contains(element: TElement): Boolean = this.multiplicity(element) > 0
 
     override fun distinctIterator(): MutableIterator<TElement>
 }

@@ -99,14 +99,6 @@ sealed interface MutableLinkedList<TElement> : LinkedList<TElement>, Deque<TElem
     fun listIterator(node: MutableLinkedListNode<TElement>): MutableListIterator<TElement>
 }
 
-fun <TElement> Iterable<TElement>.toMutableLinkedList(): MutableLinkedList<TElement> = this.toBidirList()
-
-fun <TElement> Sequence<TElement>.toMutableLinkedList(): MutableLinkedList<TElement> = this.toBidirList()
-
-fun <TElement> Collection<TElement>.toMutableLinkedList(): MutableLinkedList<TElement> = this.toBidirList()
-
-fun <TElement> Array<out TElement>.toMutableLinkedList(): MutableLinkedList<TElement> = this.toBidirList()
-
 fun <TElement> LinkedList<TElement>.getNodeAt(index: Int): LinkedListNode<TElement> {
     if (index < 0 || index >= this.size) {
         throw IndexOutOfBoundsException()
@@ -192,10 +184,10 @@ fun <TElement> MutableLinkedList<TElement>.setItemAt(index: Int, element: TEleme
 fun <TElement> MutableLinkedList<TElement>.trySetItemAt(index: Int, element: TElement): Result<TElement> =
     runCatching { this.setItemAt(index, element) }
 
-fun <TElement> LinkedList<TElement>.find(element: @UnsafeVariance TElement): LinkedListNode<TElement>? =
-    this.find { it == element }
+fun <TElement> LinkedList<TElement>.findAmount(element: @UnsafeVariance TElement): LinkedListNode<TElement>? =
+    this.findAmount { it == element }
 
-inline fun <TElement> LinkedList<TElement>.find(predicate: (TElement) -> Boolean): LinkedListNode<TElement>? {
+inline fun <TElement> LinkedList<TElement>.findAmount(predicate: (TElement) -> Boolean): LinkedListNode<TElement>? {
     var node = this.head
 
     while (null !== node) {
@@ -209,7 +201,7 @@ inline fun <TElement> LinkedList<TElement>.find(predicate: (TElement) -> Boolean
     return node
 }
 
-fun <TElement> MutableLinkedList<TElement>.find(element: @UnsafeVariance TElement): MutableLinkedListNode<TElement>? {
+fun <TElement> MutableLinkedList<TElement>.findAmount(element: @UnsafeVariance TElement): MutableLinkedListNode<TElement>? {
     var node = this.head
 
     while (null !== node) {
@@ -223,7 +215,7 @@ fun <TElement> MutableLinkedList<TElement>.find(element: @UnsafeVariance TElemen
     return node
 }
 
-inline fun <TElement> MutableLinkedList<TElement>.find(predicate: (TElement) -> Boolean): MutableLinkedListNode<TElement>? {
+inline fun <TElement> MutableLinkedList<TElement>.findAmount(predicate: (TElement) -> Boolean): MutableLinkedListNode<TElement>? {
     var node = this.head
 
     while (null !== node) {

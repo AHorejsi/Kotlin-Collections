@@ -15,9 +15,10 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
         this.addAll(index, list)
     }
 
-    override fun addAll(elements: Collection<TElement>): Boolean = this.addAll(this.size, elements)
+    override fun addAll(elements: Collection<TElement>): Boolean =
+        this.addAll(this.size, elements)
 
-    override fun remove(element: TElement): Boolean {
+    override fun remove(element: @UnsafeVariance TElement): Boolean {
         val index = this.indexOf(element)
 
         if (-1 == index) {
@@ -33,7 +34,7 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
 
     override fun indexOf(element: @UnsafeVariance TElement): Int = this.index(0, element)
 
-    override fun lastIndexOf(element: @UnsafeVariance TElement): Int = this.lastIndex(this.lastIndex, element)
+    override fun lastIndexOf(element: @UnsafeVariance TElement): Int = this.lastIndex(this.size, element)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {
@@ -75,29 +76,21 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
 
     override fun listIterator(index: Int): MutableListIterator<TElement> = object : MutableListIterator<TElement> {
         init {
-            if (index < 0 || index > this@AbstractList.size) {
-                throw IndexOutOfBoundsException("0 <= index <= size. Index = $index, size = ${this@AbstractList.size}")
-            }
+            checkIfIndexCanBeInsertedAt(index, this@AbstractList.size)
         }
 
         private var currentIndex: Int = index
         private var lastUsedIndex: Int? = null
         private var modCount: Int = this@AbstractList.modCount
 
-        private fun checkModCount() {
-            if (this.modCount != this@AbstractList.modCount) {
-                throw ConcurrentModificationException("Modifications made to underlying List")
-            }
-        }
-
         override fun previousIndex(): Int {
-            this.checkModCount()
+            checkIfUnderlyingCollectionHasBeenModified(this.modCount, this@AbstractList.modCount)
 
             return this.currentIndex - 1
         }
 
         override fun nextIndex(): Int {
-            this.checkModCount()
+            checkIfUnderlyingCollectionHasBeenModified(this.modCount, this@AbstractList.modCount)
 
             return this.currentIndex
         }
@@ -107,9 +100,7 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
         override fun hasNext(): Boolean = this.nextIndex() < this@AbstractList.size
 
         override fun previous(): TElement {
-            if (!this.hasPrevious()) {
-                throw NoSuchElementException("ListIterator at its beginning")
-            }
+            checkIfPrev(this)
 
             val usedIndex = this.previousIndex()
             val item = this@AbstractList[usedIndex]
@@ -121,9 +112,7 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
         }
 
         override fun next(): TElement {
-            if (!this.hasNext()) {
-                throw NoSuchElementException("ListIterator at its end")
-            }
+            checkIfNext(this)
 
             val usedIndex = this.nextIndex()
             val item = this@AbstractList[usedIndex]
@@ -135,15 +124,15 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
         }
 
         override fun set(element: TElement) {
-            this.checkModCount()
+            checkIfUnderlyingCollectionHasBeenModified(this.modCount, this@AbstractList.modCount)
 
             this.lastUsedIndex?.let {
                 this@AbstractList[it] = element
-            } ?: throw IllegalStateException("No item to set")
+            } ?: noneToUse("No item to set")
         }
 
         override fun remove() {
-            this.checkModCount()
+            checkIfUnderlyingCollectionHasBeenModified(this.modCount, this@AbstractList.modCount)
 
             this.lastUsedIndex?.let {
                 this@AbstractList.removeAt(it)
@@ -151,11 +140,11 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
 
                 ++(this.modCount)
                 this.lastUsedIndex = null
-            } ?: throw IllegalStateException("No item to remove")
+            } ?: noneToUse("No item to remove")
         }
 
         override fun add(element: TElement) {
-            this.checkModCount()
+            checkIfUnderlyingCollectionHasBeenModified(this.modCount, this@AbstractList.modCount)
 
             this@AbstractList.add(this.nextIndex(), element)
 
@@ -164,7 +153,6 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
     }
 }
 
-@Suppress("RemoveRedundantQualifierName")
 internal class Sublist<TElement>(
     private val base: MutableList<TElement>,
     private val fromIndex: Int,
@@ -173,42 +161,11 @@ internal class Sublist<TElement>(
     private companion object {
         @Suppress("ConstPropertyName")
         const val serialVersionUID: Long = 1L
-
-        fun checkIfValidRange(fromIndex: Int, toIndex: Int) {
-            if (fromIndex > toIndex) {
-                throw IllegalArgumentException(
-                    "fromIndex must be less than or equal to toIndex. " +
-                    "fromIndex = $fromIndex, toIndex = $toIndex"
-                )
-            }
-        }
-
-        fun checkIndexSizeExcluded(index: Int, size: Int) {
-            if (index < 0 || index >= size) {
-                throw IndexOutOfBoundsException("0 <= index < size. index = $index, size = $size")
-            }
-        }
-
-        fun checkIndexSizeIncluded(index: Int, size: Int) {
-            if (index < 0 || index > size) {
-                throw IndexOutOfBoundsException("0 <= index <= size. index = $index, size = $size")
-            }
-        }
-
-        fun checkIfInBounds(fromIndex: Int, toIndex: Int, size: Int) {
-            if (fromIndex < 0 || fromIndex >= size) {
-                throw IndexOutOfBoundsException("0 <= fromIndex < size. fromIndex = $fromIndex, size = $size")
-            }
-
-            if (toIndex < 0 || toIndex > size) {
-                throw IndexOutOfBoundsException("0 <= toIndex <= size. toIndex = $toIndex, size = $size")
-            }
-        }
     }
 
     init {
-        Sublist.checkIfValidRange(this.fromIndex, this.toIndex)
-        Sublist.checkIfInBounds(this.fromIndex, this.toIndex, this.base.size)
+        checkIfValidRange(this.fromIndex, this.toIndex)
+        checkIfRangeInBounds(this.fromIndex, this.toIndex, this.base.size)
     }
 
     override val size: Int
@@ -217,24 +174,19 @@ internal class Sublist<TElement>(
     override fun isEmpty(): Boolean = this.fromIndex == this.toIndex
 
     override fun get(index: Int): TElement {
-        Sublist.checkIndexSizeExcluded(index, this.size)
+        checkIfIndexIsAccessible(index, this.size)
 
         return this.base[index + this.fromIndex]
     }
 
     override fun set(index: Int, element: TElement): TElement {
-        Sublist.checkIndexSizeExcluded(index, this.size)
+        checkIfIndexIsAccessible(index, this.size)
 
-        val actualIndex = index + this.fromIndex
-
-        val old = this.base[actualIndex]
-        this.base[actualIndex] = element
-
-        return old
+        return this.base.set(index + this.fromIndex, element)
     }
 
     override fun addAll(index: Int, elements: Collection<TElement>): Boolean {
-        Sublist.checkIndexSizeIncluded(index, this.size)
+       checkIfIndexCanBeInsertedAt(index, this.size)
 
         if (this.base.addAll(index + this.fromIndex, elements)) {
             this.toIndex += elements.size
@@ -246,7 +198,7 @@ internal class Sublist<TElement>(
     }
 
     override fun removeAt(index: Int): TElement {
-        Sublist.checkIndexSizeExcluded(index, this.size)
+        checkIfIndexIsAccessible(index, this.size)
 
         val item = this.base.removeAt(index + this.fromIndex)
         --(this.toIndex)
@@ -272,8 +224,8 @@ internal class Sublist<TElement>(
     }
 
     override fun subList(fromIndex: Int, toIndex: Int): MutableList<TElement> {
-        Sublist.checkIfValidRange(fromIndex, toIndex)
-        Sublist.checkIfInBounds(fromIndex, toIndex, this.size)
+        checkIfValidRange(fromIndex, toIndex)
+        checkIfRangeInBounds(fromIndex, toIndex, this.size)
 
         return Sublist(this.base, fromIndex + this.fromIndex, toIndex + this.fromIndex)
     }
