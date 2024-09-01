@@ -1,8 +1,6 @@
 package collections.functional
 
-import arrow.core.None
 import arrow.core.Option
-import arrow.core.Some
 import collections.index
 import collections.lastIndex
 
@@ -13,9 +11,9 @@ interface PureList<TElement> : List<TElement> {
 
     override operator fun get(index: Int): TElement
 
-    fun set(index: Int, element: TElement): PureList<TElement>
+    fun update(index: Int, element: TElement): PureList<TElement>
 
-    fun setAll(elements: Collection<IndexedValue<TElement>>): PureList<TElement>
+    fun updateAll(elements: Collection<IndexedValue<TElement>>): PureList<TElement>
 
     fun prepend(element: TElement): PureList<TElement>
 
@@ -93,9 +91,12 @@ interface PureList<TElement> : List<TElement> {
 
     fun partition(predicate: (TElement) -> Boolean): Pair<PureList<TElement>, PureList<TElement>>
 
-    fun slice(fromIndex: Int, toIndex: Int): PureList<TElement> = this.subList(fromIndex, toIndex)
+    fun slice(fromIndex: Int, toIndex: Int): PureList<TElement> =
+        this.subList(fromIndex, toIndex)
 
-    override fun iterator(): Iterator<TElement> = this.listIterator()
+    override fun iterator(): Iterator<TElement> =
+        this.listIterator()
 
-    override fun listIterator(): ListIterator<TElement> = this.listIterator(0)
+    override fun listIterator(): ListIterator<TElement> =
+        this.listIterator(0)
 }

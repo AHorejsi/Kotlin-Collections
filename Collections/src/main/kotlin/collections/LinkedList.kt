@@ -2,7 +2,9 @@ package collections
 
 import java.io.Serializable
 
-open class LinkedListNode<out TElement>(open val item: TElement) : Serializable {
+open class LinkedListNode<out TElement> internal constructor(
+    open val item: TElement
+) : Serializable {
     private companion object {
         @Suppress("ConstPropertyName")
         const val serialVersionUID: Long = 1L
@@ -14,7 +16,9 @@ open class LinkedListNode<out TElement>(open val item: TElement) : Serializable 
     open val next: LinkedListNode<TElement>? = null
 }
 
-class MutableLinkedListNode<TElement>(override var item: TElement) : LinkedListNode<TElement>(item), Serializable {
+class MutableLinkedListNode<TElement> internal constructor(
+    override var item: TElement
+) : LinkedListNode<TElement>(item), Serializable {
     private companion object {
         @Suppress("ConstPropertyName")
         const val serialVersionUID: Long = 1L
@@ -34,6 +38,10 @@ sealed interface LinkedList<out TElement> : Collection<TElement> {
 
     val tail: LinkedListNode<TElement>?
 
+    fun front(): TElement = this.head?.item ?: empty("Empty LinkedList")
+
+    fun back(): TElement = this.tail?.item ?: empty("Empty LinkedList")
+
     fun listIterator(): ListIterator<TElement> = this.listIterator(0)
 
     fun listIterator(index: Int): ListIterator<TElement>
@@ -41,24 +49,16 @@ sealed interface LinkedList<out TElement> : Collection<TElement> {
     fun listIterator(node: LinkedListNode<@UnsafeVariance TElement>): ListIterator<TElement>
 }
 
-sealed interface MutableLinkedList<TElement> : LinkedList<TElement>, Deque<TElement>, MutableCollection<TElement> {
+sealed interface MutableLinkedList<TElement> : LinkedList<TElement>, MutableCollection<TElement> {
     override val head: MutableLinkedListNode<TElement>?
 
     override val tail: MutableLinkedListNode<TElement>?
 
-    override fun front(): TElement = this.head?.item ?: throw NoSuchElementException()
-
-    override fun back(): TElement = this.tail?.item ?: throw NoSuchElementException()
-
     fun addFirst(element: TElement)
-
-    override fun pushFront(element: TElement) = this.addFirst(element)
 
     fun addFirst(newNode: MutableLinkedListNode<TElement>)
 
     fun addLast(element: TElement)
-
-    override fun pushBack(element: TElement) = this.addLast(element)
 
     fun addLast(newNode: MutableLinkedListNode<TElement>)
 
@@ -76,11 +76,7 @@ sealed interface MutableLinkedList<TElement> : LinkedList<TElement>, Deque<TElem
 
     fun removeFirst(): MutableLinkedListNode<TElement>
 
-    override fun popFront(): TElement = this.removeFirst().item
-
     fun removeLast(): MutableLinkedListNode<TElement>
-
-    override fun popBack(): TElement = this.removeLast().item
 
     fun remove(node: MutableLinkedListNode<TElement>)
 

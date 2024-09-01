@@ -3,35 +3,13 @@ package collections.functional
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
-import collections.DefaultComparator
+import collections.*
 import collections.FuncComparator
-import collections.index
-import collections.lastIndex
+import collections.checkIfIndexIsAccessible
 
 @Suppress("RemoveRedundantQualifierName")
 sealed class PureVec<TElement> : PureList<TElement>, RandomAccess {
     companion object {
-        private fun checkIndexRange(fromIndex: Int, toIndex: Int, size: Int) {
-            if (fromIndex < 0 || fromIndex >= size || toIndex < 0 || toIndex > size) {
-                throw IndexOutOfBoundsException()
-            }
-            if (fromIndex > toIndex) {
-                throw IllegalArgumentException()
-            }
-        }
-
-        private fun checkRangeWithSizeExcluded(index: Int, size: Int) {
-            if (index < 0 || index >= size) {
-                throw IndexOutOfBoundsException("Index = $index, size = $size")
-            }
-        }
-
-        private fun checkRangeWithSizeIncluded(index: Int, size: Int) {
-            if (index < 0 || index > size) {
-                throw IndexOutOfBoundsException("Index = $index, size = $size")
-            }
-        }
-
         fun <TItem> empty(): PureVec<TItem> = PureVec.Empty()
 
         fun <TItem> single(only: TItem): PureVec<TItem> = PureVec.Singleton(only)
@@ -51,7 +29,7 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess {
             throw IndexOutOfBoundsException("Index = $index, size = 0")
         }
 
-        override fun setAll(elements: Collection<IndexedValue<TItem>>): PureVec<TItem> {
+        override fun updateAll(elements: Collection<IndexedValue<TItem>>): PureVec<TItem> {
             if (!elements.isEmpty()) {
                 throw IndexOutOfBoundsException()
             }
@@ -107,7 +85,7 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess {
             return this.head
         }
 
-        override fun setAll(elements: Collection<IndexedValue<TItem>>): PureVec<TItem> {
+        override fun updateAll(elements: Collection<IndexedValue<TItem>>): PureVec<TItem> {
             if (elements.isEmpty()) {
                 return this
             }
@@ -206,7 +184,7 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess {
         override val size: Int
     ) : PureVec<TItem>() {
         override fun get(index: Int): TItem {
-            PureVec.checkRangeWithSizeExcluded(index, this.size)
+            checkIfIndexIsAccessible(index,  this.size)
 
             @Suppress("UNCHECKED_CAST")
             return this.data[this.actualIndex(index)] as TItem
@@ -314,13 +292,14 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess {
             get() = this.toIndex - this.fromIndex
 
         override operator fun get(index: Int): TItem {
-            PureVec.checkRangeWithSizeExcluded(index, this.size)
+            checkIfIndexIsAccessible(index, this.size)
 
             return this.base[index + this.fromIndex]
         }
 
         override fun subList(fromIndex: Int, toIndex: Int): PureVec<TItem> {
-            PureVec.checkIndexRange(fromIndex, toIndex, this.size)
+            checkIfValidRange(fromIndex, toIndex)
+            checkIfRangeInBounds(fromIndex, toIndex, this.size)
 
             return when (toIndex - fromIndex) {
                 0 -> PureVec.empty()
@@ -336,7 +315,7 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess {
             get() = this.base.size
 
         override operator fun get(index: Int): TItem {
-            PureVec.checkRangeWithSizeExcluded(index, this.size)
+            checkIfIndexIsAccessible(index, this.size)
 
             return this.base[this.lastIndex - index]
         }
@@ -353,7 +332,7 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess {
             get() = this.base.size
 
         override operator fun get(index: Int): TItem {
-            PureVec.checkRangeWithSizeIncluded(index, this.size)
+            checkIfIndexIsAccessible(index, this.size)
 
             val item = this.base[index]
 
@@ -379,7 +358,7 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess {
             get() = this.base.size
 
         override operator fun get(index: Int): TItem {
-            PureVec.checkRangeWithSizeIncluded(index, this.size)
+            checkIfIndexIsAccessible(index, this.size)
 
             return this.base[this.actualIndex(index)]
         }
@@ -414,14 +393,14 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess {
 
     override fun isEmpty(): Boolean = 0 == this.size
 
-    override fun set(index: Int, element: TElement): PureVec<TElement> {
+    override fun update(index: Int, element: TElement): PureVec<TElement> {
         val indexed = IndexedValue(index, element)
         val singleton = PureVec.single(indexed)
 
-        return this.setAll(singleton)
+        return this.updateAll(singleton)
     }
 
-    override fun setAll(elements: Collection<IndexedValue<TElement>>): PureVec<TElement> {
+    override fun updateAll(elements: Collection<IndexedValue<TElement>>): PureVec<TElement> {
         val newData = arrayOfNulls<Any>(this.size)
 
         for ((index, item) in elements) {
@@ -490,7 +469,7 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess {
     }
 
     override fun insertAll(index: Int, elements: Collection<TElement>): PureVec<TElement> {
-        PureVec.checkRangeWithSizeExcluded(index, this.size)
+        checkIfIndexCanBeInsertedAt(index, this.size)
 
         return when (index) {
             0 -> this.prependAll(elements)
@@ -529,7 +508,8 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess {
     override fun removeAt(index: Int): PureVec<TElement> = this.removeRange(index, index + 1)
 
     override fun removeRange(fromIndex: Int, toIndex: Int): PureVec<TElement> {
-        PureVec.checkIndexRange(fromIndex, toIndex, this.size)
+        checkIfValidRange(fromIndex, toIndex)
+        checkIfRangeInBounds(fromIndex, toIndex, this.size)
 
         return if (0 == fromIndex)
             this.skip(toIndex)
@@ -620,7 +600,8 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess {
     }
 
     override fun subList(fromIndex: Int, toIndex: Int): PureVec<TElement> {
-        PureVec.checkIndexRange(fromIndex, toIndex, this.size)
+        checkIfValidRange(fromIndex, toIndex)
+        checkIfRangeInBounds(fromIndex, toIndex, this.size)
 
         return when (toIndex - fromIndex) {
             0 -> PureVec.empty()
@@ -631,8 +612,10 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess {
     }
 
     override fun split(index: Int): Pair<PureVec<TElement>, PureVec<TElement>> {
-        val left = this.draw(index)
-        val right = this.skip(index)
+        val nextIndex = index + 1
+
+        val left = this.draw(nextIndex)
+        val right = this.skip(nextIndex)
 
         return left to right
     }
@@ -721,7 +704,7 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess {
     }
 
     override fun sort(): PureVec<TElement> {
-        val default = DefaultComparator<TElement>()
+        val default = inOrder<TElement>()
 
         return this.sort(default::compare)
     }
@@ -770,7 +753,7 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess {
 
     override fun listIterator(index: Int): ListIterator<TElement> = object : ListIterator<TElement> {
         init {
-            PureVec.checkRangeWithSizeIncluded(index, this@PureVec.size)
+            checkIfIndexCanBeInsertedAt(index, this@PureVec.size)
         }
 
         private var current: Int = index

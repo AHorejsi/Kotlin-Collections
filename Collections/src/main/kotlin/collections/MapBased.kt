@@ -20,20 +20,10 @@ private class MapBasedSortedSet<TElement>(
     }
 }
 
-private class MapBasedMultiset<TElement>(
-    base: MutableMap<TElement, DequeList<TElement>>
-) : AbstractMultiset<TElement>(base), Serializable {
-    private companion object {
-        @Suppress("ConstPropertyName")
-        const val serialVersionUID: Long = 1L
-    }
-}
+fun <TElement> asMutableSet(base: MutableMap<TElement, Unit>): MutableSet<TElement> =
+    MapBasedSet(base)
 
-fun <TElement> asMutableSet(map: MutableMap<TElement, Unit>): MutableSet<TElement> =
-    MapBasedSet(map)
+fun <TElement> asMutableSortedSet(base: MutableSortedMap<TElement, Unit>): MutableSortedSet<TElement> =
+    MapBasedSortedSet(base)
 
-fun <TElement> asMutableSet(map: MutableSortedMap<TElement, Unit>): MutableSortedSet<TElement> =
-    MapBasedSortedSet(map)
 
-fun <TElement> asMutableMultiset(map: MutableMap<TElement, DequeList<TElement>>): MutableMultiset<TElement> =
-    MapBasedMultiset(map)

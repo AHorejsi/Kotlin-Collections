@@ -3,58 +3,53 @@ package collections
 import arrow.core.Option
 
 fun <TElement> Array<out TElement>.safeGet(index: Int): Option<TElement> =
-    AsList(this).safeGet(index)
+    this.segment().safeGet(index)
 
 fun <TElement> Array<in TElement>.safeSet(index: Int, element: TElement): Option<Unit> =
-    AsList(this).safeSet(index, element).map{ Unit }
+    this.segment().safeSet(index, element)
 
 fun <TElement> Array<out TElement>.tryGet(index: Int): Result<TElement> =
-    AsList(this).tryGet(index)
+    this.segment().tryGet(index)
 
 fun <TElement> Array<in TElement>.trySet(index: Int, element: TElement): Result<Unit> =
-    AsList(this).trySet(index, element).map{ Unit }
+    this.segment().trySet(index, element)
 
 fun <TElement> Array<out TElement>.wrapGet(index: Int): TElement =
-    AsList(this).wrapGet(index)
+    this.segment().wrapGet(index)
 
 fun <TElement> Array<in TElement>.wrapSet(index: Int, element: TElement) {
-    AsList(this).wrapSet(index, element)
+    this.segment().wrapSet(index, element)
 }
 
 fun <TElement> Array<out TElement>.index(fromIndex: Int, element: @UnsafeVariance TElement): Int =
     this.index(fromIndex) { it == element }
 
 fun <TElement> Array<out TElement>.index(fromIndex: Int, predicate: (TElement) -> Boolean): Int =
-    AsList(this).index(fromIndex, predicate)
+    this.segment().index(fromIndex, predicate)
 
 fun <TElement> Array<out TElement>.lastIndex(fromIndex: Int, element: @UnsafeVariance TElement): Int =
     this.lastIndex(fromIndex) { it == element }
 
 fun <TElement> Array<out TElement>.lastIndex(fromIndex: Int, predicate: (TElement) -> Boolean): Int =
-    AsList(this).lastIndex(fromIndex, predicate)
+    this.segment().lastIndex(fromIndex, predicate)
 
-fun <TElement> Array<out TElement>.indices(element: @UnsafeVariance TElement): Sequence<Int> =
-    this.indices(0, element)
+fun <TElement> Array<out TElement>.swap(index1: Int, index2: Int) =
+    this.segment().swap(index1, index2)
 
-fun <TElement> Array<out TElement>.indices(predicate: (TElement) -> Boolean): Sequence<Int> =
-    this.indices(0, predicate)
+fun <TElement> Array<out TElement>.isPermutationOf(other: Array<TElement>): Boolean =
+    this.segment().isPermutationOf(other.segment())
 
-fun <TElement> Array<out TElement>.indices(fromIndex: Int, element: @UnsafeVariance TElement): Sequence<Int> =
-    this.indices(fromIndex) { it == element }
+fun <TElement> Array<TElement>.next(comp: Comparator<TElement>? = null): Boolean =
+    this.next(comp.function)
 
-fun <TElement> Array<out TElement>.indices(fromIndex: Int, predicate: (TElement) -> Boolean): Sequence<Int> =
-    AsList(this).indices(fromIndex, predicate)
+fun <TElement> Array<TElement>.next(comp: (TElement, TElement) -> Int): Boolean =
+    AsList(this.segment()).next(comp)
 
-fun <TElement> Array<out TElement>.isPermutationOf(other: List<TElement>): Boolean =
-    AsList(this).isPermutationOf(other)
+fun <TElement> Array<TElement>.prev(comp: Comparator<TElement>? = null): Boolean =
+    this.prev(comp.function)
 
-/*fun <TElement> Array<TElement>.nextPermutation(): Boolean {
-
-}
-
-fun <TElement> Array<TElement>.prevPermutation(): Boolean {
-
-}*/
+fun <TElement> Array<TElement>.prev(comp: (TElement, TElement) -> Int): Boolean =
+    AsList(this.segment()).prev(comp)
 
 fun <TElement> compare(
     leftArray: Array<out TElement>,
@@ -68,8 +63,11 @@ fun <TElement> compare(
     rightArray: Array<out TElement>,
     comp: (TElement, TElement) -> Int
 ): Int {
-    val leftList = AsList(leftArray)
-    val rightList = AsList(rightArray)
+    val leftList = AsList(leftArray.segment())
+    val rightList = AsList(rightArray.segment())
 
     return compare(leftList, rightList, comp)
 }
+
+fun <TElement> toString(arr: Array<TElement>): String =
+    AsList(arr.segment()).toString()

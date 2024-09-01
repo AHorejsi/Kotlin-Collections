@@ -1,5 +1,6 @@
 package collections
 
+import arrow.core.Option
 import java.io.Serializable
 
 interface Stack<TElement> {
@@ -24,7 +25,7 @@ class VectorStack<TElement>(initialCapacity: Int = VectorStack.DEFAULT_CAPACITY)
     }
 
     init {
-        require(initialCapacity >= 0) { "Initial capacity must be non-negative but was $initialCapacity" }
+        checkIfNegativeCapacity(initialCapacity)
     }
 
     private var data: Array<Any?> = arrayOfNulls(initialCapacity)
@@ -51,7 +52,7 @@ class VectorStack<TElement>(initialCapacity: Int = VectorStack.DEFAULT_CAPACITY)
 
     override fun peek(): TElement =
         if (this.isEmpty())
-            throw NoSuchElementException()
+            empty("Empty Stack")
         else
             @Suppress("UNCHECKED_CAST")
             this.data[this.size - 1] as TElement
@@ -103,9 +104,12 @@ class LinkedStack<TElement> : Stack<TElement>, Serializable {
             --(this.size)
 
             return it.item
-        } ?: throw NoSuchElementException()
+        } ?: empty("Empty Stack")
 
-    override fun peek(): TElement = this.head?.item ?: throw NoSuchElementException()
+    override fun peek(): TElement =
+        this.head?.let {
+            return it.item
+        } ?: empty("Empty Stack")
 
     override fun clear() {
         this.head = null
@@ -113,8 +117,23 @@ class LinkedStack<TElement> : Stack<TElement>, Serializable {
     }
 }
 
-fun Stack<*>.isEmpty(): Boolean = 0 == this.size
+fun Stack<*>.isEmpty(): Boolean =
+    0 == this.size
 
-fun <TElement> Stack<TElement>.tryPop(): Result<TElement> = runCatching { this.pop() }
+fun <TElement> Stack<TElement>.tryPop(): Result<TElement> =
+    runCatching { this.pop() }
 
-fun <TElement> Stack<TElement>.tryPeek(): Result<TElement> = runCatching { this.peek() }
+fun <TElement> Stack<TElement>.popOrNull(): TElement? =
+    this.tryPop().getOrNull()
+
+fun <TElement> Stack<TElement>.safePop(): Option<TElement> =
+    this.tryPop().toOption()
+
+fun <TElement> Stack<TElement>.tryPeek(): Result<TElement> =
+    runCatching { this.peek() }
+
+fun <TElement> Stack<TElement>.peekOrNull(): TElement? =
+    this.tryPeek().getOrNull()
+
+fun <TElement> Stack<TElement>.safePeek(): Option<TElement> =
+    this.tryPeek().toOption()

@@ -7,18 +7,11 @@ fun <TElement> Sequence<TElement>.withIndex(startIndex: Int): Sequence<IndexedVa
     return this.map{ IndexedValue(currentIndex++, iter.next()) }
 }
 
-fun Sequence<*>.hasAtLeast(size: Int): Boolean {
-    checkIfNegativeAmount(size)
+fun Sequence<*>.hasAtLeast(size: Int): Boolean =
+    this.asIterable().hasAtLeast(size)
 
-    val iter = this.iterator()
-    var found = 0
-
-    while (iter.hasNext() && found < size) {
-        ++found
-    }
-
-    return iter.hasNext()
-}
+fun Sequence<*>.hasAtMost(size: Int): Boolean =
+    this.asIterable().hasAtMost(size)
 
 fun <TElement> Sequence<TElement>.prepend(item: TElement): Sequence<TElement> = sequence {
     yield(item)
@@ -50,9 +43,40 @@ fun <TElement> Sequence<TElement>.popLast(): Sequence<TElement> = sequence {
     }
 }
 
+fun <TElement> Sequence<TElement>.find(element: @UnsafeVariance TElement): Sequence<TElement> =
+    this.find{ it == element }
+
+fun <TElement> Sequence<TElement>.find(predicate: (TElement) -> Boolean): Sequence<TElement> = sequence {
+    for (item in this@find) {
+        if (predicate(item)) {
+            yield(item)
+        }
+    }
+}
+
+fun <TElement> Sequence<TElement>.reversed(): Sequence<TElement> {
+    val iter = this.iterator()
+
+    return reversedHelper(iter)
+}
+
+private fun <TElement> reversedHelper(iter: Iterator<TElement>): Sequence<TElement> = sequence {
+    if (!iter.hasNext()) {
+        return@sequence
+    }
+
+    val item = iter.next()
+
+    reversedHelper(iter)
+
+    yield(item)
+}
+
 fun <TElement> Sequence<TElement>.splitAt(index: Int): Pair<Sequence<TElement>, Sequence<TElement>> {
-    val left = this.take(index)
-    val right = this.drop(index)
+    val nextIndex = index + 1
+
+    val left = this.take(nextIndex)
+    val right = this.drop(nextIndex)
 
     return left to right
 }

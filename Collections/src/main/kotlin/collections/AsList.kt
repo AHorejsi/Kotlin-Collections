@@ -1,6 +1,6 @@
 package collections
 
-internal class AsList<TElement>(private val base: Array<TElement>) : MutableList<TElement>, RandomAccess {
+internal class AsList<TElement>(private val base: ArraySegment<TElement>) : MutableList<TElement>, RandomAccess {
     override val size: Int
         get() = this.base.size
 
@@ -49,7 +49,8 @@ internal class AsList<TElement>(private val base: Array<TElement>) : MutableList
     override operator fun contains(element: TElement): Boolean =
         this.base.contains(element)
 
-    override fun containsAll(elements: Collection<TElement>): Boolean = elements.all(this.base::contains)
+    override fun containsAll(elements: Collection<TElement>): Boolean =
+        elements.all(this.base::contains)
 
     override fun indexOf(element: TElement): Int =
         this.base.indexOf(element)
@@ -60,20 +61,60 @@ internal class AsList<TElement>(private val base: Array<TElement>) : MutableList
     override fun subList(fromIndex: Int, toIndex: Int): MutableList<TElement> =
         unsupported(this.javaClass.name, this.javaClass.enclosingMethod.name)
 
+    override fun iterator(): MutableIterator<TElement> =
+        this.listIterator()
+
     override fun listIterator(): MutableListIterator<TElement> =
         this.listIterator(0)
 
-    override fun listIterator(index: Int): MutableListIterator<TElement> =
-        unsupported(this.javaClass.name, this.javaClass.enclosingMethod.name)
+    override fun listIterator(index: Int): MutableListIterator<TElement> = object : MutableListIterator<TElement> {
+        private var currentIndex: Int = index
+        private var lastUsedIndex: Int? = null
 
-    override fun iterator(): MutableIterator<TElement> = object : MutableIterator<TElement> {
-        private val iter: Iterator<TElement> = this@AsList.base.iterator()
+        override fun previousIndex(): Int =
+            this.currentIndex - 1
 
-        override fun hasNext(): Boolean = this.iter.hasNext()
+        override fun nextIndex(): Int =
+            this.currentIndex
 
-        override fun next(): TElement = this.iter.next()
+        override fun hasPrevious(): Boolean =
+            this.previousIndex() >= 0
 
-        override fun remove(): Nothing =
+        override fun hasNext(): Boolean =
+            this.nextIndex() < this@AsList.size
+
+        override fun previous(): TElement {
+            checkIfPrev(this)
+
+            val item = this@AsList[this.previousIndex()]
+
+            this.lastUsedIndex = this.currentIndex
+            --(this.currentIndex)
+
+            return item
+        }
+
+        override fun next(): TElement {
+            checkIfNext(this)
+
+            val item = this@AsList[this.nextIndex()]
+
+            this.lastUsedIndex = this.currentIndex
+            ++(this.currentIndex)
+
+            return item
+        }
+
+        override fun set(element: TElement) {
+            this.lastUsedIndex?.let {
+                this@AsList[it] = element
+            }
+        }
+
+        override fun add(element: TElement) =
+            unsupported(this.javaClass.name, this.javaClass.enclosingMethod.name)
+
+        override fun remove(): Unit =
             unsupported(this.javaClass.name, this.javaClass.enclosingMethod.name)
     }
 }

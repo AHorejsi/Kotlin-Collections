@@ -10,22 +10,22 @@ fun IntProgression.count(): Int {
     val gap = abs(this.first - this.last) + 1
     val step = abs(this.step)
 
-    val quot = gap.div(step)
-    val rem = gap.rem(step)
+    val quot = gap / step
+    val rem = gap % step
 
     return quot + rem
 }
 
 fun LongProgression.count(): Long {
     if (this.isEmpty()) {
-        return 0
+        return 0L
     }
 
-    val gap = abs(this.first - this.last) + 1
+    val gap = abs(this.first - this.last) + 1L
     val step = abs(this.step)
 
-    val quot = gap.div(step)
-    val rem = gap.rem(step)
+    val quot = gap / step
+    val rem = gap % step
 
     return quot + rem
 }

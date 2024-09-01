@@ -31,7 +31,7 @@ class BinaryHeap<TElement>(
     constructor(
         initialCapacity: Int = BinaryHeap.DEFAULT_CAPACITY,
         compObj: Comparator<TElement>? = null
-    ) : this(initialCapacity, (compObj ?: DefaultComparator())::compare)
+    ) : this(initialCapacity, compObj.function)
 
     init {
         require(initialCapacity >= 0)

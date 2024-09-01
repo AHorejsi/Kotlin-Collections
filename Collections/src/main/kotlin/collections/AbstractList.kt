@@ -95,9 +95,11 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
             return this.currentIndex
         }
 
-        override fun hasPrevious(): Boolean = this.previousIndex() >= 0
+        override fun hasPrevious(): Boolean =
+            this.previousIndex() >= 0
 
-        override fun hasNext(): Boolean = this.nextIndex() < this@AbstractList.size
+        override fun hasNext(): Boolean =
+            this.nextIndex() < this@AbstractList.size
 
         override fun previous(): TElement {
             checkIfPrev(this)
@@ -209,7 +211,7 @@ internal class Sublist<TElement>(
     override fun clear() {
         if (!this.isEmpty()) {
             this.shiftForClearing()
-            this.base.removeFromBack(this.toIndex - this.fromIndex)
+            this.base.removeFromBack(this.size)
 
             this.toIndex = this.fromIndex
         }

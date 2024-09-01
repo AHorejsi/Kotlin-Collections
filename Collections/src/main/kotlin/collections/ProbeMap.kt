@@ -98,7 +98,7 @@ class ProbeMap<TKey, TValue>(
         value: TValue,
         itemData: Array<Probe<MutableEntry<TKey, TValue>>>
     ): TValue? {
-        val startIndex = this.comparator.hashCode(key) % itemData.size
+        val startIndex = this.comparator.hashCode(key).mod(itemData.size)
 
         var index = startIndex
         var count = 1
@@ -116,7 +116,7 @@ class ProbeMap<TKey, TValue>(
             }
 
             ++count
-            index = this.hasher.hashCode2(startIndex, count) % itemData.size
+            index = this.hasher.hashCode2(startIndex, count).mod(itemData.size)
         }
 
         val newEntry = CustomEntry(key, value)

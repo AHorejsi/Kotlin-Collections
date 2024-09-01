@@ -3,15 +3,14 @@ package collections
 import java.io.Serializable
 import kotlin.math.ceil
 import kotlin.math.max
-import kotlin.math.roundToInt
 
 @Suppress("RemoveRedundantQualifierName")
 class VectorList<TElement>(
     initialCapacity: Int = VectorList.DEFAULT_CAPACITY
 ) : AbstractList<TElement>(), RandomAccess, Serializable {
-    private companion object {
+    companion object {
         @Suppress("ConstPropertyName")
-        const val serialVersionUID: Long = 1L
+        private const val serialVersionUID: Long = 1L
 
         const val DEFAULT_CAPACITY: Int = 16
     }
@@ -20,7 +19,7 @@ class VectorList<TElement>(
         checkIfNegativeCapacity(initialCapacity)
     }
 
-    private var data: Array<Any?> = arrayOfNulls(initialCapacity)
+    private var data: Array<Any?> = arrayOfNulls(max(initialCapacity, VectorList.DEFAULT_CAPACITY))
 
     override var size: Int = 0
         private set
@@ -72,7 +71,6 @@ class VectorList<TElement>(
     }
 
     private fun insertElements(elements: Collection<TElement>, startIndex: Int) {
-
         for ((index, item) in elements.withIndex(startIndex)) {
             this.data[index] = item
         }
@@ -95,14 +93,13 @@ class VectorList<TElement>(
         checkIfNegativeAmount(amount)
 
         val oldSize = this.size
-        val newSize = max(0, this.size - amount)
 
-        this.size = newSize
+        this.size = max(0, this.size - amount)
         ++(super.modCount)
 
         this.resizeIfNeededAfterRemoval()
 
-        return oldSize - newSize
+        return oldSize - this.size
     }
 
     private fun shiftForRemoval(index: Int) {
@@ -119,12 +116,10 @@ class VectorList<TElement>(
 
     private fun resizeIfNeededAfterRemoval() {
         val capacityAboveMinimumThreshold = this.capacity > VectorList.DEFAULT_CAPACITY
-        val halfOfSlotsAreEmpty = this.size <= ceil(this.capacity / 2.0).roundToInt()
+        val halfOfSlotsAreEmpty = this.size <= ceil(this.capacity / 2.0).toInt()
 
         if (capacityAboveMinimumThreshold && halfOfSlotsAreEmpty) {
-            val newCapacity = max(VectorList.DEFAULT_CAPACITY, this.size * 3 / 2)
-
-            this.reallocate(newCapacity)
+            this.reallocate(this.size * 3 / 2)
         }
     }
 
@@ -143,8 +138,7 @@ class VectorList<TElement>(
     }
 
     private fun reallocate(newCapacity: Int) {
-        val actualCapacity = max(newCapacity, VectorList.DEFAULT_CAPACITY)
-        val newData = arrayOfNulls<Any>(actualCapacity)
+        val newData = arrayOfNulls<Any>(newCapacity)
 
         for (index in this.indices) {
             newData[index] = this.data[index]
@@ -154,23 +148,23 @@ class VectorList<TElement>(
     }
 }
 
-fun <TElement> vectorListOf(): VectorList<TElement> = VectorList()
+fun <TElement> vectorListOf(): VectorList<TElement> =
+    VectorList()
 
-fun <TElement> vectorListOf(vararg elements: TElement): VectorList<TElement> = elements.toVectorList()
+fun <TElement> vectorListOf(vararg elements: TElement): VectorList<TElement> =
+    elements.toVectorList()
 
 fun <TElement> Iterable<TElement>.toVectorList(): VectorList<TElement> {
     val size = this.count()
     val vec = VectorList<TElement>(size)
 
-    for (item in this) {
-        vec.add(item)
-    }
+    vec.addAll(this)
 
     return vec
 }
 
 fun <TElement> Sequence<TElement>.toVectorList(): VectorList<TElement> {
-    val vec = VectorList<TElement>()
+    val vec = vectorListOf<TElement>()
 
     for (item in this) {
         vec.add(item)

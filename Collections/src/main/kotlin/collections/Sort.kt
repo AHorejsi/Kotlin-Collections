@@ -1,6 +1,6 @@
 package collections
 
-class DefaultComparator<TElement> : Comparator<TElement> {
+private class DefaultComparator<TElement> : Comparator<TElement> {
     override fun compare(p0: TElement, p1: TElement): Int {
         @Suppress("UNCHECKED_CAST")
         val comp = p0 as Comparable<TElement>
@@ -9,16 +9,24 @@ class DefaultComparator<TElement> : Comparator<TElement> {
     }
 }
 
-class FuncComparator<TElement>(private val func: (TElement, TElement) -> Int) : Comparator<TElement> {
-    override fun compare(p0: TElement, p1: TElement): Int = this.func(p0, p1)
+internal class FuncComparator<TElement>(private val func: (TElement, TElement) -> Int) : Comparator<TElement> {
+    override fun compare(p0: TElement, p1: TElement): Int =
+        this.func(p0, p1)
 }
+
+val <TElement> Comparator<TElement>?.nonnull: Comparator<TElement>
+    get() = this ?: inOrder()
 
 val <TElement> Comparator<TElement>?.function: (TElement, TElement) -> Int
-    get() = (this ?: DefaultComparator())::compare
+    get() = this.nonnull::compare
 
-fun <TElement> reverseOrder(comp: (TElement, TElement) -> Int): (TElement, TElement) -> Int {
-    return { left, right -> comp(right, left) }
-}
+val <TElement> ((TElement, TElement) -> Int).reversed: (TElement, TElement) -> Int
+    get() {
+        return { left, right -> this(right, left) }
+    }
+
+fun <TElement> inOrder(): Comparator<TElement> =
+    DefaultComparator()
 
 fun <TElement> nullFirst(comp: (TElement, TElement) -> Int): (TElement, TElement) -> Int {
     return { left, right ->

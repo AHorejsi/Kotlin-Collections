@@ -49,7 +49,7 @@ class RbMap<TKey, TValue>(
         const val serialVersionUID: Long = 1L
     }
 
-    constructor(compObj: Comparator<TKey>? = null) : this((compObj ?: DefaultComparator())::compare)
+    constructor(compObj: Comparator<TKey>? = null) : this(compObj.function)
 
     constructor(
         elements: Sequence<Map.Entry<TKey, TValue>>,

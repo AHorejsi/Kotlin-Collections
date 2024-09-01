@@ -3,15 +3,17 @@ package collections.functional
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
-import collections.DefaultComparator
 import collections.FuncComparator
+import collections.inOrder
 import collections.index
 import collections.lastIndex
 import kotlin.math.abs
 import kotlin.math.min
 
 @Suppress("RemoveRedundantQualifierName")
-class PureArray<TElement> private constructor(private val base: Array<Any?>) : PureList<TElement>, RandomAccess {
+class PureArray<TElement> private constructor(
+    private val base: Array<Any?>
+) : PureList<TElement>, RandomAccess {
     companion object {
         private val EMPTY: Array<Any?> = emptyArray()
 
@@ -52,14 +54,14 @@ class PureArray<TElement> private constructor(private val base: Array<Any?>) : P
         return this.base[index] as TElement
     }
 
-    override fun set(index: Int, element: TElement): PureArray<TElement> {
+    override fun update(index: Int, element: TElement): PureArray<TElement> {
         val indexed = IndexedValue(index, element)
         val singleton = listOf(indexed)
 
-        return this.setAll(singleton)
+        return this.updateAll(singleton)
     }
 
-    override fun setAll(elements: Collection<IndexedValue<TElement>>): PureArray<TElement> {
+    override fun updateAll(elements: Collection<IndexedValue<TElement>>): PureArray<TElement> {
         if (elements.isEmpty()) {
             return this
         }
@@ -341,7 +343,7 @@ class PureArray<TElement> private constructor(private val base: Array<Any?>) : P
     override fun slice(fromIndex: Int, toIndex: Int): PureArray<TElement> = this.subList(fromIndex, toIndex)
 
     override fun sort(): PureArray<TElement> {
-        val default = DefaultComparator<TElement>()
+        val default = inOrder<TElement>()
 
         return this.sort(default::compare)
     }

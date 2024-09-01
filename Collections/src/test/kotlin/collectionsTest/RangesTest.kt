@@ -8,6 +8,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
+@Suppress("SameParameterValue")
 class RangesTest {
     @Test
     fun testUp() {
