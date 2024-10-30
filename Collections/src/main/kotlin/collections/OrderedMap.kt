@@ -87,7 +87,7 @@ class OrderedMap<TKey, TValue>(
     }
 
     override val entries: MutableSet<MutableEntry<TKey, TValue>>
-        get() = object : AbstractEntrySet<TKey, TValue>(this) {
+        get() = object : AbstractEntrySet<TKey, TValue>(this@OrderedMap) {
             override fun iterator(): MutableIterator<MutableEntry<TKey, TValue>> = object : MutableIterator<MutableEntry<TKey, TValue>> {
                 private val base: MutableIterator<MutableEntry<TKey, TValue>> = this@OrderedMap.list.iterator()
                 private var lastItem: MutableEntry<TKey, TValue>? = null

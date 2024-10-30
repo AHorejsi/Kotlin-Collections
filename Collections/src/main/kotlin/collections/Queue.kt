@@ -24,7 +24,7 @@ class VectorQueue<TElement>(initialCapacity: Int = VectorQueue.DEFAULT_CAPACITY)
     }
 
     init {
-        require(initialCapacity >= 0)
+        checkIfNegativeCapacity(initialCapacity)
     }
 
     private var data: Array<Any?> = arrayOfNulls(initialCapacity)
@@ -38,14 +38,14 @@ class VectorQueue<TElement>(initialCapacity: Int = VectorQueue.DEFAULT_CAPACITY)
             this.reallocate(this.size * 3 / 2)
         }
 
-        this.data[(this.frontIndex + this.size) % this.data.size] = element
+        this.data[this.actualIndex(this.size)] = element
         ++(this.size)
     }
 
     override fun dequeue(): TElement {
         val item = this.front()
 
-        this.frontIndex = (this.frontIndex + 1) % this.data.size
+        this.frontIndex = this.actualIndex(1)
         --(this.size)
 
         return item
@@ -53,7 +53,7 @@ class VectorQueue<TElement>(initialCapacity: Int = VectorQueue.DEFAULT_CAPACITY)
 
     override fun front(): TElement =
         if (this.isEmpty())
-            throw NoSuchElementException()
+            empty(VectorQueue::class)
         else
             @Suppress("UNCHECKED_CAST")
             this.data[this.frontIndex] as TElement
@@ -67,12 +67,15 @@ class VectorQueue<TElement>(initialCapacity: Int = VectorQueue.DEFAULT_CAPACITY)
         val newData = arrayOfNulls<Any>(newCapacity)
 
         for (index in 0 until this.size) {
-            newData[index] = this.data[(this.frontIndex + index) % this.data.size]
+            newData[index] = this.data[this.actualIndex(index)]
         }
 
         this.data = newData
         this.frontIndex = 0
     }
+
+    private fun actualIndex(targetIndex: Int): Int =
+        (this.frontIndex + targetIndex) % this.data.size
 }
 
 private class QueueNode<TElement>(
@@ -117,9 +120,12 @@ class LinkedQueue<TElement> : Queue<TElement>, Serializable {
             --(this.size)
 
             return it.item
-        } ?: throw NoSuchElementException()
+        } ?: empty(LinkedQueue::class)
 
-    override fun front(): TElement = this.head?.item ?: throw NoSuchElementException()
+    override fun front(): TElement =
+        this.head?.let {
+            return it.item
+        } ?: empty(LinkedQueue::class)
 
     override fun clear() {
         this.head = null
@@ -128,8 +134,17 @@ class LinkedQueue<TElement> : Queue<TElement>, Serializable {
     }
 }
 
-fun Queue<*>.isEmpty(): Boolean = 0 == this.size
+fun Queue<*>.isEmpty(): Boolean =
+    0 == this.size
 
-fun <TElement> Queue<TElement>.tryDequeue(): Result<TElement> = runCatching { this.dequeue() }
+fun <TElement> Queue<TElement>.tryDequeue(): Result<TElement> =
+    runCatching{ this.dequeue() }
 
-fun <TElement> Queue<TElement>.tryFront(): Result<TElement> = runCatching { this.front() }
+fun <TElement> Queue<TElement>.dequeueOrNull(): TElement? =
+    this.tryDequeue().getOrNull()
+
+fun <TElement> Queue<TElement>.tryFront(): Result<TElement> =
+    runCatching{ this.front() }
+
+fun <TElement> Queue<TElement>.frontOrNull(): TElement? =
+    this.tryFront().getOrNull()

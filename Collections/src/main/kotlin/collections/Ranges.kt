@@ -51,27 +51,19 @@ infix fun Long.up(amount: Long): LongRange {
 infix fun Int.down(amount: Int): IntProgression {
     checkIfNegativeAmount(amount)
 
-    if (0 == amount) {
-        return IntRange.EMPTY
-    }
-
-    var end = checkForOverflowOnSubtraction(this, amount)
-    end = checkForOverflowOnAddition(end, 1)
-
-    return this downTo end
+    return if (0 == amount)
+        IntRange.EMPTY
+    else
+        this downTo checkForOverflowOnSubtraction(this, amount) + 1
 }
 
 infix fun Long.down(amount: Long): LongProgression {
     checkIfNegativeAmount(amount)
 
-    if (0L == amount) {
-        return LongRange.EMPTY
-    }
-
-    var end = checkForOverflowOnSubtraction(this, amount)
-    end = checkForOverflowOnAddition(end, 1L)
-
-    return this downTo end
+    return if (0L == amount)
+        LongRange.EMPTY
+    else
+        this downTo checkForOverflowOnSubtraction(this, amount) + 1L
 }
 
 infix fun Int.move(amount: Int): IntProgression =

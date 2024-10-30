@@ -13,12 +13,38 @@ abstract class AbstractCollection<TElement> : MutableCollection<TElement> {
     override fun removeAll(elements: Collection<@UnsafeVariance TElement>): Boolean =
         this.delete(elements) > 0
 
-    override fun retainAll(elements: Collection<TElement>): Boolean =
+    override fun retainAll(elements: Collection<@UnsafeVariance TElement>): Boolean =
         this.keep(elements) > 0
 
     override fun containsAll(elements: Collection<@UnsafeVariance TElement>): Boolean =
         elements.all(this::contains)
 
-    override fun toString(): String =
-        this.asString()
+    override fun toString(): String {
+        if (this.isEmpty()) {
+            return "[]"
+        }
+
+        val sb = StringBuilder()
+        val iter = this.iterator()
+        var elem: TElement
+
+        sb.append('[')
+
+        while (true) {
+            elem = iter.next()
+
+            sb.append(elem)
+
+            if (!iter.hasNext()) {
+                break
+            }
+
+            sb.append(',')
+            sb.append(' ')
+        }
+
+        sb.append(']')
+
+        return sb.toString()
+    }
 }

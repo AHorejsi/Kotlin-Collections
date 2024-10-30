@@ -1,6 +1,10 @@
 package collections
 
-internal class AsList<TElement>(private val base: ArraySegment<TElement>) : MutableList<TElement>, RandomAccess {
+import kotlin.reflect.KCallable
+
+internal class StructurallyImmutableList<TElement>(
+    private val base: ArraySegment<TElement>
+) : AbstractList<TElement>(), RandomAccess {
     override val size: Int
         get() = this.base.size
 
@@ -18,54 +22,53 @@ internal class AsList<TElement>(private val base: ArraySegment<TElement>) : Muta
         return old
     }
 
-    override fun add(element: TElement): Boolean =
-        this.add(this.size, element)
+    override fun add(element: TElement): Boolean {
+        val func: (TElement) -> Boolean = this::add
 
+        unsupported(StructurallyImmutableList::class, func as KCallable<*>)
+    }
 
-    override fun add(index: Int, element: TElement) =
-        unsupported(this.javaClass.enclosingMethod.name, this.javaClass.name)
+    override fun add(index: Int, element: TElement) {
+        val func: (Int, TElement) -> Unit = this::add
 
-    override fun addAll(elements: Collection<TElement>): Boolean =
-        this.addAll(this.size, elements)
+        unsupported(StructurallyImmutableList::class, func as KCallable<*>)
+    }
 
-    override fun addAll(index: Int, elements: Collection<TElement>): Boolean =
-        unsupported(this.javaClass.name, this.javaClass.enclosingMethod.name)
+    override fun addAll(elements: Collection<TElement>): Boolean {
+        val func: (Collection<TElement>) -> Boolean = this::addAll
+
+        unsupported(StructurallyImmutableList::class, func as KCallable<*>)
+    }
+
+    override fun addAll(index: Int, elements: Collection<TElement>): Boolean {
+        val func: (Int, Collection<TElement>) -> Boolean = this::addAll
+
+        unsupported(StructurallyImmutableList::class, func as KCallable<*>)
+    }
 
     override fun removeAt(index: Int): TElement =
-        unsupported(this.javaClass.name, this.javaClass.enclosingMethod.name)
+        unsupported(StructurallyImmutableList::class, this::removeAt)
 
     override fun remove(element: TElement): Boolean =
-        unsupported(this.javaClass.name, this.javaClass.enclosingMethod.name)
+        unsupported(StructurallyImmutableList::class, this::remove)
 
     override fun removeAll(elements: Collection<TElement>): Boolean =
-        unsupported(this.javaClass.name, this.javaClass.enclosingMethod.name)
+        unsupported(StructurallyImmutableList::class, this::removeAll)
 
     override fun retainAll(elements: Collection<TElement>): Boolean =
-        unsupported(this.javaClass.name, this.javaClass.enclosingMethod.name)
+        unsupported(StructurallyImmutableList::class, this::retainAll)
 
     override fun clear(): Unit =
-        unsupported(this.javaClass.name, this.javaClass.enclosingMethod.name)
+        unsupported(StructurallyImmutableList::class, this::clear)
 
     override operator fun contains(element: TElement): Boolean =
-        this.base.contains(element)
-
-    override fun containsAll(elements: Collection<TElement>): Boolean =
-        elements.all(this.base::contains)
+        element in this.base
 
     override fun indexOf(element: TElement): Int =
         this.base.indexOf(element)
 
     override fun lastIndexOf(element: TElement): Int =
         this.base.lastIndexOf(element)
-
-    override fun subList(fromIndex: Int, toIndex: Int): MutableList<TElement> =
-        unsupported(this.javaClass.name, this.javaClass.enclosingMethod.name)
-
-    override fun iterator(): MutableIterator<TElement> =
-        this.listIterator()
-
-    override fun listIterator(): MutableListIterator<TElement> =
-        this.listIterator(0)
 
     override fun listIterator(index: Int): MutableListIterator<TElement> = object : MutableListIterator<TElement> {
         private var currentIndex: Int = index
@@ -81,12 +84,12 @@ internal class AsList<TElement>(private val base: ArraySegment<TElement>) : Muta
             this.previousIndex() >= 0
 
         override fun hasNext(): Boolean =
-            this.nextIndex() < this@AsList.size
+            this.nextIndex() < this@StructurallyImmutableList.size
 
         override fun previous(): TElement {
             checkIfPrev(this)
 
-            val item = this@AsList[this.previousIndex()]
+            val item = this@StructurallyImmutableList[this.previousIndex()]
 
             this.lastUsedIndex = this.currentIndex
             --(this.currentIndex)
@@ -97,7 +100,7 @@ internal class AsList<TElement>(private val base: ArraySegment<TElement>) : Muta
         override fun next(): TElement {
             checkIfNext(this)
 
-            val item = this@AsList[this.nextIndex()]
+            val item = this@StructurallyImmutableList[this.nextIndex()]
 
             this.lastUsedIndex = this.currentIndex
             ++(this.currentIndex)
@@ -107,14 +110,14 @@ internal class AsList<TElement>(private val base: ArraySegment<TElement>) : Muta
 
         override fun set(element: TElement) {
             this.lastUsedIndex?.let {
-                this@AsList[it] = element
+                this@StructurallyImmutableList[it] = element
             }
         }
 
-        override fun add(element: TElement) =
-            unsupported(this.javaClass.name, this.javaClass.enclosingMethod.name)
+        override fun add(element: TElement): Unit =
+            unsupported(this::class, this::add)
 
         override fun remove(): Unit =
-            unsupported(this.javaClass.name, this.javaClass.enclosingMethod.name)
+            unsupported(this::class, this::remove)
     }
 }

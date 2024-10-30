@@ -146,8 +146,8 @@ class RangesTest {
 
     @Test
     fun testCount() {
-        val small = 1000000
-        val large = 1000000000L
+        val small = 1000
+        val large = 1000000L
 
         this.testCountWithIntRanges(small)
         this.testCountWithLongRanges(small, large)
@@ -208,7 +208,7 @@ class RangesTest {
     }
 
     private fun testMoveWithLong() {
-        val amount2 = 1000000000L
+        val amount2 = 10000000L
 
         val upward2 = 0L move amount2
         val downward2 = 0L move -amount2

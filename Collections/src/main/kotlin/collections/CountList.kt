@@ -41,7 +41,8 @@ class CountList<TElement> : SelfOrgList<TElement>, Serializable {
     override fun find(predicate: (TElement) -> Boolean): IndexedValue<TElement>? =
         this.amount(predicate)?.let { IndexedValue(it.index, it.value.item) }
 
-    fun amount(element: @UnsafeVariance TElement): IndexedValue<Counter<TElement>>? = this.amount{ it == element }
+    fun amount(element: @UnsafeVariance TElement): IndexedValue<Counter<TElement>>? =
+        this.amount{ it == element }
 
     fun amount(predicate: (TElement) -> Boolean): IndexedValue<Counter<TElement>>? {
         val search = this.jump.find{ predicate(it.item) }
@@ -70,19 +71,25 @@ class CountList<TElement> : SelfOrgList<TElement>, Serializable {
     }
 
     private fun countUp(indexed: IndexedValue<Counter<TElement>>?) {
-        indexed?.let {
-            val counter = it.value
-            ++(counter.amount)
+        if (null === indexed) {
+            return
         }
+
+        val counter = indexed.value
+
+        ++(counter.amount)
     }
 
     override fun iterator(): MutableIterator<TElement> = object : MutableIterator<TElement> {
         private val iter = this@CountList.jump.iterator()
 
-        override fun hasNext(): Boolean = this.iter.hasNext()
+        override fun hasNext(): Boolean =
+            this.iter.hasNext()
 
-        override fun next(): TElement = this.iter.next().item
+        override fun next(): TElement =
+            this.iter.next().item
 
-        override fun remove() = this.iter.remove()
+        override fun remove() =
+            this.iter.remove()
     }
 }

@@ -2,24 +2,10 @@ package collections
 
 import java.io.Serializable
 
-class BidirList<TElement>() : AbstractLinkedList<TElement>(), Serializable {
+class BidirList<TElement> : AbstractLinkedList<TElement>(), Serializable {
     private companion object {
         @Suppress("ConstPropertyName")
         const val serialVersionUID: Long = 1L
-    }
-
-    constructor(elements: Sequence<TElement>) : this(elements.asIterable())
-
-    constructor(elements: Collection<TElement>) : this() {
-        this.addAll(elements)
-    }
-
-    constructor(elements: Iterable<TElement>) : this() {
-        this.addAll(elements)
-    }
-
-    constructor(vararg elements: TElement) : this() {
-        this.addAll(elements)
     }
 
     override fun addFirst(element: TElement) {
@@ -47,14 +33,32 @@ class BidirList<TElement>() : AbstractLinkedList<TElement>(), Serializable {
     }
 }
 
-fun <TElement> bidirListOf(): BidirList<TElement> = BidirList()
+fun <TElement> bidirListOf(): BidirList<TElement> =
+    BidirList()
 
-fun <TElement> bidirListOf(vararg elements: TElement): BidirList<TElement> = elements.toBidirList()
+fun <TElement> bidirListOf(vararg elements: TElement): BidirList<TElement> =
+    elements.toBidirList()
 
-fun <TElement> Iterable<TElement>.toBidirList(): BidirList<TElement> = BidirList(this)
+fun <TElement> Iterable<TElement>.toBidirList(): BidirList<TElement> {
+    val list = BidirList<TElement>()
 
-fun <TElement> Sequence<TElement>.toBidirList(): BidirList<TElement> = BidirList(this)
+    list.addAll(this)
 
-fun <TElement> Collection<TElement>.toBidirList(): BidirList<TElement> = BidirList(this)
+    return list
+}
 
-fun <TElement> Array<out TElement>.toBidirList(): BidirList<TElement> = BidirList(*this)
+fun <TElement> Sequence<TElement>.toBidirList(): BidirList<TElement> {
+    val list = BidirList<TElement>()
+
+    list.addAll(this)
+
+    return list
+}
+
+fun <TElement> Array<out TElement>.toBidirList(): BidirList<TElement> {
+    val list = BidirList<TElement>()
+
+    list.addAll(this)
+
+    return list
+}

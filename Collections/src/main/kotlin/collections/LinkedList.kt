@@ -38,9 +38,9 @@ sealed interface LinkedList<out TElement> : Collection<TElement> {
 
     val tail: LinkedListNode<TElement>?
 
-    fun front(): TElement = this.head?.item ?: empty("Empty LinkedList")
+    fun front(): TElement = this.head?.item ?: empty(this::class)
 
-    fun back(): TElement = this.tail?.item ?: empty("Empty LinkedList")
+    fun back(): TElement = this.tail?.item ?: empty(this::class)
 
     fun listIterator(): ListIterator<TElement> = this.listIterator(0)
 
@@ -96,9 +96,7 @@ sealed interface MutableLinkedList<TElement> : LinkedList<TElement>, MutableColl
 }
 
 fun <TElement> LinkedList<TElement>.getNodeAt(index: Int): LinkedListNode<TElement> {
-    if (index < 0 || index >= this.size) {
-        throw IndexOutOfBoundsException()
-    }
+    checkIfIndexIsAccessible(index, this.size)
 
     val lastIndex = this.size - index
 
@@ -129,12 +127,10 @@ private fun <TElement> rightIndexing(list: LinkedList<TElement>, count: Int): Li
 }
 
 fun <TElement> LinkedList<TElement>.tryGetNodeAt(index: Int): Result<LinkedListNode<TElement>> =
-    runCatching { this.getNodeAt(index) }
+    runCatching{ this.getNodeAt(index) }
 
 fun <TElement> MutableLinkedList<TElement>.getNodeAt(index: Int): MutableLinkedListNode<TElement> {
-    if (index < 0 || index >= this.size) {
-        throw IndexOutOfBoundsException()
-    }
+    checkIfIndexIsAccessible(index, this.size)
 
     val lastIndex = this.size - index
 
@@ -165,7 +161,7 @@ private fun <TElement> rightIndexing(list: MutableLinkedList<TElement>, count: I
 }
 
 fun <TElement> MutableLinkedList<TElement>.tryGetNodeAt(index: Int): Result<MutableLinkedListNode<TElement>> =
-    runCatching { this.getNodeAt(index) }
+    runCatching{ this.getNodeAt(index) }
 
 fun <TElement> MutableLinkedList<TElement>.setItemAt(index: Int, element: TElement): TElement {
     val node = this.getNodeAt(index)
@@ -178,94 +174,4 @@ fun <TElement> MutableLinkedList<TElement>.setItemAt(index: Int, element: TEleme
 }
 
 fun <TElement> MutableLinkedList<TElement>.trySetItemAt(index: Int, element: TElement): Result<TElement> =
-    runCatching { this.setItemAt(index, element) }
-
-fun <TElement> LinkedList<TElement>.findAmount(element: @UnsafeVariance TElement): LinkedListNode<TElement>? =
-    this.findAmount { it == element }
-
-inline fun <TElement> LinkedList<TElement>.findAmount(predicate: (TElement) -> Boolean): LinkedListNode<TElement>? {
-    var node = this.head
-
-    while (null !== node) {
-        if (predicate(node.item)) {
-            break
-        }
-
-        node = node.next
-    }
-
-    return node
-}
-
-fun <TElement> MutableLinkedList<TElement>.findAmount(element: @UnsafeVariance TElement): MutableLinkedListNode<TElement>? {
-    var node = this.head
-
-    while (null !== node) {
-        if (element == node.item) {
-            break
-        }
-
-        node = node.next
-    }
-
-    return node
-}
-
-inline fun <TElement> MutableLinkedList<TElement>.findAmount(predicate: (TElement) -> Boolean): MutableLinkedListNode<TElement>? {
-    var node = this.head
-
-    while (null !== node) {
-        if (predicate(node.item)) {
-            break
-        }
-
-        node = node.next
-    }
-
-    return node
-}
-
-fun <TElement> LinkedList<TElement>.findLast(element: @UnsafeVariance TElement): LinkedListNode<TElement>? =
-    this.findLast { it == element }
-
-inline fun <TElement> LinkedList<TElement>.findLast(predicate: (TElement) -> Boolean): LinkedListNode<TElement>? {
-    var node = this.tail
-
-    while (null !== node) {
-        if (predicate(node.item)) {
-            break
-        }
-
-        node = node.prev
-    }
-
-    return node
-}
-
-fun <TElement> MutableLinkedList<TElement>.findLast(element: @UnsafeVariance TElement): MutableLinkedListNode<TElement>? {
-    var node = this.tail
-
-    while (null !== node) {
-        if (element == node.item) {
-            break
-        }
-
-        node = node.prev
-    }
-
-    return node
-}
-
-inline fun <TElement> MutableLinkedList<TElement>.findLast(predicate: (TElement) -> Boolean): MutableLinkedListNode<TElement>? {
-    var node = this.tail
-
-    while (null !== node) {
-        if (predicate(node.item)) {
-            break
-        }
-
-        node = node.prev
-    }
-
-    return node
-}
+    runCatching{ this.setItemAt(index, element) }

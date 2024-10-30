@@ -140,7 +140,7 @@ abstract class AbstractSortedMap<TKey, TValue>(
     }
 
     override val entries: MutableSet<MutableEntry<TKey, TValue>>
-        get() = object : AbstractEntrySet<TKey, TValue>(this) {
+        get() = object : AbstractEntrySet<TKey, TValue>(this@AbstractSortedMap) {
             override fun iterator(): MutableIterator<MutableEntry<TKey, TValue>> = object : MutableIterator<MutableEntry<TKey, TValue>> {
                 private var modCount: Int = this@AbstractSortedMap.modCount
                 private var lastNode: BstNode<TKey, TValue>? = null

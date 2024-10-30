@@ -118,5 +118,6 @@ internal class CustomEntry<TKey, TValue>(
         return hashValue
     }
 
-    override fun toString(): String = "Entry[${this.key}] = ${this.value}"
+    override fun toString(): String =
+        "Entry[${this.key}] = ${this.value}"
 }

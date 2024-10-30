@@ -30,11 +30,14 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
         return true
     }
 
-    override operator fun contains(element: @UnsafeVariance TElement): Boolean = -1 != this.indexOf(element)
+    override operator fun contains(element: @UnsafeVariance TElement): Boolean =
+        -1 != this.indexOf(element)
 
-    override fun indexOf(element: @UnsafeVariance TElement): Int = this.index(0, element)
+    override fun indexOf(element: @UnsafeVariance TElement): Int =
+        this.index(0, element)
 
-    override fun lastIndexOf(element: @UnsafeVariance TElement): Int = this.lastIndex(this.size, element)
+    override fun lastIndexOf(element: @UnsafeVariance TElement): Int =
+        this.lastIndex(this.size, element)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {
@@ -45,11 +48,14 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
             return false
         }
 
-        val leftSeq = this.asSequence()
-        val rightSeq = other.asSequence()
+        val left = this.iterator()
+        val right = other.iterator()
 
-        for ((left, right) in leftSeq.zip(rightSeq)) {
-            if (left != right) {
+        while (left.hasNext()) {
+            val leftItem = left.next()
+            val rightItem = right.next()
+
+            if (leftItem != rightItem) {
                 return false
             }
         }
@@ -58,10 +64,11 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
     }
 
     override fun hashCode(): Int {
-        var hashValue = 31 * this.size
+        val modifier = 31
+        var hashValue = modifier * this.size
 
         for (item in this) {
-            hashValue = 31 * hashValue + item.hashCode()
+            hashValue = modifier * hashValue + item.hashCode()
         }
 
         return hashValue
@@ -70,9 +77,11 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
     override fun subList(fromIndex: Int, toIndex: Int): MutableList<TElement> =
         Sublist(this, fromIndex, toIndex)
 
-    override fun iterator(): MutableIterator<TElement> = this.listIterator()
+    override fun iterator(): MutableIterator<TElement> =
+        this.listIterator()
 
-    override fun listIterator(): MutableListIterator<TElement> = this.listIterator(0)
+    override fun listIterator(): MutableListIterator<TElement> =
+        this.listIterator(0)
 
     override fun listIterator(index: Int): MutableListIterator<TElement> = object : MutableListIterator<TElement> {
         init {
@@ -81,6 +90,7 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
 
         private var currentIndex: Int = index
         private var lastUsedIndex: Int? = null
+        private var calledPreviousLast: Boolean = false
         private var modCount: Int = this@AbstractList.modCount
 
         override fun previousIndex(): Int {
@@ -108,6 +118,7 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
             val item = this@AbstractList[usedIndex]
 
             this.lastUsedIndex = usedIndex
+            this.calledPreviousLast = true
             --(this.currentIndex)
 
             return item
@@ -120,6 +131,7 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
             val item = this@AbstractList[usedIndex]
 
             this.lastUsedIndex = usedIndex
+            this.calledPreviousLast = false
             ++(this.currentIndex)
 
             return item
@@ -130,7 +142,7 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
 
             this.lastUsedIndex?.let {
                 this@AbstractList[it] = element
-            } ?: noneToUse("No item to set")
+            } ?: noneToUse()
         }
 
         override fun remove() {
@@ -138,17 +150,26 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
 
             this.lastUsedIndex?.let {
                 this@AbstractList.removeAt(it)
-                --(this.currentIndex)
 
                 ++(this.modCount)
                 this.lastUsedIndex = null
-            } ?: noneToUse("No item to remove")
+
+                if (it != this.nextIndex()) {
+                    --(this.currentIndex)
+                }
+            } ?: noneToUse()
         }
 
         override fun add(element: TElement) {
             checkIfUnderlyingCollectionHasBeenModified(this.modCount, this@AbstractList.modCount)
 
             this@AbstractList.add(this.nextIndex(), element)
+
+            this.lastUsedIndex?.let {
+                if (this.calledPreviousLast) {
+                    this.lastUsedIndex = it + 1
+                }
+            }
 
             ++(this.modCount)
         }
@@ -166,14 +187,15 @@ internal class Sublist<TElement>(
     }
 
     init {
-        checkIfValidRange(this.fromIndex, this.toIndex)
         checkIfRangeInBounds(this.fromIndex, this.toIndex, this.base.size)
+        checkIfValidRange(this.fromIndex, this.toIndex)
     }
 
     override val size: Int
         get() = this.toIndex - this.fromIndex
 
-    override fun isEmpty(): Boolean = this.fromIndex == this.toIndex
+    override fun isEmpty(): Boolean =
+        this.fromIndex == this.toIndex
 
     override fun get(index: Int): TElement {
         checkIfIndexIsAccessible(index, this.size)
@@ -190,8 +212,11 @@ internal class Sublist<TElement>(
     override fun addAll(index: Int, elements: Collection<TElement>): Boolean {
        checkIfIndexCanBeInsertedAt(index, this.size)
 
-        if (this.base.addAll(index + this.fromIndex, elements)) {
-            this.toIndex += elements.size
+        val initialSize = elements.size
+        val actualIndex = index + this.fromIndex
+
+        if (this.base.addAll(actualIndex, elements)) {
+            this.toIndex += initialSize
 
             return true
         }
@@ -203,18 +228,21 @@ internal class Sublist<TElement>(
         checkIfIndexIsAccessible(index, this.size)
 
         val item = this.base.removeAt(index + this.fromIndex)
+
         --(this.toIndex)
 
         return item
     }
 
     override fun clear() {
-        if (!this.isEmpty()) {
-            this.shiftForClearing()
-            this.base.removeFromBack(this.size)
-
-            this.toIndex = this.fromIndex
+        if (this.isEmpty()) {
+            return
         }
+
+        this.shiftForClearing()
+        this.base.removeFromBack(this.size)
+
+        this.toIndex = this.fromIndex
     }
 
     private fun shiftForClearing() {
@@ -226,8 +254,8 @@ internal class Sublist<TElement>(
     }
 
     override fun subList(fromIndex: Int, toIndex: Int): MutableList<TElement> {
-        checkIfValidRange(fromIndex, toIndex)
         checkIfRangeInBounds(fromIndex, toIndex, this.size)
+        checkIfValidRange(fromIndex, toIndex)
 
         return Sublist(this.base, fromIndex + this.fromIndex, toIndex + this.fromIndex)
     }

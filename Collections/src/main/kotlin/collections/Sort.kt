@@ -1,19 +1,5 @@
 package collections
 
-private class DefaultComparator<TElement> : Comparator<TElement> {
-    override fun compare(p0: TElement, p1: TElement): Int {
-        @Suppress("UNCHECKED_CAST")
-        val comp = p0 as Comparable<TElement>
-
-        return comp.compareTo(p1)
-    }
-}
-
-internal class FuncComparator<TElement>(private val func: (TElement, TElement) -> Int) : Comparator<TElement> {
-    override fun compare(p0: TElement, p1: TElement): Int =
-        this.func(p0, p1)
-}
-
 val <TElement> Comparator<TElement>?.nonnull: Comparator<TElement>
     get() = this ?: inOrder()
 
@@ -26,7 +12,12 @@ val <TElement> ((TElement, TElement) -> Int).reversed: (TElement, TElement) -> I
     }
 
 fun <TElement> inOrder(): Comparator<TElement> =
-    DefaultComparator()
+    Comparator { p0, p1 ->
+        @Suppress("UNCHECKED_CAST")
+        val comp = p0 as Comparable<TElement>
+
+        comp.compareTo(p1)
+    }
 
 fun <TElement> nullFirst(comp: (TElement, TElement) -> Int): (TElement, TElement) -> Int {
     return { left, right ->

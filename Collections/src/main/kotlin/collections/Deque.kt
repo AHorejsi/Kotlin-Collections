@@ -5,23 +5,28 @@ import java.io.Serializable
 interface Deque<TElement> : Stack<TElement>, Queue<TElement> {
     override val size: Int
 
-    override fun enqueue(element: TElement) = this.pushFront(element)
+    override fun enqueue(element: TElement) =
+        this.pushFront(element)
 
-    override fun push(element: TElement) = this.pushBack(element)
+    override fun push(element: TElement) =
+        this.pushBack(element)
 
     fun pushFront(element: TElement)
 
     fun pushBack(element: TElement)
 
-    override fun dequeue(): TElement = this.popBack()
+    override fun dequeue(): TElement =
+        this.popBack()
 
-    override fun pop(): TElement = this.popBack()
+    override fun pop(): TElement =
+        this.popBack()
 
     fun popFront(): TElement
 
     fun popBack(): TElement
 
-    override fun peek(): TElement = this.back()
+    override fun peek(): TElement =
+        this.back()
 
     override fun front(): TElement
 
@@ -40,7 +45,7 @@ class VectorDeque<TElement>(initialCapacity: Int = VectorDeque.DEFAULT_CAPACITY)
     }
 
     init {
-        require(initialCapacity >= 0)
+        checkIfNegativeCapacity(initialCapacity)
     }
 
     private var data: Array<Any?> = arrayOfNulls(initialCapacity)
@@ -54,7 +59,7 @@ class VectorDeque<TElement>(initialCapacity: Int = VectorDeque.DEFAULT_CAPACITY)
             this.reallocate()
         }
 
-        this.frontIndex = (this.frontIndex - 1) % this.data.size
+        this.frontIndex = this.actualIndex(-1)
         this.data[this.frontIndex] = element
         ++(this.size)
     }
@@ -64,7 +69,7 @@ class VectorDeque<TElement>(initialCapacity: Int = VectorDeque.DEFAULT_CAPACITY)
             this.reallocate()
         }
 
-        this.data[(this.frontIndex + this.size) % this.data.size] = element
+        this.data[this.actualIndex(this.size)] = element
         ++(this.size)
     }
 
@@ -72,7 +77,7 @@ class VectorDeque<TElement>(initialCapacity: Int = VectorDeque.DEFAULT_CAPACITY)
         val item = this.front()
 
         --(this.size)
-        this.frontIndex = (this.frontIndex + 1) % this.data.size
+        this.frontIndex = this.actualIndex(1)
 
         return item
     }
@@ -91,10 +96,13 @@ class VectorDeque<TElement>(initialCapacity: Int = VectorDeque.DEFAULT_CAPACITY)
 
     private fun at(index: Int): TElement =
         if (this.isEmpty())
-            throw NoSuchElementException()
+            empty(VectorDeque::class)
         else
             @Suppress("UNCHECKED_CAST")
-            this.data[(this.frontIndex + index) % this.data.size] as TElement
+            this.data[this.actualIndex(index)] as TElement
+
+    private fun actualIndex(index: Int): Int =
+        (this.frontIndex + index).mod(this.data.size)
 
     override fun clear() {
         this.size = 0
@@ -170,7 +178,7 @@ class LinkedDeque<TElement> : Deque<TElement>, Serializable {
             --(this.size)
 
             return it.item
-        } ?: throw NoSuchElementException()
+        } ?: empty(LinkedDeque::class)
 
     override fun popBack(): TElement =
         this.tail?.let {
@@ -180,13 +188,17 @@ class LinkedDeque<TElement> : Deque<TElement>, Serializable {
             --(this.size)
 
             return it.item
-        } ?: throw NoSuchElementException()
+        } ?: empty(LinkedDeque::class)
 
-    override fun front(): TElement = this.at(this.head)
+    override fun front(): TElement =
+        this.head?.let {
+            return it.item
+        } ?: empty(LinkedDeque::class)
 
-    override fun back(): TElement = this.at(this.tail)
-
-    private fun at(node: DequeNode<TElement>?) = node?.item ?: throw NoSuchElementException()
+    override fun back(): TElement =
+        this.tail?.let {
+            return it.item
+        } ?: empty(LinkedDeque::class)
 
     override fun clear() {
         this.head = null
@@ -195,12 +207,29 @@ class LinkedDeque<TElement> : Deque<TElement>, Serializable {
     }
 }
 
-fun Deque<*>.isEmpty(): Boolean = 0 == this.size
+fun Deque<*>.isEmpty(): Boolean =
+    0 == this.size
 
-fun <TElement> Deque<TElement>.tryPopFront(): Result<TElement> = runCatching { this.popFront() }
+fun <TElement> Deque<TElement>.tryPopFront(): Result<TElement> =
+    runCatching{ this.popFront() }
 
-fun <TElement> Deque<TElement>.tryPopBack(): Result<TElement> = runCatching { this.popBack() }
+fun <TElement> Deque<TElement>.popFrontOrNull(): TElement? =
+    this.tryPopFront().getOrNull()
 
-fun <TElement> Deque<TElement>.tryFront(): Result<TElement> = runCatching { this.front() }
+fun <TElement> Deque<TElement>.tryPopBack(): Result<TElement> =
+    runCatching{ this.popBack() }
 
-fun <TElement> Deque<TElement>.tryBack(): Result<TElement> = runCatching { this.back() }
+fun <TElement> Deque<TElement>.popBackOrNull(): TElement? =
+    this.tryPopBack().getOrNull()
+
+fun <TElement> Deque<TElement>.tryFront(): Result<TElement> =
+    runCatching{ this.front() }
+
+fun <TElement> Deque<TElement>.frontOrNull(): TElement? =
+    this.tryFront().getOrNull()
+
+fun <TElement> Deque<TElement>.tryBack(): Result<TElement> =
+    runCatching{ this.back() }
+
+fun <TElement> Deque<TElement>.backOrNull(): TElement? =
+    this.tryBack().getOrNull()

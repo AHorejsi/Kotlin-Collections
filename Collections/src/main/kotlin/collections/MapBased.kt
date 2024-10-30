@@ -25,5 +25,3 @@ fun <TElement> asMutableSet(base: MutableMap<TElement, Unit>): MutableSet<TEleme
 
 fun <TElement> asMutableSortedSet(base: MutableSortedMap<TElement, Unit>): MutableSortedSet<TElement> =
     MapBasedSortedSet(base)
-
-

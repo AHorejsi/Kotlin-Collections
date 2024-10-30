@@ -13,24 +13,29 @@ internal class KeySet<TElement>(
     override val size: Int
         get() = this.base.size
 
-    override fun add(element: TElement): Boolean {
-        throw UnsupportedOperationException()
-    }
+    override fun add(element: TElement): Boolean =
+        unsupported(KeySet::class, this::add)
 
-    override fun remove(element: TElement): Boolean = null !== this.base.remove(element)
+    override fun remove(element: TElement): Boolean =
+        null !== this.base.remove(element)
 
-    override fun clear() = this.base.clear()
+    override fun clear() =
+        this.base.clear()
 
-    override operator fun contains(element: TElement): Boolean = this.base.containsKey(element)
+    override operator fun contains(element: TElement): Boolean =
+        this.base.containsKey(element)
 
     override fun iterator(): MutableIterator<TElement> = object : MutableIterator<TElement> {
         private val iter = this@KeySet.base.entries.iterator()
 
-        override fun hasNext(): Boolean = this.iter.hasNext()
+        override fun hasNext(): Boolean =
+            this.iter.hasNext()
 
-        override fun next(): TElement = this.iter.next().key
+        override fun next(): TElement =
+            this.iter.next().key
 
-        override fun remove() = this.iter.remove()
+        override fun remove() =
+            this.iter.remove()
     }
 }
 
@@ -45,15 +50,14 @@ internal class ValueCollection<TElement>(
     override val size: Int
         get() = this.base.size
 
-    override fun add(element: TElement): Boolean {
-        throw UnsupportedOperationException()
-    }
+    override fun add(element: TElement): Boolean =
+        unsupported(ValueCollection::class, this::add)
 
-    override fun remove(element: TElement): Boolean {
-        throw UnsupportedOperationException()
-    }
+    override fun remove(element: TElement): Boolean =
+        unsupported(ValueCollection::class, this::remove)
 
-    override fun clear() = this.base.clear()
+    override fun clear() =
+        this.base.clear()
 
     override operator fun contains(element: TElement): Boolean {
         for (value in this) {
@@ -68,23 +72,30 @@ internal class ValueCollection<TElement>(
     override fun iterator(): MutableIterator<TElement> = object : MutableIterator<TElement> {
         private val iter = this@ValueCollection.base.entries.iterator()
 
-        override fun hasNext(): Boolean = this.iter.hasNext()
+        override fun hasNext(): Boolean =
+            this.iter.hasNext()
 
-        override fun next(): TElement = this.iter.next().value
+        override fun next(): TElement =
+            this.iter.next().value
 
-        override fun remove() = this.iter.remove()
+        override fun remove() =
+            this.iter.remove()
     }
 }
 
 internal abstract class AbstractEntrySet<TKey, TValue>(
     private val base: MutableMap<TKey, TValue>
-) : AbstractCollection<MutableEntry<TKey, TValue>>(), MutableSet<MutableEntry<TKey, TValue>> {
+) : AbstractCollection<MutableEntry<TKey, TValue>>(), MutableSet<MutableEntry<TKey, TValue>>, Serializable {
+    private companion object {
+        @Suppress("ConstPropertyName")
+        const val serialVersionUID: Long = 1L
+    }
+
     override val size: Int
         get() = this.base.size
 
-    override fun add(element: MutableEntry<TKey, TValue>): Boolean {
-        throw UnsupportedOperationException()
-    }
+    override fun add(element: MutableEntry<TKey, TValue>): Boolean =
+        unsupported(AbstractEntrySet::class, this::add)
 
     override fun remove(element: MutableEntry<TKey, TValue>): Boolean {
         if (element in this) {
@@ -96,7 +107,8 @@ internal abstract class AbstractEntrySet<TKey, TValue>(
         return false
     }
 
-    override fun clear() = this.base.clear()
+    override fun clear() =
+        this.base.clear()
 
     override operator fun contains(element: MutableEntry<TKey, TValue>): Boolean {
         val value = this.base[element.key]

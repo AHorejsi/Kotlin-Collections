@@ -57,5 +57,6 @@ abstract class AbstractMap<TKey, TValue> : MutableMap<TKey, TValue> {
         return hashValue
     }
 
-    override fun toString(): String = this.entries.toString()
+    override fun toString(): String =
+        this.entries.toString()
 }

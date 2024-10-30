@@ -28,15 +28,6 @@ class BinaryHeap<TElement>(
         const val DEFAULT_CAPACITY: Int = 16
     }
 
-    constructor(
-        initialCapacity: Int = BinaryHeap.DEFAULT_CAPACITY,
-        compObj: Comparator<TElement>? = null
-    ) : this(initialCapacity, compObj.function)
-
-    init {
-        require(initialCapacity >= 0)
-    }
-
     private val data: MutableList<TElement> = VectorList(initialCapacity)
 
     override val size: Int
@@ -57,18 +48,19 @@ class BinaryHeap<TElement>(
                 break
             }
 
-            this.swap(currentIndex, parentIndex)
+            this.data.swap(currentIndex, parentIndex)
 
             currentIndex = parentIndex
             parentIndex = this.parent(currentIndex)
         }
     }
 
-    private fun parent(currentIndex: Int): Int = (currentIndex - 1) / 2
+    private fun parent(currentIndex: Int): Int =
+        (currentIndex - 1) / 2
 
     override fun pop(): TElement {
         if (this.isEmpty()) {
-            throw NoSuchElementException()
+            empty(BinaryHeap::class)
         }
 
         val item = this.data.removeLast()
@@ -98,30 +90,34 @@ class BinaryHeap<TElement>(
                 break
             }
             else {
-                this.swap(currentIndex, indexOfLargest)
+                this.data.swap(currentIndex, indexOfLargest)
 
                 currentIndex = indexOfLargest
             }
         }
     }
 
-    private fun swap(index1: Int, index2: Int) {
-        val temp = this.data[index1]
-        this.data[index1] = this.data[index2]
-        this.data[index2] = temp
-    }
-
     override fun peek(): TElement =
         if (this.isEmpty())
-            throw NoSuchElementException()
+            empty(BinaryHeap::class)
         else
             this.data.first()
 
-    override fun clear() = this.data.clear()
+    override fun clear() =
+        this.data.clear()
 }
 
-fun Heap<*>.isEmpty(): Boolean = 0 == this.size
+fun Heap<*>.isEmpty(): Boolean =
+    0 == this.size
 
-fun <TElement> Heap<TElement>.tryPop(): Result<TElement> = runCatching { this.pop() }
+fun <TElement> Heap<TElement>.popOrNull(): TElement? =
+    this.tryPop().getOrNull()
 
-fun <TElement> Heap<TElement>.tryPeek(): Result<TElement> = runCatching { this.peek() }
+fun <TElement> Heap<TElement>.tryPop(): Result<TElement> =
+    runCatching{ this.pop() }
+
+fun <TElement> Heap<TElement>.peekOrNull(): TElement? =
+    this.tryPeek().getOrNull()
+
+fun <TElement> Heap<TElement>.tryPeek(): Result<TElement> =
+    runCatching{ this.peek() }

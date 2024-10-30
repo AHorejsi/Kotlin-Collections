@@ -15,34 +15,6 @@ class ProbeMap<TKey, TValue>(
         val DEFAULT_COMPARATOR: EqualityComparator<Any?> = EqualityComparator.Default
     }
 
-    constructor(
-        elements: Sequence<Map.Entry<TKey, TValue>>,
-        hasher: Hasher = ProbeMap.DEFAULT_HASHER,
-        comparator: EqualityComparator<TKey> = ProbeMap.DEFAULT_COMPARATOR
-    ) : this(elements.asIterable(), hasher, comparator)
-
-    constructor(
-        elements: Map<TKey, TValue>,
-        hasher: Hasher = ProbeMap.DEFAULT_HASHER,
-        comparator: EqualityComparator<TKey> = ProbeMap.DEFAULT_COMPARATOR
-    ) : this(elements.asIterable(), hasher, comparator)
-
-    constructor(
-        elements: Collection<Map.Entry<TKey, TValue>>,
-        hasher: Hasher = ProbeMap.DEFAULT_HASHER,
-        comparator: EqualityComparator<TKey> = ProbeMap.DEFAULT_COMPARATOR
-    ) : this(elements.asIterable(), hasher, comparator)
-
-    constructor(
-        elements: Iterable<Map.Entry<TKey, TValue>>,
-        hasher: Hasher = ProbeMap.DEFAULT_HASHER,
-        comparator: EqualityComparator<TKey> = ProbeMap.DEFAULT_COMPARATOR
-    ) : this(hasher, comparator) {
-        for ((key, value) in elements) {
-            this[key] = value
-        }
-    }
-
     private var data: Array<Probe<MutableEntry<TKey, TValue>>> =
         Array((this.hasher.initialCapacity / this.hasher.loadFactor).toInt()) { Probe.Empty }
 
@@ -131,7 +103,7 @@ class ProbeMap<TKey, TValue>(
         return this.removeByIndex(index)
     }
 
-    private fun removeByIndex(index: Int?): TValue? {
+    private fun removeByIndex(index: Int?): TValue? =
         index?.let {
             val probe = this.data[it] as Probe.Valid<MutableEntry<TKey, TValue>>
             val entry = probe.item
@@ -142,13 +114,14 @@ class ProbeMap<TKey, TValue>(
             --(this.size)
             ++(super.modCount)
 
-            return value
+            return@let value
         }
 
-        return null
-    }
-
     override fun clear() {
+        if (this.isEmpty()) {
+            return
+        }
+
         val capacity = (this.hasher.initialCapacity / this.hasher.loadFactor).toInt()
 
         this.data = Array(capacity) { Probe.Empty }
@@ -159,7 +132,7 @@ class ProbeMap<TKey, TValue>(
     override fun containsKey(key: TKey): Boolean = null !== this.findIndex(key)
 
     private fun findIndex(key: TKey): Int? {
-        val startIndex = this.comparator.hashCode(key) % this.capacity
+        val startIndex = this.comparator.hashCode(key).mod(this.capacity)
 
         var index = startIndex
         var count = 1
@@ -176,7 +149,7 @@ class ProbeMap<TKey, TValue>(
             }
 
             ++count
-            index = this.hasher.hashCode2(startIndex, count) % this.capacity
+            index = this.hasher.hashCode2(startIndex, count).mod(this.capacity)
         }
 
         return null
@@ -193,7 +166,7 @@ class ProbeMap<TKey, TValue>(
     }
 
     override val entries: MutableSet<MutableEntry<TKey, TValue>>
-        get() = object : AbstractEntrySet<TKey, TValue>(this) {
+        get() = object : AbstractEntrySet<TKey, TValue>(this@ProbeMap) {
             override fun iterator(): MutableIterator<MutableEntry<TKey, TValue>> = object : MutableIterator<MutableEntry<TKey, TValue>> {
                 private var modCount: Int = this@ProbeMap.modCount
                 private var currentIndex: Int = this.findIndex(-1)
@@ -211,7 +184,8 @@ class ProbeMap<TKey, TValue>(
                     return this.exceedsCapacity(this.currentIndex)
                 }
 
-                private fun exceedsCapacity(index: Int): Boolean = index < this@ProbeMap.capacity
+                private fun exceedsCapacity(index: Int): Boolean =
+                    index < this@ProbeMap.capacity
 
                 override fun next(): MutableEntry<TKey, TValue> {
                     if (!this.hasNext()) {
@@ -250,12 +224,3 @@ class ProbeMap<TKey, TValue>(
             }
         }
 }
-
-fun <TKey, TValue> Map<TKey, TValue>.toProbeMap(): ProbeMap<TKey, TValue> = ProbeMap(this)
-
-fun <TKey, TValue> Collection<Map.Entry<TKey, TValue>>.toProbeMap(): ProbeMap<TKey, TValue> = ProbeMap(this)
-
-fun <TKey, TValue> Iterable<Map.Entry<TKey, TValue>>.toProbeMap(): ProbeMap<TKey, TValue> = ProbeMap(this)
-
-fun <TKey, TValue> Sequence<Map.Entry<TKey, TValue>>.toProbeMap(): ProbeMap<TKey, TValue> = ProbeMap(this)
-

@@ -1,23 +1,22 @@
 package collections.functional
 
-import arrow.core.None
-import arrow.core.Option
-import arrow.core.Some
-import collections.FuncComparator
-import collections.inOrder
-import collections.index
-import collections.lastIndex
+import collections.*
+import java.io.Serializable
 import kotlin.math.abs
 import kotlin.math.min
 
 @Suppress("RemoveRedundantQualifierName")
 class PureArray<TElement> private constructor(
     private val base: Array<Any?>
-) : PureList<TElement>, RandomAccess {
+) : PureList<TElement>, RandomAccess, Serializable {
     companion object {
+        @Suppress("ConstPropertyName")
+        private const val serialVersionUID: Long = 1L
+
         private val EMPTY: Array<Any?> = emptyArray()
 
-        fun <TItem> empty(): PureArray<TItem> = PureArray(PureArray.EMPTY)
+        fun <TItem> empty(): PureArray<TItem> =
+            PureArray(PureArray.EMPTY)
 
         fun <TItem> single(only: TItem): PureArray<TItem> {
             val array = arrayOf<Any?>(only)
@@ -29,47 +28,45 @@ class PureArray<TElement> private constructor(
     override val head: TElement
         get() =
             if (this.isEmpty())
-                throw NoSuchElementException()
+                empty(PureArray::class)
             else
                 this[0]
 
     override val tail: PureArray<TElement>
         get() =
             if (this.isEmpty())
-                throw NoSuchElementException()
+                empty(PureArray::class)
             else
                 this.skip(1)
 
     override val size: Int
         get() = this.base.size
 
-    override fun isEmpty(): Boolean = 0 == this.size
+    override fun isEmpty(): Boolean =
+        0 == this.size
 
     override operator fun get(index: Int): TElement {
-        if (index < 0 || index >= this.size) {
-            throw IndexOutOfBoundsException()
-        }
+        checkIfIndexIsAccessible(index, this.size)
 
         @Suppress("UNCHECKED_CAST")
         return this.base[index] as TElement
     }
 
     override fun update(index: Int, element: TElement): PureArray<TElement> {
-        val indexed = IndexedValue(index, element)
-        val singleton = listOf(indexed)
+        val singleton = mapOf(index to element)
 
         return this.updateAll(singleton)
     }
 
-    override fun updateAll(elements: Collection<IndexedValue<TElement>>): PureArray<TElement> {
+    override fun updateAll(elements: Map<Int, TElement>): PureArray<TElement> {
         if (elements.isEmpty()) {
             return this
         }
 
-        val copy = this.base.copyOf()
+        val copy = arrayOfNulls<Any>(this.size)
 
-        for ((index, item) in elements) {
-            copy[index] = item
+        for (index in this.indices) {
+            copy[index] = elements.getOrDefault(index, this[index])
         }
 
         return PureArray(copy)
@@ -87,6 +84,7 @@ class PureArray<TElement> private constructor(
         }
 
         val newBase = arrayOfNulls<Any>(elements.size + this.size)
+
         this.concat(elements, this, newBase)
 
         return PureArray(newBase)
@@ -104,17 +102,23 @@ class PureArray<TElement> private constructor(
         }
 
         val newBase = arrayOfNulls<Any>(this.size + elements.size)
+
         this.concat(this, elements, newBase)
 
         return PureArray(newBase)
     }
 
     private fun concat(left: Collection<TElement>, right: Collection<TElement>, newBase: Array<Any?>) {
-        val leftSeq = left.asSequence()
-        val rightSeq = right.asSequence()
+        var index = 0
 
-        for ((index, item) in (leftSeq + rightSeq).withIndex()) {
-            newBase[index] = item
+        for (element in left) {
+            newBase[index] = element
+            ++index
+        }
+
+        for (element in right) {
+            newBase[index] = element
+            ++index
         }
     }
 
@@ -125,9 +129,7 @@ class PureArray<TElement> private constructor(
     }
 
     override fun insertAll(index: Int, elements: Collection<TElement>): PureArray<TElement> {
-        if (index < 0 || index > this.size) {
-            throw IndexOutOfBoundsException()
-        }
+        checkIfIndexCanBeInsertedAt(index, this.size)
 
         when (index) {
             0 -> { return this.prependAll(elements) }
@@ -160,7 +162,8 @@ class PureArray<TElement> private constructor(
         return currentIndex
     }
 
-    override fun draw(amount: Int): PureArray<TElement> = this.subList(0, min(amount, this.size))
+    override fun draw(amount: Int): PureArray<TElement> =
+        this.subList(0, min(amount, this.size))
 
     override fun drawLast(amount: Int): PureArray<TElement> =
         if (amount >= this.size)
@@ -212,16 +215,16 @@ class PureArray<TElement> private constructor(
             this.skipLast(index)
     }
 
-    override fun remove(element: TElement): PureArray<TElement> {
+    override fun delete(element: TElement): PureArray<TElement> {
         val singleton = listOf(element)
 
-        return this.removeAll(singleton)
+        return this.deleteAll(singleton)
     }
 
-    override fun removeAll(elements: Collection<TElement>): PureArray<TElement> {
+    override fun deleteAll(elements: Collection<TElement>): PureArray<TElement> {
         val indices = elements.asSequence()
             .map(this::indexOf)
-            .filter((-1)::equals)
+            .filterNot((-1)::equals)
             .toHashSet()
 
         if (indices.isEmpty()) {
@@ -229,7 +232,6 @@ class PureArray<TElement> private constructor(
         }
 
         var insertIndex = 0
-
         val newBase = arrayOfNulls<Any>(this.size - indices.size)
 
         for ((index, item) in this.withIndex()) {
@@ -242,9 +244,9 @@ class PureArray<TElement> private constructor(
         return PureArray(newBase)
     }
 
-    override fun removeAt(index: Int): PureArray<TElement> = this.removeRange(index, index + 1)
+    override fun deleteAt(index: Int): PureArray<TElement> = this.deleteRange(index, index + 1)
 
-    override fun removeAt(indices: Collection<Int>): PureArray<TElement> {
+    override fun deleteAt(indices: Collection<Int>): PureArray<TElement> {
         if (indices.isEmpty()) {
             return this
         }
@@ -262,7 +264,7 @@ class PureArray<TElement> private constructor(
         return PureArray(newBase)
     }
 
-    override fun removeRange(fromIndex: Int, toIndex: Int): PureArray<TElement> {
+    override fun deleteRange(fromIndex: Int, toIndex: Int): PureArray<TElement> {
         val amountToRemove = toIndex - fromIndex
 
         if (0 == amountToRemove) {
@@ -302,9 +304,7 @@ class PureArray<TElement> private constructor(
     }
 
     override fun split(index: Int): Pair<PureArray<TElement>, PureArray<TElement>> {
-        if (index < 0 || index > this.size) {
-            throw IndexOutOfBoundsException()
-        }
+        checkIfIndexCanBeInsertedAt(index, this.size)
 
         val left = this.draw(index)
         val right = this.skip(index)
@@ -312,22 +312,22 @@ class PureArray<TElement> private constructor(
         return left to right
     }
 
-    override fun find(predicate: (TElement) -> Boolean): Option<TElement> {
+    override fun find(predicate: (TElement) -> Boolean): Result<TElement> {
         val index = this.index(0, predicate)
 
         return if (-1 == index)
-            None
+            Result.failure(ResultUtils.FAILED_SEARCH)
         else
-            Some(this[index])
+            Result.success(this[index])
     }
 
-    override fun findLast(predicate: (TElement) -> Boolean): Option<TElement> {
+    override fun findLast(predicate: (TElement) -> Boolean): Result<TElement> {
         val index = this.lastIndex(this.size, predicate)
 
         return if (-1 == index)
-            None
+            Result.failure(ResultUtils.FAILED_SEARCH)
         else
-            Some(this[index])
+            Result.success(this[index])
     }
 
     override fun subList(fromIndex: Int, toIndex: Int): PureArray<TElement> {
@@ -340,8 +340,6 @@ class PureArray<TElement> private constructor(
         return PureArray(copy)
     }
 
-    override fun slice(fromIndex: Int, toIndex: Int): PureArray<TElement> = this.subList(fromIndex, toIndex)
-
     override fun sort(): PureArray<TElement> {
         val default = inOrder<TElement>()
 
@@ -350,7 +348,7 @@ class PureArray<TElement> private constructor(
 
     override fun sort(comp: (TElement, TElement) -> Int): PureArray<TElement> {
         val newBase = this.base.copyOf()
-        val comparator = FuncComparator(comp)
+        val comparator = Comparator(comp)
 
         @Suppress("UNCHECKED_CAST")
         (newBase as Array<TElement>).sortWith(comparator)
@@ -427,7 +425,7 @@ class PureArray<TElement> private constructor(
         return PureArray(newBase)
     }
 
-    override fun partition(predicate: (TElement) -> Boolean): Pair<PureArray<TElement>, PureArray<TElement>> {
+    override fun separate(predicate: (TElement) -> Boolean): Pair<PureArray<TElement>, PureArray<TElement>> {
         val left = arrayOfNulls<Any>(this.size)
         val right = arrayOfNulls<Any>(this.size)
 
@@ -454,25 +452,25 @@ class PureArray<TElement> private constructor(
 
     override fun listIterator(index: Int): ListIterator<TElement> = object : ListIterator<TElement> {
         init {
-            if (index < 0 || index > this@PureArray.size) {
-                throw IndexOutOfBoundsException()
-            }
+            checkIfIndexCanBeInsertedAt(index, this@PureArray.size)
         }
 
         private var current: Int = index
 
-        override fun previousIndex(): Int = this.current - 1
+        override fun previousIndex(): Int =
+            this.current - 1
 
-        override fun nextIndex(): Int = this.current
+        override fun nextIndex(): Int =
+            this.current
 
-        override fun hasPrevious(): Boolean = this.previousIndex() >= 0
+        override fun hasPrevious(): Boolean =
+            this.previousIndex() >= 0
 
-        override fun hasNext(): Boolean = this.nextIndex() < this@PureArray.size
+        override fun hasNext(): Boolean =
+            this.nextIndex() < this@PureArray.size
 
         override fun previous(): TElement {
-            if (!this.hasPrevious()) {
-                throw NoSuchElementException()
-            }
+            checkIfPrev(this)
 
             val item = this@PureArray[this.previousIndex()]
 
@@ -482,9 +480,7 @@ class PureArray<TElement> private constructor(
         }
 
         override fun next(): TElement {
-            if (!this.hasNext()) {
-                throw NoSuchElementException()
-            }
+            checkIfNext(this)
 
             val item = this@PureArray[this.nextIndex()]
 

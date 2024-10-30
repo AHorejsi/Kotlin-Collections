@@ -1,30 +1,27 @@
 package collections
 
-import arrow.core.Option
 import kotlin.math.min
 
 val List<*>.isRandomAccess: Boolean
     get() = this is RandomAccess
 
 fun <TElement> List<TElement>.tryGet(index: Int): Result<TElement> =
-    runCatching { this[index] }
+    runCatching{ this[index] }
 
 fun <TElement> MutableList<TElement>.trySet(index: Int, element: TElement): Result<TElement> =
-    runCatching { this.set(index, element) }
-
-fun <TElement> List<TElement>.safeGet(index: Int): Option<TElement> =
-    this.tryGet(index).toOption()
-
-fun <TElement> MutableList<TElement>.safeSet(index: Int, element: TElement): Option<TElement> =
-    this.trySet(index, element).toOption()
+    runCatching{ this.set(index, element) }
 
 fun <TElement> List<TElement>.wrapGet(index: Int): TElement {
+    checkIfEmptyListForWrappedIndexing(this)
+
     val actualIndex = index.mod(this.size)
 
     return this[actualIndex]
 }
 
 fun <TElement> MutableList<TElement>.wrapSet(index: Int, element: TElement): TElement {
+    checkIfEmptyListForWrappedIndexing(this)
+
     val actualIndex = index.mod(this.size)
 
     return this.set(actualIndex, element)
@@ -32,7 +29,21 @@ fun <TElement> MutableList<TElement>.wrapSet(index: Int, element: TElement): TEl
 
 fun <TElement> MutableList<TElement>.swap(index1: Int, index2: Int) {
     if (index1 != index2) {
-        this[index1] = this.set(index2, this[index1])
+        val temp = this[index1]
+        this[index1] = this[index2]
+        this[index2] = temp
+    }
+}
+
+fun <TElement> MutableList<TElement>.resize(newSize: Int, supply: () -> TElement) {
+    checkIfNegativeAmount(newSize)
+
+    while (this.size < newSize) {
+        this.add(supply())
+    }
+
+    while (this.size > newSize) {
+        this.removeLast()
     }
 }
 
@@ -46,14 +57,18 @@ fun <TElement> MutableList<TElement>.removeFromBack(amount: Int): Int =
 private fun <TElement> MutableList<TElement>.removeFromBackHelper(amount: Int): Int {
     checkIfNegativeAmount(amount)
 
+    val sizeBeforeRemoval = this.size
+
     if (amount >= this.size) {
         this.clear()
     }
     else {
-        this.removeRange(this.size - amount, this.size)
+        repeat(amount) {
+            this.removeLast()
+        }
     }
 
-    return min(this.size, amount)
+    return min(sizeBeforeRemoval, amount)
 }
 
 fun <TElement> MutableList<TElement>.removeRange(fromIndex: Int, toIndex: Int) =
@@ -72,9 +87,9 @@ fun <TElement> List<TElement>.index(fromIndex: Int, predicate: (TElement) -> Boo
     val iter = this.listIterator(fromIndex)
 
     while (iter.hasNext()) {
-        val item = iter.next()
+        val elem = iter.next()
 
-        if (predicate(item)) {
+        if (predicate(elem)) {
             return iter.previousIndex()
         }
     }
@@ -107,9 +122,9 @@ fun <TElement> List<TElement>.lastIndex(fromIndex: Int, predicate: (TElement) ->
     val iter = this.listIterator(fromIndex)
 
     while (iter.hasPrevious()) {
-        val item = iter.previous()
+        val elem = iter.previous()
 
-        if (predicate(item)) {
+        if (predicate(elem)) {
             return iter.nextIndex()
         }
     }
@@ -152,7 +167,7 @@ fun <TElement> List<TElement>.isPermutationOf(other: List<TElement>): Boolean {
         }
     }
 
-    return map.filter{ 0 == it.value }.isEmpty()
+    return map.all{ 0 == it.value }
 }
 
 fun <TElement> MutableList<TElement>.next(comp: Comparator<TElement>? = null): Boolean =
@@ -197,6 +212,85 @@ fun <TElement> MutableList<TElement>.prev(comp: Comparator<TElement>? = null): B
 fun <TElement> MutableList<TElement>.prev(comp: (TElement, TElement) -> Int): Boolean =
     this.next(comp.reversed)
 
+fun <TElement> List<TElement>.separationPoint(predicate: (TElement) -> Boolean): Int? {
+    var index = 0
+
+    while (index < this.size) {
+        val item = this[index]
+
+        if (!predicate(item)) {
+            break
+        }
+
+        ++index
+    }
+
+    val separationIndex = index
+
+    while (index < this.size) {
+        val item = this[index]
+
+        if (predicate(item)) {
+            return null
+        }
+
+        ++index
+    }
+
+    return separationIndex
+}
+
+fun <TElement> MutableList<TElement>.separate(predicate: (TElement) -> Boolean): Int {
+    var partitionPoint = 0
+
+    for (index in this.indices) {
+        val item = this[index]
+
+        if (predicate(item)) {
+            this.swap(index, partitionPoint)
+            ++partitionPoint
+        }
+    }
+
+    return partitionPoint
+}
+
+fun <TElement> MutableList<TElement>.stableSeparate(predicate: (TElement) -> Boolean): Int {
+    val (yes, no) = this.partition(predicate)
+    var index = 0
+
+    for (item in yes) {
+        this[index] = item
+        ++index
+    }
+
+    for (item in no) {
+        this[index] = item
+        ++index
+    }
+
+    return yes.size
+}
+
+fun <TElement> MutableList<TElement>.intersperse(separator: TElement) {
+    if (this.atMost(1)) {
+        return
+    }
+
+    val iter = this.listIterator()
+
+    while (true) {
+        iter.next()
+
+        if (!iter.hasNext()) {
+            break
+        }
+
+        iter.add(separator)
+        iter.next()
+    }
+}
+
 fun <TElement> compare(leftList: List<TElement>, rightList: List<TElement>, comp: Comparator<TElement>? = null): Int =
     compare(leftList, rightList, comp.function)
 
@@ -236,22 +330,31 @@ fun <TElement> List<TElement>.isSortedUntil(comp: (TElement, TElement) -> Int): 
         return this.size
     }
 
-    val iter = this.listIterator()
+    val iter = this.iterator()
+
     var current = iter.next()
+    var index = 0
 
     while (iter.hasNext()) {
-        val next = iter.next()
+        val elem = iter.next()
 
         if (!iter.hasNext()) {
             break
         }
 
-        if (comp(current, next) > 0) {
-            return iter.previousIndex()
+        if (comp(current, elem) > 0) {
+            return index + 1
         }
 
-        current = next
+        current = elem
+        ++index
     }
 
     return this.size
+}
+
+fun <TElement> MutableList<TElement>.sortWith(comp: (TElement, TElement) -> Int) {
+    val comparator = Comparator(comp)
+
+    this.sortWith(comparator)
 }

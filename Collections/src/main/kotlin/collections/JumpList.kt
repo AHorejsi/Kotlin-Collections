@@ -9,14 +9,16 @@ class JumpList<TElement>(
         @Suppress("ConstPropertyName")
         private const val serialVersionUID: Long = 1L
 
-        fun <TKey> moveToFront(
-            @Suppress("UNUSED_PARAMETER") past: IndexedValue<TKey>,
-            @Suppress("UNUSED_PARAMETER") now: IndexedValue<TKey>
+        @Suppress("UNUSED_PARAMETER", "FunctionName")
+        fun <TKey> MOVE_TO_FRONT(
+            past: IndexedValue<TKey>,
+            now: IndexedValue<TKey>
         ): Boolean = false
 
-        fun <TKey> transpose(
-            @Suppress("UNUSED_PARAMETER") past: IndexedValue<TKey>,
-            @Suppress("UNUSED_PARAMETER") now: IndexedValue<TKey>
+        @Suppress("UNUSED_PARAMETER", "FunctionName")
+        fun <TKey> TRANSPOSE(
+            past: IndexedValue<TKey>,
+            now: IndexedValue<TKey>
         ): Boolean = true
     }
 

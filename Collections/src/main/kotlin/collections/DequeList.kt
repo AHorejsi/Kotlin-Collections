@@ -14,7 +14,7 @@ class DequeList<TElement>(
     }
 
     init {
-        require(initialCapacity >= 0)
+        checkIfNegativeCapacity(initialCapacity)
     }
 
     private var data: Array<Any?> = arrayOfNulls(initialCapacity)
@@ -27,18 +27,14 @@ class DequeList<TElement>(
         get() = this.data.size
 
     override fun get(index: Int): TElement {
-        if (index < 0 || index >= this.size) {
-            throw IndexOutOfBoundsException()
-        }
+        checkIfIndexIsAccessible(index, this.size)
 
         @Suppress("UNCHECKED_CAST")
         return this.data[this.actualIndex(index)] as TElement
     }
 
     override fun set(index: Int, element: TElement): TElement {
-        if (index < 0 || index >= this.size) {
-            throw IndexOutOfBoundsException()
-        }
+        checkIfIndexIsAccessible(index, this.size)
 
         val actualIndex = this.actualIndex(index)
 
@@ -49,14 +45,14 @@ class DequeList<TElement>(
         return old as TElement
     }
 
-    fun addFirst(element: TElement) = super.add(0, element)
+    fun addFirst(element: TElement) =
+        super.add(0, element)
 
-    fun addLast(element: TElement) = super.add(this.size, element)
+    fun addLast(element: TElement) =
+        super.add(this.size, element)
 
     override fun addAll(index: Int, elements: Collection<TElement>): Boolean {
-        if (index < 0 || index > this.size) {
-            throw IndexOutOfBoundsException()
-        }
+        checkIfIndexCanBeInsertedAt(index, this.size)
 
         val amountToAdd = elements.size
         val newSize = this.size + amountToAdd
@@ -86,6 +82,7 @@ class DequeList<TElement>(
     }
 
     private fun shiftForInsertion(index: Int, amountToAdd: Int) {
+        @Suppress("UnnecessaryVariable")
         val distanceFromStart = index
         val distanceFromEnd = this.size - index
 
@@ -174,6 +171,7 @@ class DequeList<TElement>(
     }
 
     private fun shiftForRemoval(index: Int) {
+        @Suppress("UnnecessaryVariable")
         val distanceFromStart = index
         val distanceFromEnd = this.size - index
 
@@ -205,7 +203,8 @@ class DequeList<TElement>(
         ++(super.modCount)
     }
 
-    private fun actualIndex(index: Int) = (this.startIndex + index).mod(this.capacity)
+    private fun actualIndex(index: Int) =
+        (this.startIndex + index).mod(this.capacity)
 
     fun ensureCapacity(newCapacity: Int) {
         if (newCapacity > this.capacity) {
@@ -231,13 +230,18 @@ class DequeList<TElement>(
     }
 }
 
-fun <TElement> dequeListOf(): DequeList<TElement> = DequeList()
+fun <TElement> dequeListOf(): DequeList<TElement> =
+    DequeList()
 
-fun <TElement> dequeListOf(vararg elements: TElement): DequeList<TElement> = elements.toDequeList()
+fun <TElement> dequeListOf(vararg elements: TElement): DequeList<TElement> =
+    elements.toDequeList()
 
 fun <TElement> Iterable<TElement>.toDequeList(): DequeList<TElement> {
-    val size = this.count()
-    val deque = DequeList<TElement>(size)
+    if (this is Collection<TElement>) {
+        return this.toDequeList()
+    }
+
+    val deque = DequeList<TElement>()
 
     for (item in this) {
         deque.addLast(item)
@@ -267,7 +271,9 @@ fun <TElement> Collection<TElement>.toDequeList(): DequeList<TElement> {
 fun <TElement> Array<out TElement>.toDequeList(): DequeList<TElement> {
     val deque = DequeList<TElement>(this.size)
 
-    deque.addAll(this)
+    for (item in this) {
+        deque.addLast(item)
+    }
 
     return deque
 }

@@ -136,7 +136,7 @@ abstract class AbstractLinkedList<TElement> : AbstractCollection<TElement>(), Mu
     }
 
     override fun remove(element: TElement): Boolean {
-        val node = this.findAmount(element)
+        val node = this.findNode(element)
 
         if (null !== node) {
             this.remove(node)
@@ -217,7 +217,22 @@ abstract class AbstractLinkedList<TElement> : AbstractCollection<TElement>(), Mu
         return amountRemoved
     }
 
-    override operator fun contains(element: @UnsafeVariance TElement): Boolean = null !== this.findAmount(element)
+    override operator fun contains(element: @UnsafeVariance TElement): Boolean =
+        null !== this.findNode(element)
+
+    private fun findNode(element: TElement): MutableLinkedListNode<TElement>? {
+        var current = this.head
+
+        while (null !== current) {
+            if (element == current.item) {
+                break
+            }
+
+            current = current.next
+        }
+
+        return current
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {

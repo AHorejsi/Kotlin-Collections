@@ -46,7 +46,7 @@ class ArraySegment<TElement> internal constructor(
         this.base[index + this.fromIndex] = element
     }
 
-    fun copy(): Array<TElement> =
+    fun copyOf(): Array<TElement> =
         this.base.copyOfRange(this.fromIndex, this.toIndex)
 
     fun fill(element: TElement) =
@@ -55,46 +55,27 @@ class ArraySegment<TElement> internal constructor(
     fun reverse() =
         this.base.reverse(this.fromIndex, this.toIndex)
 
-    fun shuffle(rand: Random = Random.Default) {
-        if (this.size <= 1) {
-            return
-        }
-
-        if (2 == this.size) {
-            this.shuffleSize2(rand)
-        }
-        else {
-            this.shuffleGreaterThan2(rand)
-        }
-    }
-
-    private fun shuffleSize2(rand: Random) {
-        if (rand.nextBoolean()) {
-            this.swap(0, 1)
-        }
-    }
-
-    private fun shuffleGreaterThan2(rand: Random) {
-        val size = this.size
-
-        for (index in this.lastIndex downTo 0) {
-            val randomIndex = rand.nextInt(index, size)
-
-            this.swap(index, randomIndex)
-        }
-    }
-
     fun sort(comp: Comparator<in TElement>? = null) =
         this.base.sortWith(comp.nonnull, this.fromIndex, this.toIndex)
 
     fun rotate(amount: Int) {
-        val rotationsNeeded = amount.mod(this.size)
+        if (this.size <= 1) {
+            return
+        }
+
+        val rotationsNeeded = amount % this.size
 
         if (0 == rotationsNeeded) {
             return
         }
 
-        val (left, right) = this.splitArray(rotationsNeeded)
+        val (left, right) =
+            if (rotationsNeeded < 0) {
+                this.splitArray(this.size - amount)
+            }
+            else {
+                this.splitArray(amount)
+            }
 
         this.doCopy(0, right)
         this.doCopy(right.size, left)
@@ -122,45 +103,17 @@ class ArraySegment<TElement> internal constructor(
         }
     }
 
-    fun partition(predicate: (TElement) -> Boolean): Int {
-        val (front, end) = this.asIterable().partition(predicate)
+    fun indexOf(element: TElement): Int =
+        this.index(0, element)
 
-        for ((index, item) in front.withIndex()) {
-            this[index] = item
-        }
-
-        for ((index, item) in end.withIndex(front.size)) {
-            this[index] = item
-        }
-
-        return front.size
-    }
-
-    fun indexOf(element: TElement): Int {
-        for (index in 0 until this.size) {
-            if (element == this[index]) {
-                return index
-            }
-        }
-
-        return -1
-    }
-
-    fun lastIndexOf(element: TElement): Int {
-        for (index in this.lastIndex downTo 0) {
-            if (element == this[index]) {
-                return index
-            }
-        }
-
-        return -1
-    }
+    fun lastIndexOf(element: TElement): Int =
+        this.lastIndex(this.size, element)
 
     operator fun contains(element: TElement): Boolean =
         -1 != this.indexOf(element)
 
     override fun toString(): String =
-        this.asString()
+        StructurallyImmutableList(this).toString()
 
     override fun iterator(): Iterator<TElement> = object : Iterator<TElement> {
         private var index = 0
@@ -197,42 +150,66 @@ fun <TElement> ArraySegment<TElement>.segment(indices: IntRange): ArraySegment<T
     else
         this.segment(indices.first, indices.last + 1)
 
-fun <TElement> ArraySegment<out TElement>.safeGet(index: Int): Option<TElement> =
-    AsList(this).safeGet(index)
-
-fun <TElement> ArraySegment<in TElement>.safeSet(index: Int, element: TElement): Option<Unit> =
-    AsList(this).safeSet(index, element).map{ _ -> return@map }
-
 fun <TElement> ArraySegment<out TElement>.tryGet(index: Int): Result<TElement> =
-    AsList(this).tryGet(index)
+    StructurallyImmutableList(this).tryGet(index)
 
 fun <TElement> ArraySegment<in TElement>.trySet(index: Int, element: TElement): Result<Unit> =
-    AsList(this).trySet(index, element).map{ _ -> return@map }
+    StructurallyImmutableList(this).trySet(index, element).map{ _ -> return@map }
 
 fun <TElement> ArraySegment<out TElement>.wrapGet(index: Int): TElement =
-    AsList(this).wrapGet(index)
+    StructurallyImmutableList(this).wrapGet(index)
 
 fun <TElement> ArraySegment<in TElement>.wrapSet(index: Int, element: TElement) {
-    AsList(this).wrapSet(index, element)
+    StructurallyImmutableList(this).wrapSet(index, element)
 }
 
 fun <TElement> ArraySegment<TElement>.swap(index1: Int, index2: Int) =
-    AsList(this).swap(index1, index2)
+    StructurallyImmutableList(this).swap(index1, index2)
 
 fun <TElement> ArraySegment<out TElement>.index(fromIndex: Int, element: @UnsafeVariance TElement): Int =
     this.index(fromIndex) { it == element }
 
 fun <TElement> ArraySegment<out TElement>.index(fromIndex: Int, predicate: (TElement) -> Boolean): Int =
-    AsList(this).index(fromIndex, predicate)
+    StructurallyImmutableList(this).index(fromIndex, predicate)
 
 fun <TElement> ArraySegment<out TElement>.lastIndex(fromIndex: Int, element: @UnsafeVariance TElement): Int =
     this.lastIndex(fromIndex) { it == element }
 
 fun <TElement> ArraySegment<out TElement>.lastIndex(fromIndex: Int, predicate: (TElement) -> Boolean): Int =
-    AsList(this).lastIndex(fromIndex, predicate)
+    StructurallyImmutableList(this).lastIndex(fromIndex, predicate)
 
 fun <TElement> ArraySegment<out TElement>.isPermutationOf(other: ArraySegment<out TElement>): Boolean =
-    AsList(this).isPermutationOf(AsList(other))
+    StructurallyImmutableList(this).isPermutationOf(StructurallyImmutableList(other))
+
+fun <TElement> ArraySegment<TElement>.next(comp: Comparator<TElement>? = null): Boolean =
+    this.next(comp.function)
+
+fun <TElement> ArraySegment<TElement>.next(comp: (TElement, TElement) -> Int): Boolean =
+    StructurallyImmutableList(this).next(comp)
+
+fun <TElement> ArraySegment<TElement>.prev(comp: Comparator<TElement>? = null): Boolean =
+    this.prev(comp.function)
+
+fun <TElement> ArraySegment<TElement>.prev(comp: (TElement, TElement) -> Int): Boolean =
+    StructurallyImmutableList(this).prev(comp)
+
+fun <TElement> ArraySegment<TElement>.separate(predicate: (TElement) -> Boolean): Int =
+    StructurallyImmutableList(this).separate(predicate)
+
+fun <TElement> ArraySegment<TElement>.shuffle(rand: Random = Random.Default) =
+    StructurallyImmutableList(this).shuffle(rand)
+
+fun <TElement> ArraySegment<out TElement>.isSorted(comp: Comparator<TElement>? = null): Boolean =
+    this.isSorted(comp.function)
+
+fun <TElement> ArraySegment<out TElement>.isSorted(comp: (TElement, TElement) -> Int): Boolean =
+    this.size == this.isSortedUntil(comp)
+
+fun <TElement> ArraySegment<out TElement>.isSortedUntil(comp: Comparator<TElement>? = null): Int =
+    this.isSortedUntil(comp.function)
+
+fun <TElement> ArraySegment<out TElement>.isSortedUntil(comp: (TElement, TElement) -> Int): Int =
+    StructurallyImmutableList(this).isSortedUntil(comp)
 
 fun <TElement> ArraySegment<out TElement>?.contentEquals(other: ArraySegment<out TElement>?): Boolean =
     when ((null === this) to (null === other)) {
@@ -259,3 +236,17 @@ private fun <TElement> contentEqualsHelper(left: ArraySegment<out TElement>, rig
 
     return true
 }
+
+fun <TElement> compare(
+    left: ArraySegment<out TElement>,
+    right: ArraySegment<out TElement>,
+    comp: Comparator<TElement>? = null
+): Int =
+    compare(left, right, comp.function)
+
+fun <TElement> compare(
+    left: ArraySegment<out TElement>,
+    right: ArraySegment<out TElement>,
+    comp: (TElement, TElement) -> Int
+): Int =
+    compare(StructurallyImmutableList(left), StructurallyImmutableList(right), comp)

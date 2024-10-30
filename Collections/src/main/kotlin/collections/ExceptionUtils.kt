@@ -1,5 +1,18 @@
 package collections
 
+import kotlin.reflect.KCallable
+import kotlin.reflect.KClass
+
+internal class ResultUtils private constructor() {
+    init {
+        noInstances(ResultUtils::class)
+    }
+
+    companion object {
+        val FAILED_SEARCH = NoSuchElementException("No item found matching the given predicate")
+    }
+}
+
 internal fun checkIfNegativeCapacity(capacity: Int) {
     if (capacity < 0) {
         throw IllegalArgumentException("Capacity cannot be negative. Specified capacity is $capacity")
@@ -20,13 +33,13 @@ internal fun checkIfNegativeAmount(amount: Long) {
 
 internal fun checkIfIndexIsAccessible(index: Int, size: Int) {
     if (index < 0 || index >= size) {
-        throw IndexOutOfBoundsException("0 <= index < size. Index = $index, Size = $size")
+        outOfBoundsWithSizeInclusive(index, size)
     }
 }
 
 internal fun checkIfIndexCanBeInsertedAt(index: Int, size: Int) {
     if (index < 0 || index > size) {
-        throw IndexOutOfBoundsException("0 <= index <= size. Index = $index, Size = $size")
+        outOfBoundsWithSizeExclusive(index, size)
     }
 }
 
@@ -50,15 +63,33 @@ internal fun checkIfRangeInBounds(fromIndex: Int, toIndex: Int, size: Int) {
     }
 }
 
+internal fun checkIfSameSize(size1: Int, size2: Int) {
+    if (size1 != size2) {
+        throw IllegalArgumentException("Sizes must be equal. Size1 = $size1, Size2 = $size2")
+    }
+}
+
+internal fun checkIfEmptyCollection(collect: Collection<*>) {
+    if (collect.isEmpty()) {
+        throw IllegalArgumentException("Collection must be non-empty")
+    }
+}
+
+internal fun checkIfEmptyListForWrappedIndexing(list: List<*>) {
+    if (list.isEmpty()) {
+        throw IllegalStateException("List must be non-empty for wrapped indexing")
+    }
+}
+
 internal fun checkIfPrev(iter: ListIterator<*>) {
     if (!iter.hasPrevious()) {
-        throw NoSuchElementException("No more elements. Iterator at beginning")
+        throw NoSuchElementException("No prior elements. Iterator at beginning")
     }
 }
 
 internal fun checkIfNext(iter: Iterator<*>) {
     if (!iter.hasNext()) {
-        throw NoSuchElementException("No more elements. Iterator at end")
+        throw NoSuchElementException("No later elements. Iterator at end")
     }
 }
 
@@ -90,7 +121,7 @@ internal fun checkForOverflowOnAddition(left: Long, right: Long): Long {
 
 internal fun checkForOverflowOnSubtraction(left: Int, right: Int): Int {
     val output = left - right
-    val hasOverflow = (left >= 0) != (right >= 0) && (left >= 0) != (output >= 0)
+    val hasOverflow = ((left >= 0).xor(right >= 0)) && ((left >= 0).xor(output >= 0))
 
     return if (hasOverflow)
         throw ArithmeticException("Overflow from subtraction. Left Operand = $left, Right Operand = $right, Output = $output")
@@ -100,7 +131,7 @@ internal fun checkForOverflowOnSubtraction(left: Int, right: Int): Int {
 
 internal fun checkForOverflowOnSubtraction(left: Long, right: Long): Long {
     val output = left - right
-    val hasOverflow = (left >= 0) != (right >= 0) && (left >= 0) != (output >= 0)
+    val hasOverflow = ((left >= 0) != (right >= 0)) && ((left >= 0) != (output >= 0))
 
     return if (hasOverflow)
         throw ArithmeticException("Overflow from subtraction. Left Operand = $left, Right Operand = $right, Output = $output")
@@ -108,14 +139,23 @@ internal fun checkForOverflowOnSubtraction(left: Long, right: Long): Long {
         output
 }
 
-internal fun outOfBounds(index: Int): Nothing =
+internal fun noInstances(cls: KClass<*>): Nothing =
+    throw InternalError("No instances of ${cls.simpleName} are allowed")
+
+internal fun outOfBoundsWithoutSize(index: Int): Nothing =
     throw IndexOutOfBoundsException(index)
 
-internal fun noneToUse(message: String): Nothing =
-    throw IllegalStateException(message)
+internal fun outOfBoundsWithSizeInclusive(index: Int, size: Int): Nothing =
+    throw IndexOutOfBoundsException("0 <= index < size. Index = $index, Size = $size")
 
-internal fun empty(message: String): Nothing =
-    throw NoSuchElementException(message)
+internal fun outOfBoundsWithSizeExclusive(index: Int, size: Int): Nothing =
+    throw IndexOutOfBoundsException("0 <= index <= size. Index = $index, Size = $size")
 
-internal fun unsupported(cls: String, func: String): Nothing =
-    throw UnsupportedOperationException("No $func for $cls")
+internal fun noneToUse(): Nothing =
+    throw IllegalStateException("No item at last cursor")
+
+internal fun empty(cls: KClass<*>): Nothing =
+    throw NoSuchElementException("Empty ${cls.simpleName}")
+
+internal fun unsupported(cls: KClass<*>, func: KCallable<*>): Nothing =
+    throw UnsupportedOperationException("No ${func.name} for ${cls.simpleName}")
