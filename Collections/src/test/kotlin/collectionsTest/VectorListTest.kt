@@ -37,10 +37,10 @@ class VectorListTest {
         val vecFromIter = assertDoesNotThrow{ iter.toVectorList() }
         val vecFromArray = assertDoesNotThrow{ array.toVectorList() }
 
-        this.testSequenceEquality(vecFromSet.iterator(), set.iterator())
-        this.testSequenceEquality(vecFromIter.iterator(), iter.iterator())
-        this.testSequenceEquality(vecFromSeq.iterator(), seq.iterator())
-        this.testSequenceEquality(vecFromArray.iterator(), array.iterator())
+        this.testIteratorEquality(vecFromSet.iterator(), set.iterator())
+        this.testIteratorEquality(vecFromIter.iterator(), iter.iterator())
+        this.testIteratorEquality(vecFromSeq.iterator(), seq.iterator())
+        this.testIteratorEquality(vecFromArray.iterator(), array.iterator())
 
         assertTrue(set.size <= vecFromSet.capacity)
         assertTrue(seq.count() <= vecFromSeq.capacity)
@@ -48,7 +48,7 @@ class VectorListTest {
         assertTrue(array.size <= vecFromArray.capacity)
     }
 
-    private fun testSequenceEquality(left: Iterator<*>, right: Iterator<*>) {
+    private fun testIteratorEquality(left: Iterator<*>, right: Iterator<*>) {
         while (left.hasNext() && right.hasNext()) {
             val leftItem = left.next()
             val rightItem = right.next()
@@ -63,88 +63,61 @@ class VectorListTest {
     @Test
     fun testIsRandomAccess() {
         val vec = vectorListOf<Int>()
-        val result = assertDoesNotThrow{ vec.isRandomAccess }
 
-        assertTrue(result)
+        reusable.testIsRandomAccess(vec)
     }
 
     @Test
     fun testWithIndex() {
         val vec = (1 .. 16).toVectorList()
 
-        for (index in vec.indices) {
-            this.testWithIndexIteration(vec, index)
-        }
-    }
-
-    private fun testWithIndexIteration(vec: VectorList<Int>, startIndex: Int) {
-        val items = assertDoesNotThrow{ vec.withIndex(startIndex) }
-
-        for ((index, elem) in items) {
-            val item = assertDoesNotThrow{ vec[index - startIndex] }
-            assertEquals(elem, item)
-        }
+        reusable.testWithIndex(vec)
     }
 
     @Test
     fun testAtLeast() {
         val count = 100
 
-        val vec1 = 0.replicate(count - 1).toVectorList()
-        val vec2 = 0.replicate(count).toVectorList()
-        val vec3 = 0.replicate(count + 1).toVectorList()
+        val lesser = 0.replicate(count - 1).toVectorList()
+        val equal = 0.replicate(count).toVectorList()
+        val greater = 0.replicate(count + 1).toVectorList()
 
-        val result1 = assertDoesNotThrow{ vec1.atLeast(count) }
-        val result2 = assertDoesNotThrow{ vec2.atLeast(count) }
-        val result3 = assertDoesNotThrow{ vec3.atLeast(count) }
-
-        assertFalse(result1)
-        assertTrue(result2)
-        assertTrue(result3)
+        reusable.testAtLeast(count, lesser, equal, greater)
     }
 
     @Test
     fun testAtMost() {
         val count = 100
 
-        val vec1 = 0.replicate(count - 1).toVectorList()
-        val vec2 = 0.replicate(count).toVectorList()
-        val vec3 = 0.replicate(count + 1).toVectorList()
+        val lesser = 0.replicate(count - 1).toVectorList()
+        val equal = 0.replicate(count).toVectorList()
+        val greater = 0.replicate(count + 1).toVectorList()
 
-        val result1 = assertDoesNotThrow{ vec1.atMost(count) }
-        val result2 = assertDoesNotThrow{ vec2.atMost(count) }
-        val result3 = assertDoesNotThrow{ vec3.atMost(count) }
-
-        assertTrue(result1)
-        assertTrue(result2)
-        assertFalse(result3)
+        reusable.testAtMost(count, lesser, equal, greater)
     }
 
     @Test
     fun testExactly() {
         val count = 100
 
-        val vec1 = 0.replicate(count - 1).toVectorList()
-        val vec2 = 0.replicate(count).toVectorList()
-        val vec3 = 0.replicate(count + 1).toVectorList()
+        val lesser = 0.replicate(count - 1).toVectorList()
+        val equal = 0.replicate(count).toVectorList()
+        val greater = 0.replicate(count + 1).toVectorList()
 
-        val result1 = assertDoesNotThrow{ vec1.exactly(count) }
-        val result2 = assertDoesNotThrow{ vec2.exactly(count) }
-        val result3 = assertDoesNotThrow{ vec3.exactly(count) }
-
-        assertFalse(result1)
-        assertTrue(result2)
-        assertFalse(result3)
+        reusable.testExactly(count, lesser, equal, greater)
     }
 
     @Test
     fun testSize() {
-        val vec = vectorListOf<Int>()
+        val vec: MutableList<Int> = vectorListOf()
+        reusable.testSize(vec)
+
+        /*val vec = vectorListOf<Int>()
 
         this.testSizeAfterAdding(vec, 100)
         this.testSizeAfterAdding(vec, 200)
         this.testSizeAfterRemoving(vec, 150)
-        this.testSizeAfterAdding(vec, 100)
+        this.testSizeAfterAdding(vec, 100)*/
     }
 
     private fun testSizeAfterAdding(vec: VectorList<Int>, amountToAdd: Int) {
