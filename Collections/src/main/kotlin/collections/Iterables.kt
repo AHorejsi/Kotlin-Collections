@@ -125,3 +125,27 @@ fun <TElement> Iterable<TElement>.sortedWith(comp: (TElement, TElement) -> Int):
 
     return this.sortedWith(comparator)
 }
+
+fun <TElement> Iterable<TElement>.splitAt(index: Int): Pair<List<TElement>, List<TElement>> {
+    val iter = this.iterator()
+    val left = mutableListOf<TElement>()
+    val right = mutableListOf<TElement>()
+
+    var count = 0
+
+    while (count < index && iter.hasNext()) {
+        val item = iter.next()
+
+        left.add(item)
+
+        ++count
+    }
+
+    while (iter.hasNext()) {
+        val item = iter.next()
+
+        right.add(item)
+    }
+
+    return Pair(left, right)
+}
