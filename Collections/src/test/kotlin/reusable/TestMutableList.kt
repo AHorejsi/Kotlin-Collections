@@ -195,3 +195,62 @@ fun testTrySetOutOfBounds(list: MutableList<Int>, newItem: Int) {
     assertFailsWith<IndexOutOfBoundsException>{ early.getOrThrow() }
     assertFailsWith<IndexOutOfBoundsException>{ late.getOrThrow() }
 }
+
+fun testAddConsecutively(list: MutableList<Int>, amount: Int, subAmount: Int) {
+    repeat(amount) { adjuster ->
+        val initialSize = list.size
+
+        repeat(subAmount) { item ->
+            val oldSize = list.size
+            val element = item + adjuster
+
+            val change = assertDoesNotThrow{ list.add(element) }
+
+            assertTrue(change)
+            assertEquals(oldSize + 1, list.size)
+            assertEquals(element, list.last())
+        }
+
+        assertEquals(initialSize + subAmount, list.size)
+        assertEquals(adjuster + subAmount - 1, list.last())
+    }
+}
+
+fun testIndexedAdd(list: MutableList<Int>, index: Int, newItem: Int) {
+    val endInserted = list.size == index
+
+    val old = list.tryGet(index)
+    val oldSize = list.size
+
+    assertDoesNotThrow{ list.add(index, newItem) }
+
+    val currentItem = list[index]
+    val currentSize = list.size
+    val next = list.tryGet(index + 1)
+
+    assertEquals(oldSize + 1, currentSize)
+    assertEquals(newItem, currentItem)
+
+    if (endInserted) {
+        assertFailsWith<IndexOutOfBoundsException>{ old.getOrThrow() }
+        assertFailsWith<IndexOutOfBoundsException>{ next.getOrThrow() }
+    }
+    else {
+        val oldItem = assertDoesNotThrow{ old.getOrThrow() }
+        val nextItem = assertDoesNotThrow{ next.getOrThrow() }
+
+        assertEquals(oldItem, nextItem)
+    }
+}
+
+fun testIndexedAddOutOfBounds(list: MutableList<Int>, index: Int, newItem: Int) {
+    val oldSize = list.size
+
+    assertFailsWith<IndexOutOfBoundsException>{ list.add(index, newItem) }
+
+    val newSize = list.size
+
+    assertEquals(oldSize, newSize)
+    assertTrue(newItem !in list)
+    assertTrue(index !in list.indices)
+}

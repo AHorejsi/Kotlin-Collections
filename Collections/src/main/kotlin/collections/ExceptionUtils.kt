@@ -145,6 +145,9 @@ internal fun noInstances(cls: KClass<*>): Nothing =
 internal fun outOfBoundsWithoutSize(index: Int): Nothing =
     throw IndexOutOfBoundsException(index)
 
+internal fun outOfBoundsWithoutSize(index: Long): Nothing =
+    throw IndexOutOfBoundsException(index)
+
 internal fun outOfBoundsWithSizeInclusive(index: Int, size: Int): Nothing =
     throw IndexOutOfBoundsException("0 <= index < size. Index = $index, Size = $size")
 

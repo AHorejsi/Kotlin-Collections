@@ -77,3 +77,97 @@ infix fun Long.move(amount: Long): LongProgression =
         this.up(amount)
     else
         this.down(-amount)
+
+operator fun IntProgression.get(index: Int): Int =
+    this.elementAt(index)
+
+operator fun LongProgression.get(index: Long): Long =
+    this.elementAt(index)
+
+fun IntProgression.elementAt(index: Int): Int {
+    val factor = abs(this.step)
+
+    val first = this.first
+    val last = this.last
+
+    val (start, end, result) =
+        if (first < last)
+            Triple(first, last, first + factor * index)
+        else
+            Triple(last, first, first - factor * index)
+
+    return if (start > result || result > end)
+        outOfBoundsWithoutSize(index)
+    else
+        result
+}
+
+fun LongProgression.elementAt(index: Long): Long {
+    val factor = abs(this.step)
+
+    val first = this.first
+    val last = this.last
+
+    val (start, end, result) =
+        if (first < last)
+            Triple(first, last, first + factor * index)
+        else
+            Triple(last, first, first - factor * index)
+
+    return if (start > result || result > end)
+        outOfBoundsWithoutSize(index)
+    else
+        result
+}
+
+operator fun IntProgression.contains(value: Int): Boolean {
+    val comp = if (this.first < this.last) inOrder<Int>() else reverseOrder()
+
+    var startIndex = 0
+    var endIndex = this.count() - 1
+
+    while (startIndex <= endIndex) {
+        val midIndex = (startIndex + endIndex) / 2
+        val midItem = this.elementAt(midIndex)
+
+        val comparison = comp.compare(value, midItem)
+
+        if (comparison < 0) {
+            endIndex = midIndex - 1
+        }
+        else if (comparison > 0) {
+            startIndex = midIndex + 1
+        }
+        else {
+            return true
+        }
+    }
+
+    return false
+}
+
+operator fun LongProgression.contains(value: Long): Boolean {
+    val comp = if (this.first < this.last) inOrder<Long>() else reverseOrder()
+
+    var startIndex = 0L
+    var endIndex = this.count() - 1L
+
+    while (startIndex <= endIndex) {
+        val midIndex = (startIndex + endIndex) / 2
+        val midItem = this.elementAt(midIndex)
+
+        val comparison = comp.compare(value, midItem)
+
+        if (comparison < 0) {
+            endIndex = midIndex - 1L
+        }
+        else if (comparison > 0) {
+            startIndex = midIndex + 1L
+        }
+        else {
+            return true
+        }
+    }
+
+    return false
+}

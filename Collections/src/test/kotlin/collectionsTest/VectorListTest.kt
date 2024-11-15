@@ -412,64 +412,20 @@ class VectorListTest {
 
     @Test
     fun testAdd() {
-        val count = 20
+        val amount = 10
+        val subAmount = 5
         val vec = vectorListOf<Int>()
 
-        repeat(count) {
-            val preSize = vec.size
-            val amount = 500
+        testAddConsecutively(vec, amount, subAmount)
 
-            val item = it
+        testIndexedAdd(vec, 0, -1)
+        testIndexedAdd(vec, vec.size, -2)
+        testIndexedAdd(vec, vec.size / 2, -3)
+        testIndexedAdd(vec, vec.size / 4, -4)
+        testIndexedAdd(vec, 3 * vec.size / 4, -5)
 
-            repeat(amount) {
-                val change = assertDoesNotThrow{ vec.add(item) }
-
-                assertTrue(change)
-            }
-
-            assertEquals(item, vec[vec.lastIndex])
-            assertEquals(vec.size, preSize + amount)
-        }
-    }
-
-    @Test
-    fun testAddWithIndexing() {
-        val initialCapacity = 9
-        val vec = VectorList<Int>(initialCapacity)
-
-        this.testAfterInsertingAtEnd(vec)
-        this.testAfterInsertingAtBeginning(vec, initialCapacity)
-        this.testAfterInsertingAtMiddle(vec)
-
-        val item = 88
-
-        assertFailsWith<IndexOutOfBoundsException>{ vec.add(-1, item) }
-        assertFailsWith<IndexOutOfBoundsException>{ vec.add(vec.size + 1, item) }
-
-        assertFalse(item in vec)
-    }
-
-    private fun testAfterInsertingAtBeginning(vec: VectorList<Int>, initialCapacity: Int) {
-        repeat(initialCapacity) {
-            assertDoesNotThrow{ vec.add(0, it) }
-
-            assertEquals(it, vec[0])
-        }
-    }
-
-    private fun testAfterInsertingAtEnd(vec: VectorList<Int>) {
-        val endItem = -1
-        assertDoesNotThrow{ vec.add(vec.size, endItem) }
-        assertEquals(endItem, vec[vec.lastIndex])
-    }
-
-    private fun testAfterInsertingAtMiddle(vec: VectorList<Int>) {
-        val midIndex = vec.size / 2
-        val midItem = 123
-
-        assertDoesNotThrow{ vec.add(midIndex, midItem) }
-
-        assertEquals(midItem, vec[midIndex])
+        testIndexedAddOutOfBounds(vec, -1, -6)
+        testIndexedAddOutOfBounds(vec, vec.size + 1, -6)
     }
 
     @Test
