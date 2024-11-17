@@ -1,12 +1,10 @@
 package reusable
 
-import collections.isRandomAccess
-import collections.tryGet
-import collections.withIndex
-import collections.wrapGet
+import collections.*
 import org.junit.jupiter.api.assertDoesNotThrow
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 fun testIsRandomAccess(list: List<Int>) {
@@ -99,4 +97,25 @@ fun testTryGetOutOfBounds(list: List<Int>) {
 
     assertFailsWith<IndexOutOfBoundsException>{ early.getOrThrow() }
     assertFailsWith<IndexOutOfBoundsException>{ late.getOrThrow() }
+}
+
+fun testLessThanComparison(list: List<Int>, other: List<Int>) {
+    val comparison = assertDoesNotThrow{ compare(list, other) }
+
+    assertTrue(comparison < 0)
+    assertNotEquals(list, other)
+}
+
+fun testEqualComparison(list: List<Int>, other: List<Int>) {
+    val comparison = assertDoesNotThrow{ compare(list, other) }
+
+    assertEquals(0, comparison)
+    assertEquals(list, other)
+}
+
+fun testGreaterThanComparison(list: List<Int>, other: List<Int>) {
+    val comparison = assertDoesNotThrow{ compare(list, other) }
+
+    assertTrue(comparison > 0)
+    assertNotEquals(list, other)
 }

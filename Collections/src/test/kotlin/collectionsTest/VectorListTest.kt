@@ -1023,61 +1023,20 @@ class VectorListTest {
 
     @Test
     fun testEquals() {
-        val range = 0 .. 100
+        val range = 1 .. 10
 
-        val vec1 = range.toVectorList()
-        val vec2 = (range step 2).toVectorList()
-        val vec3 = (range step 4).toVectorList()
+        val vec = range.toVectorList()
+        val other1 = range.toList()
+        val other2 = (range step 2).toList()
+        val other3 = (range step 5).toList()
 
-        this.testCopyAsEqual(vec1, vec2, vec3)
-        this.testComparison(vec1, vec2, vec3)
+        testEquals(vec, other1, true)
+        testEquals(other1, vec, true)
 
-        val vec1Dup = range.toVectorList()
-        val vec2Dup = (range step 2).toVectorList()
-        val vec3Dup = (range step 4).toVectorList()
-
-        this.testDuplicatesAsEqual(vec1 to vec1Dup, vec2 to vec2Dup, vec3 to vec3Dup)
-    }
-
-    private fun testCopyAsEqual(vararg vecSet: VectorList<Int>) {
-        for (vec in vecSet) {
-            val copy1 = vec.toVectorList()
-            val copy2 = vec.toVectorList()
-
-            assertNotSame(vec, copy1)
-            assertNotSame(copy1, copy2)
-            assertNotSame(copy2, vec)
-
-            assertEquals(vec, copy1)
-            assertEquals(copy1, copy2)
-            assertEquals(copy2, vec)
-        }
-    }
-
-    private fun testComparison(vararg vecSet: VectorList<Int>) {
-        for (index1 in vecSet.indices) {
-            for (index2 in vecSet.indices) {
-                this.testVecEquality(vecSet, index1, index2)
-            }
-        }
-    }
-
-    private fun testVecEquality(vecSet: Array<out VectorList<Int>>, index1: Int, index2: Int) {
-        if (index1 == index2) {
-            assertSame(vecSet[index1], vecSet[index2])
-            assertEquals(vecSet[index1], vecSet[index2])
-        }
-        else {
-            assertNotSame(vecSet[index1], vecSet[index2])
-            assertNotEquals(vecSet[index1], vecSet[index2])
-        }
-    }
-
-    private fun testDuplicatesAsEqual(vararg vecPairSet: Pair<VectorList<Int>, VectorList<Int>>) {
-        for ((orig, dup) in vecPairSet) {
-            assertEquals(orig, dup)
-            assertNotSame(orig, dup)
-        }
+        testEquals(vec, other2, false)
+        testEquals(vec, other3, false)
+        testEquals(other2, vec, false)
+        testEquals(other3, vec, false)
     }
 
     @Test
@@ -1088,17 +1047,9 @@ class VectorListTest {
         val vec2 = (range step 4).toVectorList()
         val vec3 = (range step 5).toVectorList()
 
-        assertNotEquals(vec1, vec2)
-        assertEquals(vec1, vec3)
-        assertNotEquals(vec2, vec3)
-
-        val hash1 = assertDoesNotThrow{ vec1.hashCode() }
-        val hash2 = assertDoesNotThrow{ vec2.hashCode() }
-        val hash3 = assertDoesNotThrow{ vec3.hashCode() }
-
-        assertNotEquals(hash1, hash2)
-        assertEquals(hash1, hash3)
-        assertNotEquals(hash2, hash3)
+        testHashCode(vec1, vec2)
+        testHashCode(vec2, vec3)
+        testHashCode(vec3, vec1)
     }
 
     @Test
@@ -1381,53 +1332,33 @@ class VectorListTest {
         val vec3 = vec1.toVectorList()
         vec3.prev()
 
-        this.testCompareOnSelf(vec1)
-        this.testCompareOnSelf(vec2)
-        this.testCompareOnSelf(vec3)
+        val vec4 = vec3.toVectorList()
+        vec2.next()
 
-        val comparison12 = assertDoesNotThrow{ compare(vec1, vec2) }
-        val comparison13 = assertDoesNotThrow{ compare(vec1, vec3) }
-        val comparison23 = assertDoesNotThrow{ compare(vec2, vec3) }
+        testLessThanComparison(vec1, vec2)
+        testLessThanComparison(vec3, vec1)
+        testLessThanComparison(vec4, vec2)
 
-        assertTrue(comparison12 < 0)
-        assertTrue(comparison13 > 0)
-        assertTrue(comparison23 > 0)
-    }
+        testEqualComparison(vec1, vec1)
+        testEqualComparison(vec2, vec2)
+        testEqualComparison(vec3, vec3)
+        testEqualComparison(vec4, vec4)
 
-    private fun testCompareOnSelf(vec: VectorList<Int>) {
-        val comparison = assertDoesNotThrow{ compare(vec, vec) }
-
-        assertEquals(0, comparison)
+        testGreaterThanComparison(vec2, vec1)
+        testGreaterThanComparison(vec1, vec3)
+        testGreaterThanComparison(vec2, vec4)
     }
 
     @Test
     fun testToString() {
         val vec1 = vectorListOf<Int>()
+        testToStringOnEmpty(vec1)
+
         val vec2 = vectorListOf(1000)
+        testToString(vec2, "[1000]")
+
         val vec3 = vectorListOf(-1, 4, 0, -7, 16, -11)
-
-        val str1 = assertDoesNotThrow{ vec1.toString() }
-        val str2 = assertDoesNotThrow{ vec2.toString() }
-        val str3 = assertDoesNotThrow{ vec3.toString() }
-
-        assertEquals("[]", str1)
-        assertEquals("[1000]", str2)
-        assertEquals("[-1, 4, 0, -7, 16, -11]", str3)
-
-        this.testToStringOnLargeVector()
-    }
-
-    private fun testToStringOnLargeVector() {
-        val range = (0 until 1000000).reversed()
-
-        val vec = range.toVectorList()
-        val arr = range.toMutableList()
-
-        val vecStr = assertDoesNotThrow{ vec.toString() }
-        val arrStr = assertDoesNotThrow{ arr.toString() }
-
-        assertEquals(vec, arr)
-        assertEquals(vecStr, arrStr)
+        testToString(vec3, "[-1, 4, 0, -7, 16, -11]")
     }
 }
 
