@@ -1352,7 +1352,7 @@ class VectorListTest {
     @Test
     fun testToString() {
         val vec1 = vectorListOf<Int>()
-        testToStringOnEmpty(vec1)
+        testToString(vec1, "[]")
 
         val vec2 = vectorListOf(1000)
         testToString(vec2, "[1000]")

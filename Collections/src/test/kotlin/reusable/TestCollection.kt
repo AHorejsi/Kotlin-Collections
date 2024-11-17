@@ -18,12 +18,6 @@ fun testHashCode(collection: Collection<Int>, other: Collection<Int>) {
     }
 }
 
-fun testToStringOnEmpty(collection: Collection<Int>) {
-    val result = assertDoesNotThrow{ collection.toString() }
-
-    assertEquals("[]", result)
-}
-
 fun testToString(collection: Collection<Int>, expected: String) {
     val result = assertDoesNotThrow{ collection.toString() }
 
