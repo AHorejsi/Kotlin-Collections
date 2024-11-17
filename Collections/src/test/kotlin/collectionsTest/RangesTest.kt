@@ -160,14 +160,13 @@ class RangesTest {
             0 downTo -small
         )
 
-        @Suppress("RedundantAsSequence")
         for (range1 in intRanges) {
             val range2 = range1 step 2
             val range3 = range1 step 3
 
-            assertEquals(range1.count(), range1.asSequence().count())
-            assertEquals(range2.count(), range2.asSequence().count())
-            assertEquals(range3.count(), range3.asSequence().count())
+            assertEquals(range1.count(), range1.asIterable().count())
+            assertEquals(range2.count(), range2.asIterable().count())
+            assertEquals(range3.count(), range3.asIterable().count())
         }
     }
 
@@ -179,14 +178,13 @@ class RangesTest {
             0 downTo -large
         )
 
-        @Suppress("RedundantAsSequence")
         for (range1 in longRanges) {
             val range2 = range1 step 2
             val range3 = range1 step 3
 
-            assertEquals(range1.count(), range1.asSequence().count().toLong())
-            assertEquals(range2.count(), range2.asSequence().count().toLong())
-            assertEquals(range3.count(), range3.asSequence().count().toLong())
+            assertEquals(range1.count(), range1.asIterable().count().toLong())
+            assertEquals(range2.count(), range2.asIterable().count().toLong())
+            assertEquals(range3.count(), range3.asIterable().count().toLong())
         }
     }
 
@@ -292,12 +290,12 @@ class RangesTest {
 
     private fun testContainsWithInt() {
         val rangeList = listOf(
-            1 .. 10,
-            10 downTo 1,
-            -10 .. -1,
-            -1 downTo -10,
-            -10 .. 10,
-            10 downTo -10
+            1 .. 1000,
+            1000 downTo 1,
+            -1000 .. -1,
+            -1 downTo -1000,
+            -1000 .. 1000,
+            1000 downTo -1000
         )
 
         for (range1 in rangeList) {

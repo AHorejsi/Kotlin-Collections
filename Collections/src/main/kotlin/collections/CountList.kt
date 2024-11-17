@@ -34,7 +34,7 @@ class CountList<TElement> : SelfOrgList<TElement>, Serializable {
         return this.jump.add(counter)
     }
 
-    override fun remove(element: TElement): Boolean = this.jump.removeFirstOf{ it.item == element }
+    override fun remove(element: TElement): Boolean = 1 == this.jump.removeAmount(1) { it.item == element }
 
     override fun clear() = this.jump.clear()
 

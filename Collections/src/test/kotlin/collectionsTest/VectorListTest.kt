@@ -3,7 +3,6 @@ package collectionsTest
 import collections.*
 import org.junit.jupiter.api.assertDoesNotThrow
 import reusable.*
-import kotlin.math.max
 import kotlin.test.*
 
 @Suppress("SameParameterValue")
@@ -430,35 +429,37 @@ class VectorListTest {
 
     @Test
     fun testAddAll() {
-        val max = 14
         val vec = vectorListOf<Int>()
 
-        val items = 0 until max
-        val listToBeInserted = items.toList()
-        val setToBeInserted = items.toHashSet()
+        val other1 = (1 .. 10).toList()
+        val other2 = (20 downTo 11).toSet()
+        val other3 = (5 until 15).toHashSet()
 
-        this.testCollectionToBeInserted(vec, listToBeInserted)
-        this.testCollectionToBeInserted(vec, setToBeInserted)
-        this.testCollectionToBeInserted(vec, vec)
+        val empty1 = emptySet<Int>()
+        val empty2 = hashSetOf<Int>()
 
-        val empty = emptySet<Int>()
-        val change = assertDoesNotThrow{ vec.addAll(empty) }
-        assertFalse(change)
-    }
+        testAddAllWithOther(vec, other1)
+        testAddAllWithOther(vec, other2)
+        testAddAllWithOther(vec, other3)
 
-    private fun testCollectionToBeInserted(vec: VectorList<Int>, collection: Collection<Int>) {
-        val initialSize = vec.size
-        val otherSize = collection.size
+        testAddAllWithEmpty(vec, empty1)
+        testAddAllWithEmpty(vec, empty2)
 
-        val change = assertDoesNotThrow{ vec.addAll(collection) }
-        assertTrue(change)
-        assertEquals(initialSize + otherSize, vec.size)
+        testAddAllWithSelf(vec)
 
-        val iter = collection.iterator()
+        testIndexedAddAllWithOther(vec, 0, other1)
+        testIndexedAddAllWithOther(vec, vec.size, other2)
+        testIndexedAddAllWithOther(vec, vec.size / 2, other3)
 
-        repeat(otherSize) {
-            assertEquals(iter.next(), vec[it])
-        }
+        testIndexedAddAllWithEmpty(vec, 0, empty1)
+        testIndexedAddAllWithEmpty(vec, vec.size, empty2)
+
+        testIndexedAddAllWithSelf(vec, 0)
+        testIndexedAddAllWithSelf(vec, vec.size)
+        testIndexedAddAllWithSelf(vec, vec.size / 2)
+
+        testIndexedAddAllOutOfBounds(vec, -1, empty1)
+        testIndexedAddAllOutOfBounds(vec, vec.size + 1, other1)
     }
 
     @Test
@@ -466,419 +467,49 @@ class VectorListTest {
         val vec1 = (1 .. 10).toVectorList()
         val vec2 = (-10 .. -1).toVectorList()
 
-        this.testInsertWithVector(vec1, vec2)
-        this.testInsertWithVector(vec2, vec1)
-        this.testInsertWithVector(vec1, vec1)
-        this.testInsertWithVector(vec2, vec2)
-    }
-
-    private fun testInsertWithVector(receive: VectorList<Int>, source: VectorList<Int>) {
-        val size = source.size
-        val amountAdded = assertDoesNotThrow{ receive.insert(source) }
-
-        assertEquals(size, amountAdded)
-    }
-
-    @Test
-    fun testAddAllWithIndexing() {
-        val initialSize = 10
-        val vec = vectorListOf<Int>()
-        val items = (0 until initialSize).toList()
-
-        this.testInitialAddAll(vec, items)
-        this.testAddAllWithEmpty(vec)
-        this.testAddAllAtEnd(vec)
-        this.testAddAllAtBeginning(vec)
-        this.testAddAllAtMiddle(vec)
-
-        assertFailsWith<IndexOutOfBoundsException>{ vec.addAll(-1, items) }
-        assertFailsWith<IndexOutOfBoundsException>{ vec.addAll(vec.size + 1, items ) }
-    }
-
-    private fun testInitialAddAll(vec: VectorList<Int>, items: List<Int>) {
-        val initialChange = assertDoesNotThrow{ vec.addAll(items) }
-
-        assertTrue(initialChange)
-    }
-
-    private fun testAddAllWithEmpty(vec: VectorList<Int>) {
-        val empty = emptyList<Int>()
-
-        val changeWithEmpty = assertDoesNotThrow{ vec.addAll(0, empty) }
-
-        assertFalse(changeWithEmpty)
-    }
-
-    private fun testAddAllAtBeginning(vec: VectorList<Int>) {
-        val amount = 5
-        val items = (0 until amount).toList()
-
-        val change = assertDoesNotThrow{ vec.addAll(0, items) }
-        assertTrue(change)
-
-        val vecIter = vec.listIterator(0)
-        val otherIter = items.iterator()
-
-        while (otherIter.hasNext()) {
-            assertEquals(vecIter.next(), otherIter.next())
-        }
-    }
-
-    private fun testAddAllAtEnd(vec: VectorList<Int>) {
-        val amount = 8
-        val items = (0 until amount).toSet()
-
-        val change = assertDoesNotThrow{ vec.addAll(vec.size, items) }
-        assertTrue(change)
-
-        val vecIter = vec.listIterator(vec.size - amount)
-        val otherIter = items.iterator()
-
-        while (otherIter.hasNext()) {
-            assertEquals(vecIter.next(), otherIter.next())
-        }
-    }
-
-    private fun testAddAllAtMiddle(vec: VectorList<Int>) {
-        val amount = 4
-        val items = (0 until amount).toSet()
-        val midIndex = vec.size / 2
-
-        val change = assertDoesNotThrow{ vec.addAll(midIndex, items) }
-        assertTrue(change)
-
-        val vecIter = vec.listIterator(midIndex)
-        val otherIter = items.iterator()
-
-        while (otherIter.hasNext()) {
-            assertEquals(vecIter.next(), otherIter.next())
-        }
+        testInsert(vec1, vec2)
+        testInsert(vec2, vec1)
+        testInsert(vec1, vec1)
+        testInsert(vec2, vec2)
     }
 
     @Test
     fun testResize() {
-        val value = 0
-        val amount = 100
+        val vec = vectorListOf<Int>()
 
-        val vec = value.replicate(amount).toVectorList()
-
-        this.testDecreasingResize(vec)
-        this.testIncreasingResize(vec)
-        this.testInvalidResize(vec)
-    }
-
-    private fun testIncreasingResize(vec: VectorList<Int>) {
-        val initialSize = vec.size
-
-        val value = 1
-        val largerSize = 150
-
-        assertDoesNotThrow{ vec.resize(largerSize) { value } }
-
-        assertEquals(largerSize, vec.size)
-        assertEquals(initialSize, vec.indexOf(value))
-    }
-
-    private fun testDecreasingResize(vec: VectorList<Int>) {
-        val value = -1
-        val smallerSize = 50
-
-        assertDoesNotThrow{ vec.resize(smallerSize) { value } }
-
-        assertEquals(smallerSize, vec.size)
-        assertEquals(-1, vec.indexOf(value))
-    }
-
-    private fun testInvalidResize(vec: VectorList<Int>) {
-        val initialSize = vec.size
-
-        assertFailsWith<IllegalArgumentException>{ vec.resize(-1) { throw InternalError() } }
-
-        assertEquals(initialSize, vec.size)
+        testResizeByIncrease(vec, 100, 0)
+        testResizeByIncrease(vec, 150, 1)
+        testResizeByDecrease(vec, 50, 2)
+        testInvalidResize(vec, -1, -1)
     }
 
     @Test
     fun testRemove() {
-        val vec = VectorList<Int>(10)
+        val vec = vectorListOf(0, 1, 2, 4, 5, 0, 7, 8, 9, 12)
 
-        vec.addAll(0 until 13)
-        vec.add(0)
+        testRemoveByElement(vec, 0, true)
+        testRemoveByElement(vec, 12, true)
+        testRemoveByElement(vec, 7, true)
 
-        this.testRemoveWith(vec, 0, true)
-        this.testRemoveWith(vec, 12, true)
-        this.testRemoveWith(vec, 7, true)
-
-        this.testRemoveWith(vec, -1, false)
-        this.testRemoveWith(vec, 13, false)
-        this.testRemoveWith(vec, 7, false)
+        testRemoveByElement(vec, -1, false)
+        testRemoveByElement(vec, 13, false)
+        testRemoveByElement(vec, 7, false)
 
         assertTrue(0 in vec)
-        assertFalse(7 in vec)
-    }
-
-    private fun testRemoveWith(vec: VectorList<Int>, value: Int, success: Boolean) {
-        val change = assertDoesNotThrow{ vec.remove(value) }
-
-        assertEquals(success, change)
+        assertTrue(7 !in vec)
     }
 
     @Test
     fun testRemoveAll() {
-        val vec = vectorListOf<Int>()
-
-        vec.addAll(0 until 10)
+        val vec = (0 until 10).toVectorList()
 
         val fullyInRange = (2 until 7).toHashSet()
         val partiallyInRange = (-2 until 1).toList()
         val notInRange = (-10 until -1).toSet()
 
-        this.testRemoveAllWith(vec, fullyInRange, true)
-        this.testRemoveAllWith(vec, partiallyInRange, true)
-        this.testRemoveAllWith(vec, notInRange, false)
-    }
-
-    private fun testRemoveAllWith(vec: VectorList<Int>, values: Collection<Int>, success: Boolean) {
-        @Suppress("ConvertArgumentToSet")
-        val change = assertDoesNotThrow{ vec.removeAll(values) }
-
-        assertEquals(success, change)
-    }
-
-    @Test
-    fun testRemoveAt() {
-        val vec = vectorListOf<Int>()
-
-        vec.addAll(0 .. 50)
-
-        this.testRemovingAtEnds(vec)
-        this.testRemovingInMiddle(vec)
-
-        assertFailsWith<IndexOutOfBoundsException>{ vec.removeAt(-1) }
-        assertFailsWith<IndexOutOfBoundsException>{ vec.removeAt(vec.size) }
-    }
-
-    private fun testRemovingAtEnds(vec: VectorList<Int>) {
-        val startSize = vec.size
-
-        val first = vec[0]
-        val last = vec[vec.lastIndex]
-
-        val removedFirst = assertDoesNotThrow{ vec.removeAt(0) }
-        val removedLast = assertDoesNotThrow{ vec.removeAt(vec.lastIndex) }
-
-        assertEquals(first, removedFirst)
-        assertEquals(last, removedLast)
-
-        assertEquals(startSize - 2, vec.size)
-
-        assertFalse(first in vec)
-        assertFalse(last in vec)
-    }
-
-    private fun testRemovingInMiddle(vec: VectorList<Int>) {
-        val startSize = vec.size
-
-        val midIndex1 = vec.size / 2
-        val mid1 = vec[midIndex1]
-        val removedMid1 = assertDoesNotThrow{ vec.removeAt(midIndex1) }
-
-        val midIndex2 = vec.size / 4
-        val mid2 = vec[midIndex2]
-        val removedMid2 = assertDoesNotThrow{ vec.removeAt(midIndex2) }
-
-        val midIndex3 = 3 * vec.size / 4
-        val mid3 = vec[midIndex3]
-        val removedMid3 = assertDoesNotThrow{ vec.removeAt(midIndex3) }
-
-        assertEquals(mid1, removedMid1)
-        assertEquals(mid2, removedMid2)
-        assertEquals(mid3, removedMid3)
-
-        assertEquals(startSize - 3, vec.size)
-
-        assertFalse(mid1 in vec)
-        assertFalse(mid2 in vec)
-        assertFalse(mid3 in vec)
-    }
-
-    @Test
-    fun testRemoveFirstOf() {
-        this.testRemoveFirstByElement()
-        this.testRemoveFirstByPredicate()
-    }
-
-    private fun testRemoveFirstByElement() {
-        val max = 16
-        val range = (1 .. max).asSequence()
-        val vec = (range + range + range).toVectorList()
-
-        val value = max / 2
-        val index = vec.indexOf(value)
-
-        val change1 = assertDoesNotThrow{ vec.removeFirstOf(value) }
-        val newIndex = vec.indexOf(value)
-        assertTrue(change1)
-        assertTrue(index <= newIndex)
-
-        val change2 = assertDoesNotThrow{ vec.removeFirstOf(value) }
-        assertTrue(change2)
-        assertTrue(newIndex <= vec.indexOf(value))
-
-        val change3 = assertDoesNotThrow{ vec.removeFirstOf(value) }
-        assertTrue(change3)
-        assertEquals(-1, vec.indexOf(value))
-
-        val change4 = assertDoesNotThrow{ vec.removeFirstOf(value) }
-        assertFalse(change4)
-        assertEquals(-1, vec.indexOf(value))
-    }
-
-    private fun testRemoveFirstByPredicate() {
-        val max = 24
-        val range = 1 .. max
-        val vec = range.toVectorList()
-
-        val divisor = max / 4
-        val predicate = { num: Int -> 0 == num % divisor }
-
-        do {
-            val index = vec.index(0, predicate)
-
-            val change = assertDoesNotThrow{ vec.removeFirstOf(predicate) }
-            assertTrue(change)
-
-            val nextIndex = vec.index(0, predicate)
-
-            assertTrue(index <= nextIndex || -1 == nextIndex)
-        } while (-1 != nextIndex)
-
-        val change = assertDoesNotThrow{ vec.removeFirstOf(predicate) }
-        assertFalse(change)
-    }
-
-    @Test
-    fun testRemoveAllOf() {
-        val vec = vectorListOf(1, 5, 1, 9, 5, 1, 9, 5, 2, 7, 3, 9, 5, 1, 4, 1, 1)
-        val startSize = vec.size
-
-        val zeroesRemoved = assertDoesNotThrow{ vec.removeAllOf(0) }
-        assertFalse(0 in vec)
-
-        val onesRemoved = assertDoesNotThrow{ vec.removeAllOf(1) }
-        assertFalse(1 in vec)
-
-        val threesRemoved = assertDoesNotThrow{ vec.removeAllOf(3) }
-        assertFalse(3 in vec)
-
-        val fivesRemoved = assertDoesNotThrow{ vec.removeAllOf(5) }
-        assertFalse(5 in vec)
-
-        val ninesRemoved = assertDoesNotThrow{ vec.removeAllOf(9) }
-        assertFalse(9 in vec)
-
-        assertEquals(0, zeroesRemoved)
-        assertEquals(6, onesRemoved)
-        assertEquals(1, threesRemoved)
-        assertEquals(4, fivesRemoved)
-        assertEquals(3, ninesRemoved)
-
-        val newSize = vec.size
-        val amountRemoved = zeroesRemoved + onesRemoved + threesRemoved + fivesRemoved + ninesRemoved
-
-        assertEquals(startSize, newSize + amountRemoved)
-    }
-
-    @Test
-    fun testRemoveAllOfWithPredicate() {
-        val vec = (1 .. 50).toVectorList()
-        val halfSize = vec.size / 2
-
-        val evensRemoved = assertDoesNotThrow{ vec.removeAllOf{ 0 == it % 2 } }
-        assertEquals(0, vec.count{ 0 == it % 2 })
-
-        val oddsRemoved = assertDoesNotThrow{ vec.removeAllOf{ 1 == it % 2 } }
-        assertEquals(0, vec.count{ 1 == it % 2 })
-
-        assertEquals(halfSize, evensRemoved)
-        assertEquals(halfSize, oddsRemoved)
-
-        assertTrue(vec.isEmpty())
-    }
-
-    @Test
-    fun testRemoveAmount() {
-        this.testRemoveAmountByElement()
-        this.testRemoveAmountByPredicate()
-    }
-
-    private fun testRemoveAmountByElement() {
-        val range = (1 .. 20).asSequence()
-        val vec = (range + range + range + range).toVectorList()
-
-        val amount = 3
-        val value = 5
-
-        val initialCount = vec.count{ value == it }
-        val removedCount = assertDoesNotThrow{ vec.removeAmount(amount, value) }
-        val currentCount = vec.count{ value == it }
-
-        assertEquals(initialCount, removedCount + currentCount)
-    }
-
-    private fun testRemoveAmountByPredicate() {
-        val vec = (1 .. 20).toVectorList()
-
-        val amount = 10
-        val predicate = { item: Int -> 0 == item % 4 }
-
-        val initialCount = vec.count(predicate)
-        val removedCount = assertDoesNotThrow{ vec.removeAmount(amount, predicate) }
-        val currentCount = vec.count(predicate)
-
-        assertEquals(initialCount, removedCount + currentCount)
-    }
-
-    @Test
-    fun testRetainAll() {
-        val vec = vectorListOf<Int>()
-        val range = 0 .. 100
-        val divisor = 2
-
-        vec.addAll(range)
-
-        val toBeRetained = (range step divisor).toHashSet()
-
-        val changeWithRandom = assertDoesNotThrow{ vec.retainAll(toBeRetained) }
-        assertTrue(changeWithRandom)
-
-        for (item in vec) {
-            assertTrue(0 == item % divisor)
-        }
-
-        val changeWithSelf = assertDoesNotThrow{ vec.retainAll(vec) }
-        assertFalse(changeWithSelf)
-
-        val empty = listOf<Int>()
-
-        val changeWithEmpty = assertDoesNotThrow{ vec.retainAll(empty) }
-        assertTrue(changeWithEmpty)
-
-        assertTrue(vec.isEmpty())
-    }
-
-    @Test
-    fun testClear() {
-        val vec = vectorListOf<Int>()
-        assertTrue(vec.isEmpty())
-
-        vec.addAll(0 until 10)
-        assertFalse(vec.isEmpty())
-
-        assertDoesNotThrow{ vec.clear() }
-        assertTrue(vec.isEmpty())
-
-        assertFailsWith<IndexOutOfBoundsException>{ vec[0] }
-        assertFailsWith<IndexOutOfBoundsException>{ vec[vec.lastIndex] }
+        testRemoveAllByElements(vec, fullyInRange, true)
+        testRemoveAllByElements(vec, partiallyInRange, true)
+        testRemoveAllByElements(vec, notInRange, false)
     }
 
     @Test
@@ -886,91 +517,135 @@ class VectorListTest {
         val range = 0 .. 50
 
         val vec = range.toVectorList()
-        val divisibleBy10 = (range step 10).toVectorList()
-        val divisibleBy5 = (range step 5).toVectorList()
-        val divisibleBy2 = (range step 2).toVectorList()
+        val other = (range step 5).toSet()
 
-        val changeWhenDeleteFactorsOf10 = assertDoesNotThrow{ vec.delete(divisibleBy10) }
-        val changeWhenDeleteFactorsOf5 = assertDoesNotThrow{ vec.delete(divisibleBy5) }
-        val changeWhenDeleteFactorsOf2 = assertDoesNotThrow{ vec.delete(divisibleBy2) }
-        val changeWhenDeleteFactorsAgain = assertDoesNotThrow{ vec.delete(divisibleBy2) + vec.delete(divisibleBy5) + vec.delete(divisibleBy10) }
-
-        assertEquals(6, changeWhenDeleteFactorsOf10)
-        assertEquals(5, changeWhenDeleteFactorsOf5)
-        assertEquals(20, changeWhenDeleteFactorsOf2)
-        assertEquals(0, changeWhenDeleteFactorsAgain)
-
-        val sizeBeforeDeleteSelf = vec.size
-        val changeWhenDeleteSelf = assertDoesNotThrow{ vec.delete(vec) }
-        assertEquals(sizeBeforeDeleteSelf, changeWhenDeleteSelf)
+        testDeleteWithOther(vec, other, 11)
     }
 
     @Test
-    fun testKeep() {
-        val range = 0 .. 100
-        val vec = range.toVectorList()
-        val divisor = 4
+    fun testRemoveAt() {
+        val vec = (0 .. 50).toVectorList()
 
-        val toBeKept = (range step divisor).toSet()
+        testRemoveByIndex(vec, vec.lastIndex)
+        testRemoveByIndex(vec, vec.size / 2)
+        testRemoveByIndex(vec, 0)
+        testRemoveByIndex(vec, vec.size / 3)
+        testRemoveByIndex(vec, 2 * vec.size / 3)
 
-        val changeExpected = vec.size - toBeKept.size
-        val changeWithRandom = assertDoesNotThrow{ vec.keep(toBeKept) }
-        assertEquals(changeExpected, changeWithRandom)
-
-        for (item in vec) {
-            assertTrue(0 == item % divisor)
-        }
-
-        val changeWithSelf = assertDoesNotThrow{ vec.keep(vec) }
-        assertEquals(0, changeWithSelf)
-
-        val empty = emptyList<Int>()
-        val size = vec.size
-
-        val changeWithEmpty = assertDoesNotThrow{ vec.keep(empty) }
-        assertEquals(size, changeWithEmpty)
-
-        assertTrue(vec.isEmpty())
+        testRemoveByIndexOutOfBounds(vec, -1)
+        testRemoveByIndexOutOfBounds(vec, vec.size)
     }
 
     @Test
     fun testRemoveFromBack() {
-        val size = 501
-        val moreThanHalf = (size / 2) + 1
+        val vec1 = (1 .. 101).toVectorList()
+        testRemoveFromBack(vec1, vec1.size / 2 + 1)
 
-        val vec = (1 .. size).toVectorList()
+        val vec2 = (1 .. 101).toVectorList()
+        testRemoveFromBack(vec2, vec2.size / 2)
 
-        assertFailsWith<IllegalArgumentException>{ vec.removeFromBack(-1) }
+        val vec3 = (1 .. 100).toVectorList()
+        testRemoveFromBack(vec3, vec3.size / 2 + 1)
 
-        this.testRemoveFromBackWith(vec, 0)
-        this.testRemoveFromBackWith(vec, moreThanHalf)
-        this.testRemoveFromBackWith(vec, moreThanHalf)
-    }
+        val vec4 = (1 .. 100).toVectorList()
+        testRemoveFromBack(vec4, vec4.size / 2)
 
-    private fun testRemoveFromBackWith(vec: VectorList<Int>, amount: Int) {
-        val expectedSize = max(0, vec.size - amount)
-        val expectedRemovedAmount = vec.size - expectedSize
-        val amountRemoved = assertDoesNotThrow{ vec.removeFromBack(amount) }
-
-        assertEquals(expectedSize, vec.size)
-        assertEquals(expectedRemovedAmount, amountRemoved)
+        val vec5 = vectorListOf<Int>()
+        testRemoveFromBackWithNegativeAmount(vec5, -1)
     }
 
     @Test
     fun testRemoveRange() {
         val vec = (0 until 100).toVectorList()
 
-        this.testRemovingRange(vec, (vec.size / 5), (vec.size / 3))
-        this.testRemovingRange(vec, (vec.size / 2), (3 * vec.size / 4))
+        testRemoveRange(vec, vec.size / 4, 3 * vec.size / 4)
+        testRemoveRange(vec, 0, vec.size / 2)
+        testRemoveRange(vec, vec.size / 2, vec.size)
+
+        testRemoveInvalidRange(vec, -1, vec.size)
+        testRemoveInvalidRange(vec, 0, vec.size + 1)
     }
 
-    private fun testRemovingRange(vec: VectorList<Int>, fromIndex: Int, toIndex: Int) {
-        val rangeSize = toIndex - fromIndex
-        val newSize = vec.size - rangeSize
+    @Test
+    fun testRemoveAllOf() {
+        val vec1 = vectorListOf(6, 1, 5, 1, 9, 5, 1, 9, 5, 2, 7, 3, 9, 5, 1, 4, 1, 1)
+        val oldSize1 = vec1.size
 
-        assertDoesNotThrow{ vec.removeRange(fromIndex, toIndex) }
+        testRemoveAllByElement(vec1, 0, 0)
+        testRemoveAllByElement(vec1, 1, 6)
+        testRemoveAllByElement(vec1, 3, 1)
+        testRemoveAllByElement(vec1, 5, 4)
+        testRemoveAllByElement(vec1, 9, 3)
 
-        assertEquals(newSize, vec.size)
+        assertEquals(vec1.size, oldSize1 - 14)
+
+        val vec2 = vectorListOf(1, 4, 9, 3, 2, 4, 1, 2, 4, 9, 2, 3, 1, 4, 1, 3, 2, 9, 3, 1, 3, 9, 2, 4, 1)
+        val oldSize2 = vec2.size
+
+        testRemoveAllByPredicate(vec2, { 0 == it % 2 }, 10)
+        testRemoveAllByPredicate(vec2, { 0 == it % 3 }, 9)
+        testRemoveAllByPredicate(vec2, { it < 0 }, 0)
+
+        assertEquals(vec2.size, oldSize2 - 19)
+        assertTrue(vec2.all{ 1 == it })
+    }
+
+    @Test
+    fun testRemoveAmount() {
+        val vec1 = vectorListOf(6, 1, 5, 1, 9, 5, 1, 9, 5, 2, 7, 3, 9, 5, 1, 4, 1, 1)
+        val oldSize1 = vec1.size
+
+        testRemoveAmountByElement(vec1, 0, 1, 0)
+        testRemoveAmountByElement(vec1, 1, 4, 4)
+        testRemoveAmountByElement(vec1, 5, 7, 4)
+
+        testRemoveNegativeAmountByElement(vec1, 9, -1)
+
+        assertEquals(vec1.size, oldSize1 - 8)
+
+        val vec2 = vectorListOf(1, 4, 9, 3, 2, 4, 1, 2, 4, 9, 2, 3, 1, 4, 1, 3, 2, 9, 3, 1, 3, 9, 2, 4, 1)
+        val oldSize2 = vec2.size
+
+        testRemoveAmountByPredicate(vec2, { 0 == it % 2 }, 7, 7)
+        testRemoveAmountByPredicate(vec2, { 0 == it % 3 }, 13, 9)
+        testRemoveAmountByPredicate(vec2, { it < 0 }, 1, 0)
+
+        testRemoveNegativeAmount(vec2, { it < 0 }, -1)
+
+        assertEquals(vec2.size, oldSize2 - 16)
+    }
+
+    @Test
+    fun testRetainAll() {
+        val range = 1 .. 100
+
+        val vec = range.toVectorList()
+        val other = (range step 3).toSet()
+        val empty = emptyList<Int>()
+
+        testRetainAllWithOther(vec, other)
+        testRetainAllWithSelf(vec)
+        testRetainAllWithEmpty(vec, empty)
+    }
+
+    @Test
+    fun testKeep() {
+        val range = 1 .. 100
+
+        val vec = range.toVectorList()
+        val other = (range step 3).toSet()
+        val empty = emptyList<Int>()
+
+        testKeepWithOther(vec, other)
+        testKeepWithSelf(vec)
+        testKeepWithEmpty(vec, empty)
+    }
+
+    @Test
+    fun testClear() {
+        val vec = vectorListOf<Int>()
+
+        testClear(vec)
     }
 
     @Test

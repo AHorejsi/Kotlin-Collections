@@ -68,15 +68,15 @@ infix fun Long.down(amount: Long): LongProgression {
 
 infix fun Int.move(amount: Int): IntProgression =
     if (amount >= 0)
-        this.up(amount)
+        this up amount
     else
-        this.down(-amount)
+        this down -amount
 
 infix fun Long.move(amount: Long): LongProgression =
     if (amount >= 0)
-        this.up(amount)
+        this up amount
     else
-        this.down(-amount)
+        this down -amount
 
 operator fun IntProgression.get(index: Int): Int =
     this.elementAt(index)
@@ -121,7 +121,11 @@ fun LongProgression.elementAt(index: Long): Long {
 }
 
 operator fun IntProgression.contains(value: Int): Boolean {
-    val comp = if (this.first < this.last) inOrder<Int>() else reverseOrder()
+    val comp =
+        if (this.first < this.last)
+            inOrder<Int>()
+        else
+            reverseOrder()
 
     var startIndex = 0
     var endIndex = this.count() - 1
@@ -147,7 +151,11 @@ operator fun IntProgression.contains(value: Int): Boolean {
 }
 
 operator fun LongProgression.contains(value: Long): Boolean {
-    val comp = if (this.first < this.last) inOrder<Long>() else reverseOrder()
+    val comp =
+        if (this.first < this.last)
+            inOrder<Long>()
+        else
+            reverseOrder()
 
     var startIndex = 0L
     var endIndex = this.count() - 1L

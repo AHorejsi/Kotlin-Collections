@@ -42,16 +42,13 @@ interface SelfOrgList<TElement> : MutableCollection<TElement> {
     fun findAll(predicate: (element: TElement) -> Boolean): Sequence<IndexedValue<TElement>>
 
     override operator fun contains(element: @UnsafeVariance TElement): Boolean =
-        this.contains{ it == element }
-
-    fun contains(predicate: (TElement) -> Boolean): Boolean =
-        null !== this.find(predicate)
+        null !== this.find{ it == element }
 
     override fun containsAll(elements: Collection<@UnsafeVariance TElement>): Boolean {
         var foundAll = true
 
         for (item in elements) {
-            foundAll = item in this
+            foundAll = foundAll && item in this
         }
 
         return foundAll

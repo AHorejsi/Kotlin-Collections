@@ -48,15 +48,6 @@ private fun Iterable<*>.countUpTo(size: Int): Int {
     return amount
 }
 
-fun <TElement> MutableIterable<TElement>.removeFirstOf(element: @UnsafeVariance TElement): Boolean =
-    when (this) {
-        is MutableSet<TElement> -> this.remove(element)
-        else -> this.removeFirstOf{ it == element }
-    }
-
-fun <TElement> MutableIterable<TElement>.removeFirstOf(predicate: (TElement) -> Boolean): Boolean =
-    1 == this.removeAmount(1, predicate)
-
 fun <TElement> MutableIterable<TElement>.removeAllOf(element: @UnsafeVariance TElement): Int =
     when (this) {
         is MutableSet<TElement> -> if (this.remove(element)) 1 else 0
