@@ -1,11 +1,9 @@
 package reusable
 
+import asserts.*
 import collections.*
 import org.junit.jupiter.api.assertDoesNotThrow
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertNotEquals
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 fun testIsRandomAccess(list: List<Int>) {
     val success = assertDoesNotThrow{ list.isRandomAccess }
@@ -99,10 +97,21 @@ fun testTryGetOutOfBounds(list: List<Int>) {
     assertFailsWith<IndexOutOfBoundsException>{ late.getOrThrow() }
 }
 
-fun testLessThanComparison(list: List<Int>, other: List<Int>) {
-    val comparison = assertDoesNotThrow{ compare(list, other) }
+fun testSuccessfulSeparationPoint(list: List<Int>, predicate: (Int) -> Boolean, expectedPoint: Int) {
+    val separationPoint = assertDoesNotThrow{ list.separationPoint(predicate) }
 
-    assertTrue(comparison < 0)
+    assertNotNull(separationPoint)
+    assertEquals(expectedPoint, separationPoint)
+}
+
+fun testFailedSeparationPoint(list: List<Int>, predicate: (Int) -> Boolean) {
+    val separationPoint = assertDoesNotThrow{ list.separationPoint(predicate) }
+
+    assertNull(separationPoint)
+}
+
+fun testLessThanComparison(list: List<Int>, other: List<Int>) {
+    assertLess(list, other, ::compare)
     assertNotEquals(list, other)
 }
 
@@ -114,8 +123,6 @@ fun testEqualComparison(list: List<Int>, other: List<Int>) {
 }
 
 fun testGreaterThanComparison(list: List<Int>, other: List<Int>) {
-    val comparison = assertDoesNotThrow{ compare(list, other) }
-
-    assertTrue(comparison > 0)
+    assertGreater(list, other, ::compare)
     assertNotEquals(list, other)
 }
