@@ -1,5 +1,6 @@
 package asserts
 
+import org.junit.jupiter.api.assertDoesNotThrow
 import kotlin.test.asserter
 
 fun <TType : Comparable<TType>> assertLess(left: TType, right: TType) {
@@ -7,10 +8,10 @@ fun <TType : Comparable<TType>> assertLess(left: TType, right: TType) {
 }
 
 fun <TType> assertLess(left: TType, right: TType, comp: Comparator<TType>) {
-    val comparison = comp.compare(left, right)
+    val comparison = assertDoesNotThrow{ comp.compare(left, right) }
 
     if (comparison >= 0) {
-        asserter.fail("left >= right")
+        asserter.fail("<$left> must be less than <$right>")
     }
 }
 
@@ -19,10 +20,10 @@ fun <TType : Comparable<TType>> assertLessEqual(left: TType, right: TType) {
 }
 
 fun <TType> assertLessEqual(left: TType, right: TType, comp: Comparator<TType>) {
-    val comparison = comp.compare(left, right)
+    val comparison = assertDoesNotThrow{ comp.compare(left, right) }
 
     if (comparison > 0) {
-        asserter.fail("left > right")
+        asserter.fail("<$left> must be less than or equal to <$right>")
     }
 }
 
@@ -31,10 +32,10 @@ fun <TType : Comparable<TType>> assertGreater(left: TType, right: TType) {
 }
 
 fun <TType> assertGreater(left: TType, right: TType, comp: Comparator<TType>) {
-    val comparison = comp.compare(left, right)
+    val comparison = assertDoesNotThrow{ comp.compare(left, right) }
 
     if (comparison <= 0) {
-        asserter.fail("left <= right")
+        asserter.fail("<$left> must be greater than <$right>")
     }
 }
 
@@ -43,9 +44,9 @@ fun <TType : Comparable<TType>> assertGreaterEqual(left: TType, right: TType) {
 }
 
 fun <TType> assertGreaterEqual(left: TType, right: TType, comp: Comparator<TType>) {
-    val comparison = comp.compare(left, right)
+    val comparison = assertDoesNotThrow{ comp.compare(left, right) }
 
     if (comparison < 0) {
-        asserter.fail("left < right")
+        asserter.fail("<$left> must be greater than or equal to <$right>")
     }
 }

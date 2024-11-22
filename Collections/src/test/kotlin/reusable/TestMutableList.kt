@@ -3,9 +3,7 @@ package reusable
 import collections.*
 import org.junit.jupiter.api.assertDoesNotThrow
 import kotlin.math.max
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 fun testSizeAfterAdd(list: MutableList<Int>, newItem: Int) {
     val oldSize = assertDoesNotThrow{ list.size }
@@ -644,4 +642,103 @@ fun testKeepWithEmpty(list: MutableList<Int>, empty: Collection<Int>) {
 
     assertEquals(oldSize, amountRemoved)
     assertEquals(0, list.size)
+}
+
+fun testSeparationPoint(
+    copy1: MutableList<Int>,
+    copy2: MutableList<Int>,
+    predicate: (Int) -> Boolean)
+{
+    val separationPoint1A = assertDoesNotThrow{ copy1.separate(predicate) }
+    val separationPoint2A = assertDoesNotThrow{ copy2.stableSeparate(predicate) }
+
+    val separationPoint1B = assertDoesNotThrow{ copy1.separationPoint(predicate) }
+    val separationPoint2B = assertDoesNotThrow{ copy2.separationPoint(predicate) }
+
+    assertNotNull(separationPoint1B)
+    assertNotNull(separationPoint2B)
+
+    assertEquals(separationPoint1A, separationPoint1B)
+    assertEquals(separationPoint1B, separationPoint2A)
+    assertEquals(separationPoint2A, separationPoint2B)
+}
+
+fun testSeparate(list: MutableList<Int>, predicate: (Int) -> Boolean) {
+    val separationPoint = assertDoesNotThrow{ list.separate(predicate) }
+
+    checkSuccessfulSeparation(list, separationPoint, predicate)
+}
+
+fun testStableSeparate(list: MutableList<String>, copy: List<String>, predicate: (String) -> Boolean) {
+    val separationPoint = assertDoesNotThrow{ list.stableSeparate(predicate) }
+
+    checkSuccessfulSeparation(list, separationPoint, predicate)
+    checkStableSeparation(list, copy)
+}
+
+private fun <TType> checkSuccessfulSeparation(
+    list: MutableList<TType>,
+    separationPoint: Int,
+    predicate: (TType) -> Boolean
+) {
+    for (index in 0 until separationPoint) {
+        val item = list[index]
+        val success = predicate(item)
+
+        assertTrue(success)
+    }
+
+    for (index in separationPoint until list.size) {
+        val item = list[index]
+        val success = predicate(item)
+
+        assertTrue(!success)
+    }
+}
+
+private fun checkStableSeparation(list: List<String>, copy: List<String>) {
+    TODO("Oops...")
+}
+
+fun testIntersperse(list: MutableList<Int>, separator: Int) {
+    val oldSize = list.size
+    val copy = list.toList().iterator()
+
+    assertDoesNotThrow{ list.intersperse(separator) }
+
+    testSizeAfterIntersperse(list, oldSize)
+    testElementsAfterIntersperse(list, copy, separator)
+    testEndsAfterIntersperse(list, separator)
+}
+
+private fun testSizeAfterIntersperse(list: MutableList<Int>, oldSize: Int) {
+    val newSize = list.size
+    val expectedSize = if (0 == oldSize) 0 else 2 * oldSize - 1
+
+    assertEquals(newSize, expectedSize)
+}
+
+private fun testElementsAfterIntersperse(list: MutableList<Int>, copy: Iterator<Int>, separator: Int) {
+    var atSeparator = false
+
+    for (elem in list) {
+        if (atSeparator) {
+            assertEquals(separator, elem)
+        }
+        else {
+            assertEquals(copy.next(), elem)
+        }
+
+        atSeparator = !atSeparator
+    }
+}
+
+private fun testEndsAfterIntersperse(list: MutableList<Int>, separator: Int) {
+    if (list.isEmpty()) {
+        assertTrue(separator !in list)
+    }
+    else {
+        assertNotEquals(separator, list[0])
+        assertNotEquals(separator, list[list.lastIndex])
+    }
 }

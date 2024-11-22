@@ -5,16 +5,10 @@ import collections.*
 import org.junit.jupiter.api.assertDoesNotThrow
 import kotlin.test.*
 
-fun testIsRandomAccess(list: List<Int>) {
+fun testIsRandomAccess(list: List<Int>, expected: Boolean) {
     val success = assertDoesNotThrow{ list.isRandomAccess }
 
-    assertTrue(success)
-}
-
-fun testIsNotRandomAccess(list: List<Int>) {
-    val success = assertDoesNotThrow{ list.isRandomAccess }
-
-    assertTrue(!success)
+    assertEquals(expected, success)
 }
 
 fun testWithIndex(list: List<*>) {
