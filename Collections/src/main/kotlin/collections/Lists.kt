@@ -273,7 +273,7 @@ fun <TElement> MutableList<TElement>.stableSeparate(predicate: (TElement) -> Boo
 }
 
 fun <TElement> MutableList<TElement>.intersperse(separator: TElement) {
-    if (this.atMost(1)) {
+    if (this.size <= 1) {
         return
     }
 
