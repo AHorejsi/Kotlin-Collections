@@ -1,6 +1,7 @@
-package collectionsTest
+package collections
 
-import collections.*
+import asserts.assertGreater
+import asserts.assertLess
 import org.junit.jupiter.api.assertDoesNotThrow
 import reusable.*
 import kotlin.test.*
@@ -64,7 +65,7 @@ class VectorListTest {
     fun testIsRandomAccess() {
         val vec = vectorListOf<Int>()
 
-        testIsRandomAccess(vec)
+        testIsRandomAccess(vec, true)
     }
 
     @Test
@@ -124,7 +125,7 @@ class VectorListTest {
 
     @Test
     fun testIsEmpty() {
-        val vec: MutableList<Int> = vectorListOf()
+        val vec = vectorListOf<Int>()
 
         testIsEmpty(vec)
     }
@@ -167,7 +168,7 @@ class VectorListTest {
         vec.add(-1)
         val capacityAfterAdd = assertDoesNotThrow{ vec.capacity }
 
-        assertTrue(capacityBeforeAdd < capacityAfterAdd)
+        assertLess(capacityBeforeAdd, capacityAfterAdd)
     }
 
     private fun testCapacityWithRemoving() {
@@ -1167,27 +1168,23 @@ class VectorListTest {
 
     @Test
     fun testSeparationPoint() {
-        val max = 100
-        val range = 1 .. max
+        val vec1 = vectorListOf(0, 2, 4, 6, 8, 1, 3, 5, 7, 9)
+        val separationPoint = 5
 
-        for (denominator in 2 .. max) {
-            val copy1 = range.toVectorList()
-            val copy2 = range.toVectorList()
+        testSuccessfulSeparationPoint(vec1, { 0 == it % 2 }, separationPoint)
 
-            val condition = { num: Int -> 0 == num % denominator }
+        val vec2 = vectorListOf(1, 2, 1)
 
-            val separationPoint1 = copy1.separate(condition)
-            val separationPoint2 = copy2.stableSeparate(condition)
+        testFailedSeparationPoint(vec2) { 0 == it % 2 }
 
-            val separationPoint3 = assertDoesNotThrow{ copy1.separationPoint(condition) }
-            val separationPoint4 = assertDoesNotThrow{ copy2.separationPoint(condition) }
+        val max3 = 100
+        val vec3 = (1 .. max3).toVectorList()
 
-            assertNotNull(separationPoint3)
-            assertNotNull(separationPoint4)
+        for (denominator in 2 .. max3) {
+            val copy2A = vec3.toVectorList()
+            val copy2B = vec3.toVectorList()
 
-            assertEquals(separationPoint1, separationPoint2)
-            assertEquals(separationPoint2, separationPoint3)
-            assertEquals(separationPoint3, separationPoint4)
+            testSeparationPoint(copy2A, copy2B) { 0 == it % denominator }
         }
     }
 
@@ -1197,129 +1194,33 @@ class VectorListTest {
         val vec = (1 .. max).toVectorList()
 
         for (denominator in 2 .. max) {
-            val condition = { num: Int -> 0 == num % denominator }
-            val separationPoint = assertDoesNotThrow{ vec.separate(condition) }
-
-            for (index in 0 until separationPoint) {
-                val result = condition(vec[index])
-
-                assertTrue(result)
-            }
-
-            for (index in separationPoint until vec.size) {
-                val result = condition(vec[index])
-
-                assertFalse(result)
-            }
+            testSeparate(vec) { 0 == it % denominator }
         }
     }
 
     @Test
     fun testStableSeparate() {
         val max = 100
-        val vec = (1 .. max).toVectorList()
+        val vec = (1 .. max).asSequence().map{ it.toString() }.toVectorList()
 
         for (denominator in 2 .. max) {
             val copy = vec.toVectorList()
-            val condition = { num: Int -> 0 == num % denominator }
 
-            val separationPoint = assertDoesNotThrow{ copy.stableSeparate(condition) }
-
-            this.checkIfPartitioned(copy, condition, separationPoint)
-            this.checkIfStablyPartitioned(vec, copy, condition)
-        }
-    }
-
-    private fun checkIfPartitioned(vec: VectorList<Int>, condition: (Int) -> Boolean, separationPoint: Int) {
-        for (index in 0 until separationPoint) {
-            val result = condition(vec[index])
-
-            assertTrue(result)
-        }
-
-        for (index in separationPoint until vec.size) {
-            val result = condition(vec[index])
-
-            assertFalse(result)
-        }
-    }
-
-    private fun checkIfStablyPartitioned(vec: VectorList<Int>, copy: VectorList<Int>, condition: (Int) -> Boolean) {
-        for ((index1, item1) in vec.withIndex()) {
-            for ((index2, item2) in vec.withIndex()) {
-                if (index1 == index2) {
-                    continue
-                }
-
-                this.checkForStablePositions(copy, condition, index1, item1, index2, item2)
-            }
-        }
-    }
-
-    private fun checkForStablePositions(
-        copy: VectorList<Int>,
-        condition: (Int) -> Boolean,
-        index1: Int,
-        item1: Int,
-        index2: Int,
-        item2: Int
-    ) {
-        val foundIndex1 = copy.indexOf(item1)
-        val foundIndex2 = copy.indexOf(item2)
-
-        val success1 = condition(item1)
-        val success2 = condition(item2)
-
-        if (index1 < index2) {
-            when {
-                success1 -> assertTrue(foundIndex1 < foundIndex2)
-                !success1 && success2 -> assertTrue(foundIndex1 > foundIndex2)
-            }
-        }
-        else {
-            when {
-                success2 -> assertTrue(foundIndex1 > foundIndex2)
-                success1 && !success2 -> assertTrue(foundIndex1 < foundIndex2)
-            }
+            testStableSeparate(vec, copy) { 0 == it.toInt() % denominator }
         }
     }
 
     @Test
     fun testIntersperse() {
-        val vec1 = (1 .. 10).toVectorList()
-        val vec2 = (1 .. 11).toVectorList()
-        val vec3 = vectorListOf<Int>()
-        val vec4 = vectorListOf(0)
-        val vec5 = vectorListOf(0, 0)
+        val even = (1 .. 10).toVectorList()
+        val odd = (1 .. 11).toVectorList()
+        val empty = vectorListOf<Int>()
+        val one = vectorListOf(0)
 
-        this.testIntersperseOn(vec1)
-        this.testIntersperseOn(vec2)
-        this.testIntersperseOn(vec3)
-        this.testIntersperseOn(vec4)
-        this.testIntersperseOn(vec5)
-    }
-
-    private fun testIntersperseOn(vec: VectorList<Int>) {
-        val copy = vec.toList().iterator()
-        val separator = -1
-
-        assertDoesNotThrow{ vec.intersperse(separator) }
-
-        var atSeparator = false
-
-        for (item in vec) {
-            if (atSeparator) {
-                assertEquals(separator, item)
-            }
-            else {
-                assertEquals(copy.next(), item)
-            }
-
-            atSeparator = !atSeparator
-        }
-
-        assertNotEquals(separator, vec.firstOrNull())
-        assertNotEquals(separator, vec.lastOrNull())
+        testIntersperse(even, -1)
+        testIntersperse(odd, -1)
+        testIntersperse(empty, -1)
+        testIntersperse(one, -1)
     }
 
     @Test
@@ -2151,7 +2052,6 @@ class VectorSublistTest {
         assertFailsWith<NoSuchElementException>{ result.getOrThrow() }
     }
 
-    @Suppress("ConvertTwoComparisonsToRangeCheck")
     private fun testTryFirstOnNonempty(vec: VectorList<Int>) {
         val startIndex = 2
         val endIndex = 8
@@ -2165,7 +2065,8 @@ class VectorSublistTest {
         val success = assertDoesNotThrow{ sub.tryFirst{ 0 == it % 4 } }
         val successItem = assertDoesNotThrow{ success.getOrThrow() }
         val vecIndex = vec.indexOf(successItem)
-        assertTrue(startIndex < vecIndex && vecIndex < endIndex)
+        assertLess(startIndex, vecIndex)
+        assertGreater(endIndex, vecIndex)
 
         val max = vec.max()
         val failed = assertDoesNotThrow{ sub.tryFirst{ it > max } }
@@ -2189,7 +2090,6 @@ class VectorSublistTest {
         assertFailsWith<NoSuchElementException>{ result.getOrThrow() }
     }
 
-    @Suppress("ConvertTwoComparisonsToRangeCheck")
     private fun testTryLastOnNonempty(vec: VectorList<Int>) {
         val startIndex = 1
         val endIndex = 6
@@ -2203,7 +2103,8 @@ class VectorSublistTest {
         val success = assertDoesNotThrow{ sub.tryLast{ 0 == it % 4 } }
         val successItem = assertDoesNotThrow{ success.getOrThrow() }
         val vecIndex = vec.indexOf(successItem)
-        assertTrue(startIndex < vecIndex && vecIndex < endIndex)
+        assertLess(startIndex, vecIndex)
+        assertGreater(endIndex, vecIndex)
 
         val max = vec.max()
         val failed = assertDoesNotThrow{ sub.tryLast{ it > max } }

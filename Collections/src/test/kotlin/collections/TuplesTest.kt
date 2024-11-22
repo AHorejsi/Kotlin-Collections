@@ -1,7 +1,5 @@
-package collectionsTest
+package collections
 
-import collections.quad
-import collections.quint
 import org.junit.jupiter.api.assertDoesNotThrow
 import kotlin.test.Test
 import kotlin.test.assertEquals

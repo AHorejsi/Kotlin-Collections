@@ -1,6 +1,5 @@
-package collectionsTest
+package collections
 
-import collections.*
 import org.junit.jupiter.api.assertDoesNotThrow
 import kotlin.test.Test
 import kotlin.test.assertEquals
