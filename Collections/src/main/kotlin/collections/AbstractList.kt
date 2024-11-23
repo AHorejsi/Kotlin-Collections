@@ -212,11 +212,11 @@ internal class Sublist<TElement>(
     override fun addAll(index: Int, elements: Collection<TElement>): Boolean {
        checkIfIndexCanBeInsertedAt(index, this.size)
 
-        val initialSize = elements.size
+        val initialSize = this.base.size
         val actualIndex = index + this.fromIndex
 
         if (this.base.addAll(actualIndex, elements)) {
-            this.toIndex += initialSize
+            this.toIndex += this.base.size - initialSize
 
             return true
         }
@@ -253,10 +253,6 @@ internal class Sublist<TElement>(
         }
     }
 
-    override fun subList(fromIndex: Int, toIndex: Int): MutableList<TElement> {
-        checkIfRangeInBounds(fromIndex, toIndex, this.size)
-        checkIfValidRange(fromIndex, toIndex)
-
-        return Sublist(this.base, fromIndex + this.fromIndex, toIndex + this.fromIndex)
-    }
+    override fun subList(fromIndex: Int, toIndex: Int): MutableList<TElement> =
+        Sublist(this, fromIndex, toIndex)
 }

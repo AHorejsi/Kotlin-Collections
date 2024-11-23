@@ -111,12 +111,6 @@ fun <TElement> Iterable<TElement>.tryLast(): Result<TElement> =
 fun <TElement> Iterable<TElement>.tryLast(predicate: (TElement) -> Boolean): Result<TElement> =
     runCatching{ this.last(predicate) }
 
-fun <TElement> Iterable<TElement>.sortedWith(comp: (TElement, TElement) -> Int): List<TElement> {
-    val comparator = Comparator(comp)
-
-    return this.sortedWith(comparator)
-}
-
 fun <TElement> Iterable<TElement>.splitAt(index: Int): Pair<List<TElement>, List<TElement>> {
     val iter = this.iterator()
     val left = mutableListOf<TElement>()

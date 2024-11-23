@@ -68,7 +68,7 @@ private fun <TElement> MutableList<TElement>.removeFromBackHelper(amount: Int): 
         }
     }
 
-    return min(sizeBeforeRemoval, amount)
+    return sizeBeforeRemoval - this.size
 }
 
 fun <TElement> MutableList<TElement>.removeRange(fromIndex: Int, toIndex: Int) =
@@ -79,10 +79,6 @@ fun <TElement> List<TElement>.index(fromIndex: Int, element: @UnsafeVariance TEl
 
 fun <TElement> List<TElement>.index(fromIndex: Int, predicate: (TElement) -> Boolean): Int {
     checkIfIndexCanBeInsertedAt(fromIndex, this.size)
-
-    if (this.isRandomAccess) {
-        return this.searchWithIndexing(fromIndex, predicate)
-    }
 
     val iter = this.listIterator(fromIndex)
 
@@ -97,27 +93,11 @@ fun <TElement> List<TElement>.index(fromIndex: Int, predicate: (TElement) -> Boo
     return -1
 }
 
-private fun <TElement> List<TElement>.searchWithIndexing(fromIndex: Int, predicate: (TElement) -> Boolean): Int {
-    for (index in fromIndex until this.size) {
-        val item = this[index]
-
-        if (predicate(item)) {
-            return index
-        }
-    }
-
-    return -1
-}
-
 fun <TElement> List<TElement>.lastIndex(fromIndex: Int, element: @UnsafeVariance TElement): Int =
     this.lastIndex(fromIndex) { it == element }
 
 fun <TElement> List<TElement>.lastIndex(fromIndex: Int, predicate: (TElement) -> Boolean): Int {
     checkIfIndexCanBeInsertedAt(fromIndex, this.size)
-
-    if (this.isRandomAccess) {
-        return this.searchBackwardWithIndexing(fromIndex, predicate)
-    }
 
     val iter = this.listIterator(fromIndex)
 
@@ -126,18 +106,6 @@ fun <TElement> List<TElement>.lastIndex(fromIndex: Int, predicate: (TElement) ->
 
         if (predicate(elem)) {
             return iter.nextIndex()
-        }
-    }
-
-    return -1
-}
-
-private fun <TElement> List<TElement>.searchBackwardWithIndexing(fromIndex: Int, predicate: (TElement) -> Boolean): Int {
-    for (index in (fromIndex - 1) downTo 0) {
-        val item = this[index]
-
-        if (predicate(item)) {
-            return index
         }
     }
 
@@ -351,10 +319,4 @@ fun <TElement> List<TElement>.isSortedUntil(comp: (TElement, TElement) -> Int): 
     }
 
     return this.size
-}
-
-fun <TElement> MutableList<TElement>.sortWith(comp: (TElement, TElement) -> Int) {
-    val comparator = Comparator(comp)
-
-    this.sortWith(comparator)
 }
