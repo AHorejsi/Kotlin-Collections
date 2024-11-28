@@ -2,6 +2,12 @@ package collections
 
 import kotlin.math.abs
 
+fun IntRange.count(): Int =
+    this.last - this.first + 1
+
+fun LongRange.count(): Long =
+    this.last - this.first + 1
+
 fun IntProgression.count(): Int {
     if (this.isEmpty()) {
         return 0
@@ -78,11 +84,39 @@ infix fun Long.move(amount: Long): LongProgression =
     else
         this down -amount
 
+// TODO TEST
+operator fun IntRange.get(index: Int): Int =
+    this.elementAt(index)
+
+// TODO TEST
+operator fun LongRange.get(index: Long): Long =
+    this.elementAt(index)
+
 operator fun IntProgression.get(index: Int): Int =
     this.elementAt(index)
 
 operator fun LongProgression.get(index: Long): Long =
     this.elementAt(index)
+
+fun IntRange.elementAt(index: Int): Int {
+    val first = this.first
+    val last = this.last
+
+    return if (first < last)
+        first + index
+    else
+        last - index
+}
+
+fun LongRange.elementAt(index: Long): Long {
+    val first = this.first
+    val last = this.last
+
+    return if (first < last)
+        first + index
+    else
+        last - index
+}
 
 fun IntProgression.elementAt(index: Int): Int {
     val factor = abs(this.step)

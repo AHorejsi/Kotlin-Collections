@@ -1,7 +1,5 @@
 package collections
 
-import kotlin.math.min
-
 val List<*>.isRandomAccess: Boolean
     get() = this is RandomAccess
 
@@ -51,6 +49,7 @@ fun <TElement> MutableList<TElement>.removeFromBack(amount: Int): Int =
     when (this) {
         is DequeList<TElement> -> this.removeFromBack(amount)
         is VectorList<TElement> -> this.removeFromBack(amount)
+        is Sublist<TElement> -> this.removeFromBack(amount)
         else -> this.removeFromBackHelper(amount)
     }
 
@@ -121,21 +120,21 @@ fun <TElement> List<TElement>.isPermutationOf(other: List<TElement>): Boolean {
         return false
     }
 
-    val map = HashMap<TElement, Int>(this.size)
+    val counter = HashMap<TElement, Int>(this.size)
 
     for (item in this) {
-        map.compute(item) { _, value -> 1 + (value ?: 0) }
+        counter.compute(item) { _, value -> 1 + (value ?: 0) }
     }
 
     for (item in other) {
-        val newCount = map.compute(item) { _, value -> (value ?: 0) - 1 }
+        val newCount = counter.compute(item) { _, value -> (value ?: 0) - 1 }
 
         if (null === newCount || newCount < 0) {
             return false
         }
     }
 
-    return map.all{ 0 == it.value }
+    return counter.all{ 0 == it.value }
 }
 
 fun <TElement> MutableList<TElement>.next(comp: Comparator<TElement>? = null): Boolean =

@@ -3,6 +3,18 @@ package reusable
 import org.junit.jupiter.api.assertDoesNotThrow
 import kotlin.test.assertEquals
 
+fun testContains(collection: Collection<Int>, element: Int, expected: Boolean) {
+    val result = assertDoesNotThrow{ element in collection }
+
+    assertEquals(expected, result)
+}
+
+fun testContainsAll(collection: Collection<Int>, other: Collection<Int>, expected: Boolean) {
+    val result = assertDoesNotThrow{ collection.containsAll(other) }
+
+    assertEquals(expected, result)
+}
+
 fun testEquals(collection: Collection<Int>, other: Collection<Int>, expectedResult: Boolean) {
     val result = assertDoesNotThrow{ collection == other }
 

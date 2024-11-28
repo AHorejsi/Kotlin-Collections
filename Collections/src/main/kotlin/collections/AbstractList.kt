@@ -224,6 +224,21 @@ internal class Sublist<TElement>(
         return false
     }
 
+    fun removeFromBack(amount: Int): Int {
+        val oldSize = this.size
+
+        if (amount >= oldSize) {
+            this.clear()
+        }
+        else {
+            this.base.removeRange(oldSize - amount, oldSize)
+
+            this.toIndex -= amount
+        }
+
+        return oldSize - this.size
+    }
+
     override fun removeAt(index: Int): TElement {
         checkIfIndexIsAccessible(index, this.size)
 

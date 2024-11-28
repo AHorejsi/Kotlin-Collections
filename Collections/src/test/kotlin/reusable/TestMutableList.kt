@@ -1,6 +1,8 @@
 package reusable
 
+import asserts.*
 import collections.*
+import objects.TestObject
 import org.junit.jupiter.api.assertDoesNotThrow
 import kotlin.math.max
 import kotlin.test.*
@@ -250,8 +252,8 @@ fun testIndexedAddOutOfBounds(list: MutableList<Int>, index: Int, newItem: Int) 
     val newSize = list.size
 
     assertEquals(oldSize, newSize)
-    assertTrue(newItem !in list)
-    assertTrue(index !in list.indices)
+    assertNotContains(list, newItem)
+    assertNotContains(list.indices, index)
 }
 
 fun testAddAllWithOther(list: MutableList<Int>, other: Collection<Int>) {
@@ -418,7 +420,7 @@ fun testRemoveAllByElements(list: MutableList<Int>, other: Collection<Int>, succ
     val change = assertDoesNotThrow{ list.removeAll(other) }
 
     assertEquals(succeeds, change)
-    assertTrue(oldSize - other.size <= list.size)
+    assertGreaterEqual(list.size, oldSize - other.size)
 }
 
 fun testDeleteWithOther(list: MutableList<Int>, other: Collection<Int>, removalAmount: Int) {
@@ -434,7 +436,7 @@ fun testDeleteWithOther(list: MutableList<Int>, other: Collection<Int>, removalA
     assertEquals(list, copy)
     assertTrue(change)
     assertEquals(amountRemoved, removalAmount)
-    assertTrue(amountRemoved <= other.size)
+    assertLessEqual(amountRemoved, other.size)
     assertEquals(newSize, oldSize - amountRemoved)
 }
 
@@ -476,7 +478,7 @@ fun testRemoveAllByElement(list: MutableList<Int>, item: Int, removalAmount: Int
 
     val amountRemoved = assertDoesNotThrow{ list.removeAllOf(item) }
 
-    assertTrue(item !in list)
+    assertNotContains(list, item)
 
     assertEquals(list.size, oldSize - amountRemoved)
     assertEquals(removalAmount, amountRemoved)
@@ -553,8 +555,8 @@ fun testRetainAllWithOther(list: MutableList<Int>, other: Collection<Int>) {
     val change = assertDoesNotThrow{ list.retainAll(other) }
 
     assertTrue(change)
-    assertTrue(list.size <= other.size)
-    assertTrue(other.containsAll(list))
+    assertLessEqual(list.size, other.size)
+    assertContainsAll(other, list)
 }
 
 fun testRetainAllWithSelf(list: MutableList<Int>) {
@@ -609,7 +611,7 @@ fun testRemoveRange(list: MutableList<Int>, fromIndex: Int, toIndex: Int) {
     assertDoesNotThrow{ list.removeRange(fromIndex, toIndex) }
 
     assertEquals(expectedSize, list.size)
-    assertTrue(!list.containsAll(range))
+    assertNotContainsAll(list, range)
 }
 
 fun testRemoveInvalidRange(list: MutableList<Int>, fromIndex: Int, toIndex: Int) {
@@ -621,9 +623,9 @@ fun testKeepWithOther(list: MutableList<Int>, other: Collection<Int>) {
 
     val amountRemoved = assertDoesNotThrow{ list.keep(other) }
 
-    assertTrue(amountRemoved <= oldSize)
-    assertTrue(list.size <= other.size)
-    assertTrue(other.containsAll(list))
+    assertLessEqual(amountRemoved, oldSize)
+    assertLessEqual(list.size, other.size)
+    assertContainsAll(other, list)
 }
 
 fun testKeepWithSelf(list: MutableList<Int>) {
@@ -669,11 +671,11 @@ fun testSeparate(list: MutableList<Int>, predicate: (Int) -> Boolean) {
     checkSuccessfulSeparation(list, separationPoint, predicate)
 }
 
-fun testStableSeparate(list: MutableList<String>, copy: List<String>, predicate: (String) -> Boolean) {
+fun testStableSeparate(list: MutableList<TestObject>, copy: List<TestObject>, predicate: (TestObject) -> Boolean) {
     val separationPoint = assertDoesNotThrow{ list.stableSeparate(predicate) }
 
     checkSuccessfulSeparation(list, separationPoint, predicate)
-    checkStableSeparation(list, copy)
+    checkStable(list, copy)
 }
 
 private fun <TType> checkSuccessfulSeparation(
@@ -696,8 +698,28 @@ private fun <TType> checkSuccessfulSeparation(
     }
 }
 
-private fun checkStableSeparation(list: List<String>, copy: List<String>) {
-    TODO("Oops...")
+private fun checkStable(list: List<TestObject>, copy: List<TestObject>) {
+    val map = hashMapOf<TestObject, MutableList<TestObject>>()
+
+    for (item in list) {
+        val dupes = map[item]
+
+        dupes?.add(item) ?: run {
+            map[item] = mutableListOf(item)
+        }
+    }
+
+    for (dupes in map.values) {
+        val indices = mutableListOf<Int>()
+
+        for (obj in dupes) {
+            val index = copy.index(0) { it === obj }
+
+            indices.add(index)
+        }
+
+        assertTrue(indices.isSorted())
+    }
 }
 
 fun testIntersperse(list: MutableList<Int>, separator: Int) {
@@ -734,11 +756,72 @@ private fun testElementsAfterIntersperse(list: MutableList<Int>, copy: Iterator<
 }
 
 private fun testEndsAfterIntersperse(list: MutableList<Int>, separator: Int) {
-    if (list.isEmpty()) {
-        assertTrue(separator !in list)
+    if (list.size <= 1) {
+        assertNotContains(list, separator)
     }
     else {
         assertNotEquals(separator, list[0])
         assertNotEquals(separator, list[list.lastIndex])
+
+        assertEquals(1, list.indexOf(separator))
+        assertEquals(list.lastIndex - 1, list.lastIndexOf(separator))
     }
+}
+
+fun testContainsAfterRemovingByIndex(list: MutableList<Int>, index: Int) {
+    val item = list.removeAt(index)
+
+    val contained = assertDoesNotThrow{ item in list }
+
+    assertTrue(!contained)
+}
+
+fun testSwap(list: MutableList<String>, index1: Int, index2: Int) {
+    val old1 = list[index1]
+    val old2 = list[index2]
+
+    assertDoesNotThrow{ list.swap(index1, index2) }
+
+    assertNotSame(list[index1], list[index2])
+    assertSame(list[index1], old2)
+    assertSame(list[index2], old1)
+    assertNotSame(old1, old2)
+}
+
+fun testNext(list: MutableList<Int>) {
+    var count = 0
+    val factorial = list.indices.map{ it + 1 }.fold(1) { curr, acc -> curr * acc }
+
+    do {
+        ++count
+    } while (assertDoesNotThrow{ list.next() })
+
+    assertEquals(factorial, count)
+}
+
+fun testPrev(list: MutableList<Int>) {
+    var count = 0
+    val factorial = list.indices.map{ it + 1 }.fold(1) { curr, acc -> curr * acc }
+
+    do {
+        ++count
+    } while (assertDoesNotThrow{ list.prev() })
+
+    assertEquals(factorial, count)
+}
+
+fun testNextOnIterator(list: MutableList<Int>) {
+    val iter = list.iterator()
+
+    for (index in list.indices) {
+        val elem1 = assertDoesNotThrow{ iter.next() }
+        val elem2 = list[index]
+
+        assertEquals(elem1, elem2)
+    }
+
+    assertFailsWith<NoSuchElementException>{ iter.next() }
+
+    list.removeAt(list.size / 2)
+    assertFailsWith<ConcurrentModificationException>{ iter.next() }
 }
