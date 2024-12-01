@@ -3,8 +3,8 @@ package collections
 import java.io.Serializable
 
 @Suppress("RemoveRedundantQualifierName")
-class VectorSelfOrgList<TElement>(
-    initialCapacity: Int = VectorSelfOrgList.DEFAULT_CAPACITY
+class TransposeList<TElement>(
+    initialCapacity: Int = TransposeList.DEFAULT_CAPACITY
 ) : SelfOrgList<TElement>, RandomAccess, Serializable {
     private companion object {
         @Suppress("ConstPropertyName")
@@ -58,10 +58,10 @@ class VectorSelfOrgList<TElement>(
         var index = -1
 
         do {
-            index = this@VectorSelfOrgList.data.index(index + 1, predicate)
+            index = this@TransposeList.data.index(index + 1, predicate)
 
             if (index > 0) {
-                val result = this@VectorSelfOrgList.reorder(index)
+                val result = this@TransposeList.reorder(index)
 
                 yield(result)
             }
