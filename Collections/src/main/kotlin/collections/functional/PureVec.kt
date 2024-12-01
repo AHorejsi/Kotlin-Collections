@@ -1,12 +1,13 @@
 package collections.functional
 
-import arrow.core.None
-import arrow.core.Option
-import arrow.core.Some
-import arrow.core.getOrElse
 import collections.*
 import collections.checkIfIndexIsAccessible
 import java.io.Serializable
+
+private sealed class Value<out TItem> {
+    data object Empty : Value<Nothing>()
+    class Fill<TElem>(val value: TElem) : Value<TElem>()
+}
 
 @Suppress("RemoveRedundantQualifierName")
 sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable {
@@ -117,13 +118,13 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
 
             val newSize = elements.size + 1
             val newCapacity = super.nextCapacity(newSize)
-            val newData = Array<Option<TItem>>(newCapacity) { None }
+            val newData = Array<Value<TItem>>(newCapacity) { Value.Empty }
 
             for ((index, item) in elements.withIndex()) {
-                newData[index] = Some(item)
+                newData[index] = Value.Fill(item)
             }
 
-            newData[newSize - 1] = Some(this.head)
+            newData[newSize - 1] = Value.Fill(this.head)
 
             return PureVec.Multiple(newData, 0, newSize)
         }
@@ -135,16 +136,16 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
 
             val newSize = elements.size + 1
             val newCapacity = super.nextCapacity(newSize)
-            val newData = Array<Option<TItem>>(newCapacity) { None }
+            val newData = Array<Value<TItem>>(newCapacity) { Value.Empty }
 
             var index = 1
 
             for (item in elements) {
-                newData[index] = Some(item)
+                newData[index] = Value.Fill(item)
                 ++index
             }
 
-            newData[0] = Some(this.head)
+            newData[0] = Value.Fill(this.head)
 
             return PureVec.Multiple(newData, 0, newSize)
         }
@@ -193,14 +194,18 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
     }
 
     private class Multiple<TItem>(
-        val data: Array<Option<TItem>>,
+        val data: Array<Value<TItem>>,
         val startIndex: Int,
         override val size: Int
     ) : PureVec<TItem>() {
         override fun get(index: Int): TItem {
             val actualIndex = this.actualIndex(index)
+            val item = this.data[actualIndex]
 
-            return this.data[actualIndex].getOrElse{ outOfBoundsWithSizeInclusive(index, this.size) }
+            return when (item) {
+                is Value.Fill<TItem> -> item.value
+                else -> outOfBoundsWithSizeInclusive(index, this.size)
+            }
         }
 
         override fun prependAll(elements: Collection<TItem>): PureVec<TItem> {
@@ -224,7 +229,7 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
             repeat(amountToAdd) {
                 index = this.actualIndex(index - 1)
 
-                if (this.data[index].isSome()) {
+                if (this.data[index] is Value.Fill<TItem>) {
                     return false
                 }
             }
@@ -241,7 +246,7 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
             while (iter.hasNext()) {
                 val elem = iter.next()
 
-                this.data[index] = Some(elem)
+                this.data[index] = Value.Fill(elem)
 
                 index = this.actualIndex(index + 1)
             }
@@ -268,7 +273,7 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
             var index = this.actualIndex(this.startIndex + this.size)
 
             repeat(amountToAdd) {
-                if (this.data[index].isSome()) {
+                if (this.data[index] is Value.Fill<TItem>) {
                     return false
                 }
 
@@ -286,7 +291,7 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
            while (iter.hasNext()) {
                 val item = iter.next()
 
-                this.data[index] = Some(item)
+                this.data[index] = Value.Fill(item)
 
                 index = this.actualIndex(index + 1)
             }
@@ -294,7 +299,8 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
             return PureVec.Multiple(this.data, this.startIndex, this.size + elements.size)
         }
 
-        private fun actualIndex(index: Int): Int = (index + this.startIndex).mod(this.data.size)
+        private fun actualIndex(index: Int): Int =
+            (index + this.startIndex).mod(this.data.size)
     }
 
     private class Slice<TItem>(
@@ -342,8 +348,8 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
         val base: PureVec<TItem>,
         val operation: (TItem) -> TOther
     ) : PureVec<TOther>() {
-        private val transformed: Array<Any?> by lazy(LazyThreadSafetyMode.PUBLICATION)
-            { arrayOfNulls(this.size) }
+        private val transformed: Array<Value<TOther>> by lazy(LazyThreadSafetyMode.PUBLICATION)
+            { Array(this.size) { Value.Empty } }
 
         override val size: Int
             get() = this.base.size
@@ -351,13 +357,13 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
         override operator fun get(index: Int): TOther {
             val transformedItem = this.transformed[index]
 
-            transformedItem?.let {
-                @Suppress("UNCHECKED_CAST")
-                return it as TOther
-            } ?: run {
+            if (transformedItem is Value.Fill<TOther>) {
+                return transformedItem.value
+            }
+            else {
                 val newItem = this.operation(this.base[index])
 
-                this.transformed[index] = newItem
+                this.transformed[index] = Value.Fill(newItem)
 
                 return newItem
             }
@@ -418,10 +424,10 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
             return this
         }
 
-        val base = Array<Option<TElement>>(this.size) { None }
+        val base = Array<Value<TElement>>(this.size) { Value.Empty }
 
         for ((index, item) in this.withIndex()) {
-            base[index] = Some(item)
+            base[index] = Value.Fill(item)
         }
 
         return PureVec.Multiple(base, 0, this.size)
@@ -434,15 +440,15 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
     }
 
     override fun updateAll(elements: Map<Int, TElement>): PureVec<TElement> {
-        val newData = Array<Option<TElement>>(this.size) { None }
+        val newData = Array<Value<TElement>>(this.size) { Value.Empty }
 
         for ((index, item) in elements) {
-            newData[index] = Some(item)
+            newData[index] = Value.Fill(item)
         }
 
         for ((index, item) in this.withIndex()) {
-            if (None === newData[index]) {
-                newData[index] = Some(item)
+            if (newData[index] is Value.Empty) {
+                newData[index] = Value.Fill(item)
             }
         }
 
@@ -487,10 +493,10 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
 
     private fun newVec(left: Sequence<TElement>, right: Sequence<TElement>, newSize: Int): PureVec<TElement> {
         val newCapacity = this.nextCapacity(newSize)
-        val newData = Array<Option<TElement>>(newCapacity) { None }
+        val newData = Array<Value<TElement>>(newCapacity) { Value.Empty }
 
         for ((index, item) in (left + right).withIndex()) {
-            newData[index] = Some(item)
+            newData[index] = Value.Fill(item)
         }
 
         return PureVec.Multiple(newData, 0, newSize)
@@ -521,10 +527,10 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
 
         val newSize = this.size + elements.size
         val newCapacity = this.nextCapacity(newSize)
-        val newData = Array<Option<TElement>>(newCapacity) { None }
+        val newData = Array<Value<TElement>>(newCapacity) { Value.Empty }
 
         for ((insertIndex, item) in (left + mid + right).withIndex()) {
-            newData[insertIndex] = Some(item)
+            newData[insertIndex] = Value.Fill(item)
         }
 
         return PureVec.Multiple(newData, 0, newSize)
@@ -569,12 +575,12 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
             return this
         }
 
-        val newData = Array<Option<TElement>>(this.size) { None }
+        val newData = Array<Value<TElement>>(this.size) { Value.Empty }
         var newIndex = 0
 
         for ((index, item) in this.withIndex()) {
             if (index !in indices) {
-                newData[newIndex] = Some(item)
+                newData[newIndex] = Value.Fill(item)
                 ++newIndex
             }
         }
@@ -675,7 +681,7 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
             PureVec.Rotate(this, amount)
 
     override fun sieve(predicate: (TElement) -> Boolean): PureVec<TElement> {
-        val newData = Array<Option<TElement>>(this.size) { None }
+        val newData = Array<Value<TElement>>(this.size) { Value.Empty }
         val index = 0
 
         return this.sieveHelper(this, newData, index, predicate)
@@ -683,7 +689,7 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
 
     private tailrec fun sieveHelper(
         current: PureVec<TElement>,
-        newData: Array<Option<TElement>>,
+        newData: Array<Value<TElement>>,
         index: Int,
         predicate: (TElement) -> Boolean
     ): PureVec<TElement> {
@@ -695,7 +701,7 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
         var newIndex = index
 
         if (predicate(item)) {
-            newData[newIndex] = Some(item)
+            newData[newIndex] = Value.Fill(item)
             ++newIndex
         }
 
@@ -744,7 +750,7 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
         return this.findLastHelper(vec, index - 1, predicate)
     }
 
-    private fun makeVec(newData: Array<Option<TElement>>, index: Int): PureVec<TElement> =
+    private fun makeVec(newData: Array<Value<TElement>>, index: Int): PureVec<TElement> =
         @Suppress("UNCHECKED_CAST")
         when (index) {
             0 -> PureVec.empty()
@@ -797,17 +803,22 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
         return PureVec.Multiple(newData, 0, this.size)
     }
 
-    private fun copyToArray(): Array<Option<TElement>> {
-        val newData = Array<Option<TElement>>(this.size) { None }
+    private fun copyToArray(): Array<Value<TElement>> {
+        val newData = Array<Value<TElement>>(this.size) { Value.Empty }
 
         for ((index, item) in this.withIndex()) {
-            newData[index] = Some(item)
+            newData[index] = Value.Fill(item)
         }
 
         return newData
     }
 
-    private tailrec fun quickSortHelper(newData: Array<Option<TElement>>, comp: (TElement, TElement) -> Int, startIndex: Int, endIndex: Int) {
+    private tailrec fun quickSortHelper(
+        newData: Array<Value<TElement>>,
+        comp: (TElement, TElement) -> Int,
+        startIndex: Int,
+        endIndex: Int
+    ) {
         if (startIndex >= endIndex) {
             return
         }
@@ -819,7 +830,12 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
         this.quickSortHelper(newData, comp, pivot + 1, endIndex)
     }
 
-    private fun quickSortPartition(newData: Array<Option<TElement>>, comp: (TElement, TElement) -> Int, startIndex: Int, endIndex: Int): Int {
+    private fun quickSortPartition(
+        newData: Array<Value<TElement>>,
+        comp: (TElement, TElement) -> Int,
+        startIndex: Int,
+        endIndex: Int
+    ): Int {
         val pivotItem = this.medianOfThree(newData, comp, startIndex, endIndex)
         var pivotIndex = (startIndex + endIndex + 1) / 2
 
@@ -841,7 +857,12 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun medianOfThree(newData: Array<Option<TElement>>, comp: (TElement, TElement) -> Int, startIndex: Int, endIndex: Int): TElement {
+    private fun medianOfThree(
+        newData: Array<Value<TElement>>,
+        comp: (TElement, TElement) -> Int,
+        startIndex: Int,
+        endIndex: Int
+    ): TElement {
         val midIndex = (startIndex + endIndex + 1) / 2
 
         val startItem = newData[startIndex] as TElement

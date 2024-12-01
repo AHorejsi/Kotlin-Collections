@@ -2,7 +2,7 @@ package collections
 
 abstract class AbstractCollection<TElement> : MutableCollection<TElement> {
     @Transient
-    protected var modCount: Int = 0
+    internal var modCount: Int = 0
 
     override fun isEmpty(): Boolean =
         0 == this.size

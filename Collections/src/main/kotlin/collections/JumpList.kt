@@ -43,9 +43,6 @@ class JumpList<TElement>(
         return true
     }
 
-    override fun addAll(elements: Collection<TElement>): Boolean =
-        super<SelfOrgList>.addAll(elements)
-
     override fun remove(element: TElement): Boolean {
         var node = this.head
         var next = node.next
@@ -77,12 +74,6 @@ class JumpList<TElement>(
         --(this.size)
         ++(super.modCount)
     }
-
-    override fun removeAll(elements: Collection<TElement>): Boolean =
-        super<SelfOrgList>.removeAll(elements)
-
-    override fun retainAll(elements: Collection<TElement>): Boolean =
-        super<SelfOrgList>.retainAll(elements)
 
     override fun clear() {
         this.head.next = null

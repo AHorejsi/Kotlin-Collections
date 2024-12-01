@@ -22,24 +22,15 @@ interface SelfOrgList<TElement> : MutableCollection<TElement> {
         return iter.next()
     }
 
-    override fun addAll(elements: Collection<TElement>): Boolean =
-        this.insert(elements) > 0
-
-    override fun removeAll(elements: Collection<TElement>): Boolean =
-        this.delete(elements) > 0
-
-    override fun retainAll(elements: Collection<TElement>): Boolean =
-        this.keep(elements) > 0
-
     fun find(element: @UnsafeVariance TElement): IndexedValue<TElement>? =
         this.find{ it == element }
 
-    fun find(predicate: (element: TElement) -> Boolean): IndexedValue<TElement>?
+    fun find(predicate: (TElement) -> Boolean): IndexedValue<TElement>?
 
     fun findAll(elements: Collection<@UnsafeVariance TElement>): Sequence<IndexedValue<TElement>> =
         this.findAll(elements::contains)
 
-    fun findAll(predicate: (element: TElement) -> Boolean): Sequence<IndexedValue<TElement>>
+    fun findAll(predicate: (TElement) -> Boolean): Sequence<IndexedValue<TElement>>
 
     override operator fun contains(element: @UnsafeVariance TElement): Boolean =
         null !== this.find{ it == element }

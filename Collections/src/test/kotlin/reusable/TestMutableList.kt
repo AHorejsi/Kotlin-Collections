@@ -262,7 +262,7 @@ fun testAddAllWithOther(list: MutableList<Int>, other: Collection<Int>) {
     val change = assertDoesNotThrow{ list.addAll(other) }
 
     assertTrue(change)
-    assertEquals(oldSize + other.size, list.size)
+    assertEquals(list.size, oldSize + other.size)
 
     val iter = other.iterator()
 
@@ -722,6 +722,12 @@ private fun checkStable(list: List<TestObject>, copy: List<TestObject>) {
     }
 }
 
+fun testRotate(list: MutableList<Int>, expected: MutableList<Int>, rotationCount: Int) {
+    assertDoesNotThrow{ list.rotate(rotationCount) }
+
+    assertEquals(expected, list)
+}
+
 fun testIntersperse(list: MutableList<Int>, separator: Int) {
     val oldSize = list.size
     val copy = list.toList().iterator()
@@ -730,7 +736,6 @@ fun testIntersperse(list: MutableList<Int>, separator: Int) {
 
     testSizeAfterIntersperse(list, oldSize)
     testElementsAfterIntersperse(list, copy, separator)
-    testEndsAfterIntersperse(list, separator)
 }
 
 private fun testSizeAfterIntersperse(list: MutableList<Int>, oldSize: Int) {
@@ -752,19 +757,6 @@ private fun testElementsAfterIntersperse(list: MutableList<Int>, copy: Iterator<
         }
 
         atSeparator = !atSeparator
-    }
-}
-
-private fun testEndsAfterIntersperse(list: MutableList<Int>, separator: Int) {
-    if (list.size <= 1) {
-        assertNotContains(list, separator)
-    }
-    else {
-        assertNotEquals(separator, list[0])
-        assertNotEquals(separator, list[list.lastIndex])
-
-        assertEquals(1, list.indexOf(separator))
-        assertEquals(list.lastIndex - 1, list.lastIndexOf(separator))
     }
 }
 

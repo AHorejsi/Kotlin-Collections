@@ -239,6 +239,55 @@ fun <TElement> MutableList<TElement>.stableSeparate(predicate: (TElement) -> Boo
     return yes.size
 }
 
+fun <TElement> MutableList<TElement>.rotate(amount: Int) {
+    if (this.size <= 1) {
+        return
+    }
+
+    val actualAmount = amount % this.size
+
+    if (0 != actualAmount) {
+        val rotationCount =
+            if (actualAmount < 0)
+                this.size + actualAmount
+            else
+                actualAmount
+
+        rotateRight(this, rotationCount)
+    }
+}
+
+private fun <TElement> rotateRight(list: MutableList<TElement>, amount: Int) {
+    val end = list.size - amount
+
+    val left = VectorQueue<TElement>(end)
+    val right = VectorQueue<TElement>(amount)
+
+    for (index in 0 until end) {
+        left.enqueue(list[index])
+    }
+
+    for (index in end until list.size) {
+        right.enqueue(list[index])
+    }
+
+    doRotation(list, left, right)
+}
+
+private fun <TElement> doRotation(list: MutableList<TElement>, left: Queue<TElement>, right: Queue<TElement>) {
+    var index = 0
+
+    while (!right.isEmpty()) {
+        list[index] = right.dequeue()
+        ++index
+    }
+
+    while (!left.isEmpty()) {
+        list[index] = left.dequeue()
+        ++index
+    }
+}
+
 fun <TElement> MutableList<TElement>.intersperse(separator: TElement) {
     if (this.size <= 1) {
         return

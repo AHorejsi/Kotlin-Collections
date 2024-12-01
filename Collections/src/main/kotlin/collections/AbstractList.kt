@@ -9,6 +9,22 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
         this.addAll(index, list)
     }
 
+    override fun remove(element: @UnsafeVariance TElement): Boolean {
+        val iter = this.iterator()
+
+        while (iter.hasNext()) {
+            val current = iter.next()
+
+            if (element == current) {
+                iter.remove()
+
+                return true
+            }
+        }
+
+        return false
+    }
+
     override operator fun contains(element: @UnsafeVariance TElement): Boolean =
         -1 != this.indexOf(element)
 
@@ -57,7 +73,7 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
         if (0 == fromIndex && this.size == toIndex)
             this
         else
-            Sublist(this, fromIndex, toIndex)
+            Sublist(this, fromIndex, toIndex, super.modCount)
 
     override fun iterator(): MutableIterator<TElement> =
         this.listIterator()
@@ -67,9 +83,10 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
 }
 
 internal class Sublist<TElement>(
-    private val base: MutableList<TElement>,
+    private val base: AbstractList<TElement>,
     private val fromIndex: Int,
-    private var toIndex: Int
+    private var toIndex: Int,
+    baseModCount: Int
 ) : AbstractList<TElement>(), Serializable {
     private companion object {
         @Suppress("ConstPropertyName")
@@ -79,27 +96,40 @@ internal class Sublist<TElement>(
     init {
         checkIfRangeInBounds(this.fromIndex, this.toIndex, this.base.size)
         checkIfValidRange(this.fromIndex, this.toIndex)
+
+        super.modCount = baseModCount
     }
 
     override val size: Int
-        get() = this.toIndex - this.fromIndex
+        get() {
+            checkIfUnderlyingCollectionHasBeenModified(super.modCount, this.base.modCount)
 
-    override fun isEmpty(): Boolean =
-        this.fromIndex == this.toIndex
+            return this.toIndex - this.fromIndex
+        }
+
+    override fun isEmpty(): Boolean {
+        checkIfUnderlyingCollectionHasBeenModified(super.modCount, this.base.modCount)
+
+        return this.fromIndex == this.toIndex
+    }
 
     override fun get(index: Int): TElement {
+        checkIfUnderlyingCollectionHasBeenModified(super.modCount, this.base.modCount)
         checkIfIndexIsAccessible(index, this.size)
 
         return this.base[index + this.fromIndex]
     }
 
     override fun set(index: Int, element: TElement): TElement {
+        checkIfUnderlyingCollectionHasBeenModified(super.modCount, this.base.modCount)
         checkIfIndexIsAccessible(index, this.size)
 
         return this.base.set(index + this.fromIndex, element)
     }
 
     override fun add(element: TElement): Boolean {
+        checkIfUnderlyingCollectionHasBeenModified(super.modCount, this.base.modCount)
+
         this.base.add(this.toIndex, element)
 
         ++(this.toIndex)
@@ -108,6 +138,7 @@ internal class Sublist<TElement>(
     }
 
     override fun addAll(index: Int, elements: Collection<TElement>): Boolean {
+        checkIfUnderlyingCollectionHasBeenModified(super.modCount, this.base.modCount)
         checkIfIndexCanBeInsertedAt(index, this.size)
 
         val initialSize = this.base.size
@@ -122,33 +153,8 @@ internal class Sublist<TElement>(
         return false
     }
 
-    override fun remove(element: @UnsafeVariance TElement): Boolean {
-        val iter = this.base.iterator()
-
-        var index = 0
-
-        while (index < this.fromIndex) {
-            iter.next()
-
-            ++index
-        }
-
-        while (index < this.toIndex) {
-            val current = iter.next()
-
-            if (element == current) {
-                iter.remove()
-
-                --(this.toIndex)
-
-                return true
-            }
-        }
-
-        return false
-    }
-
     override fun removeAt(index: Int): TElement {
+        checkIfUnderlyingCollectionHasBeenModified(super.modCount, this.base.modCount)
         checkIfIndexIsAccessible(index, this.size)
 
         val item = this.base.removeAt(index + this.fromIndex)
@@ -159,6 +165,8 @@ internal class Sublist<TElement>(
     }
 
     fun removeFromBack(amount: Int): Int {
+        checkIfUnderlyingCollectionHasBeenModified(super.modCount, this.base.modCount)
+
         val oldSize = this.size
 
         if (amount >= oldSize) {
@@ -174,6 +182,8 @@ internal class Sublist<TElement>(
     }
 
     override fun clear() {
+        checkIfUnderlyingCollectionHasBeenModified(super.modCount, this.base.modCount)
+
         if (this.isEmpty()) {
             return
         }
@@ -192,10 +202,11 @@ internal class Sublist<TElement>(
         }
     }
 
-    override fun subList(fromIndex: Int, toIndex: Int): MutableList<TElement> =
-        Sublist(this, fromIndex, toIndex)
-
     override fun listIterator(index: Int): MutableListIterator<TElement> = object : MutableListIterator<TElement> {
+        init {
+            checkIfUnderlyingCollectionHasBeenModified(this@Sublist.modCount, this@Sublist.base.modCount)
+        }
+
         private val iter = this@Sublist.base.listIterator(index + this@Sublist.fromIndex)
 
         override fun previousIndex(): Int =

@@ -12,7 +12,7 @@ data class Counter<TKey>(
     }
 }
 
-class CountList<TElement> : SelfOrgList<TElement>, Serializable {
+class CountList<TElement> : AbstractCollection<TElement>(), SelfOrgList<TElement>, Serializable {
     private companion object {
         @Suppress("ConstPropertyName")
         const val serialVersionUID: Long = 1L
@@ -43,6 +43,9 @@ class CountList<TElement> : SelfOrgList<TElement>, Serializable {
 
     override fun clear() =
         this.jump.clear()
+
+    override fun containsAll(elements: Collection<TElement>): Boolean =
+        super<SelfOrgList>.containsAll(elements)
 
     override fun find(predicate: (TElement) -> Boolean): IndexedValue<TElement>? =
         this.amount(predicate)?.let { IndexedValue(it.index, it.value.item) }

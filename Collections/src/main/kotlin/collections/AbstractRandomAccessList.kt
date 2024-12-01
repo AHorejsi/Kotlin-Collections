@@ -25,7 +25,10 @@ abstract class AbstractRandomAccessList<TElement> : AbstractList<TElement>(), Ra
     }
 
     override fun subList(fromIndex: Int, toIndex: Int): MutableList<TElement> =
-        RandomAccessSublist(this, fromIndex, toIndex)
+        if (0 == fromIndex && this.size == toIndex)
+            this
+        else
+            RandomAccessSublist(this, fromIndex, toIndex, super.modCount)
 
     override fun listIterator(index: Int): MutableListIterator<TElement> = object : MutableListIterator<TElement> {
         init {
@@ -121,9 +124,10 @@ abstract class AbstractRandomAccessList<TElement> : AbstractList<TElement>(), Ra
 }
 
 internal class RandomAccessSublist<TElement>(
-    private val base: MutableList<TElement>,
+    private val base: AbstractRandomAccessList<TElement>,
     private val fromIndex: Int,
-    private var toIndex: Int
+    private var toIndex: Int,
+    baseModCount: Int
 ) : AbstractRandomAccessList<TElement>(), Serializable {
     private companion object {
         @Suppress("ConstPropertyName")
@@ -133,34 +137,47 @@ internal class RandomAccessSublist<TElement>(
     init {
         checkIfRangeInBounds(this.fromIndex, this.toIndex, this.base.size)
         checkIfValidRange(this.fromIndex, this.toIndex)
+
+        super.modCount = baseModCount
     }
 
     override val size: Int
-        get() = this.toIndex - this.fromIndex
+        get() {
+            checkIfUnderlyingCollectionHasBeenModified(super.modCount, this.base.modCount)
 
-    override fun isEmpty(): Boolean =
-        this.fromIndex == this.toIndex
+            return this.toIndex - this.fromIndex
+        }
+
+    override fun isEmpty(): Boolean {
+        checkIfUnderlyingCollectionHasBeenModified(super.modCount, this.base.modCount)
+
+        return this.fromIndex == this.toIndex
+    }
 
     override fun get(index: Int): TElement {
+        checkIfUnderlyingCollectionHasBeenModified(super.modCount, this.base.modCount)
         checkIfIndexIsAccessible(index, this.size)
 
         return this.base[index + this.fromIndex]
     }
 
     override fun set(index: Int, element: TElement): TElement {
+        checkIfUnderlyingCollectionHasBeenModified(super.modCount, this.base.modCount)
         checkIfIndexIsAccessible(index, this.size)
 
         return this.base.set(index + this.fromIndex, element)
     }
 
     override fun addAll(index: Int, elements: Collection<TElement>): Boolean {
-       checkIfIndexCanBeInsertedAt(index, this.size)
+        checkIfUnderlyingCollectionHasBeenModified(super.modCount, this.base.modCount)
+        checkIfIndexCanBeInsertedAt(index, this.size)
 
-        val initialSize = this.base.size
+        val initialSize = elements.size
         val actualIndex = index + this.fromIndex
 
         if (this.base.addAll(actualIndex, elements)) {
-            this.toIndex += this.base.size - initialSize
+            this.toIndex += initialSize
+            ++(super.modCount)
 
             return true
         }
@@ -169,6 +186,8 @@ internal class RandomAccessSublist<TElement>(
     }
 
     fun removeFromBack(amount: Int): Int {
+        checkIfUnderlyingCollectionHasBeenModified(super.modCount, this.base.modCount)
+
         val oldSize = this.size
 
         if (amount >= oldSize) {
@@ -178,22 +197,27 @@ internal class RandomAccessSublist<TElement>(
             this.base.removeRange(oldSize - amount, oldSize)
 
             this.toIndex -= amount
+            ++(super.modCount)
         }
 
         return oldSize - this.size
     }
 
     override fun removeAt(index: Int): TElement {
+        checkIfUnderlyingCollectionHasBeenModified(super.modCount, this.base.modCount)
         checkIfIndexIsAccessible(index, this.size)
 
         val item = this.base.removeAt(index + this.fromIndex)
 
         --(this.toIndex)
+        ++(super.modCount)
 
         return item
     }
 
     override fun clear() {
+        checkIfUnderlyingCollectionHasBeenModified(super.modCount, this.base.modCount)
+
         if (this.isEmpty()) {
             return
         }
@@ -202,6 +226,7 @@ internal class RandomAccessSublist<TElement>(
         this.base.removeFromBack(this.size)
 
         this.toIndex = this.fromIndex
+        ++(super.modCount)
     }
 
     private fun shiftForClearing() {
@@ -211,7 +236,4 @@ internal class RandomAccessSublist<TElement>(
             this.base[index - size] = this.base[index]
         }
     }
-
-    override fun subList(fromIndex: Int, toIndex: Int): MutableList<TElement> =
-        RandomAccessSublist(this, fromIndex, toIndex)
 }

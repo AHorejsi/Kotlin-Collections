@@ -9,6 +9,10 @@ fun LongRange.count(): Long =
     this.last - this.first + 1
 
 fun IntProgression.count(): Int {
+    if (this is IntRange) {
+        return this.count()
+    }
+
     if (this.isEmpty()) {
         return 0
     }
@@ -23,6 +27,10 @@ fun IntProgression.count(): Int {
 }
 
 fun LongProgression.count(): Long {
+    if (this is LongRange) {
+        return this.count()
+    }
+
     if (this.isEmpty()) {
         return 0L
     }
@@ -84,11 +92,9 @@ infix fun Long.move(amount: Long): LongProgression =
     else
         this down -amount
 
-// TODO TEST
 operator fun IntRange.get(index: Int): Int =
     this.elementAt(index)
 
-// TODO TEST
 operator fun LongRange.get(index: Long): Long =
     this.elementAt(index)
 
@@ -102,23 +108,39 @@ fun IntRange.elementAt(index: Int): Int {
     val first = this.first
     val last = this.last
 
-    return if (first < last)
-        first + index
+    val result =
+        if (first < last)
+            first + index
+        else
+            last - index
+
+    return if (result < first || result > last)
+        outOfBoundsWithoutSize(index)
     else
-        last - index
+        result
 }
 
 fun LongRange.elementAt(index: Long): Long {
     val first = this.first
     val last = this.last
 
-    return if (first < last)
-        first + index
+    val result =
+        if (first < last)
+            first + index
+        else
+            last - index
+
+    return if (result < first || result > last)
+        outOfBoundsWithoutSize(index)
     else
-        last - index
+        result
 }
 
 fun IntProgression.elementAt(index: Int): Int {
+    if (this is IntRange) {
+        return this.elementAt(index)
+    }
+
     val factor = abs(this.step)
 
     val first = this.first
@@ -130,13 +152,17 @@ fun IntProgression.elementAt(index: Int): Int {
         else
             Triple(last, first, first - factor * index)
 
-    return if (start > result || result > end)
+    return if (result < start || result > end)
         outOfBoundsWithoutSize(index)
     else
         result
 }
 
 fun LongProgression.elementAt(index: Long): Long {
+    if (this is LongRange) {
+        return this.elementAt(index)
+    }
+
     val factor = abs(this.step)
 
     val first = this.first
@@ -148,13 +174,13 @@ fun LongProgression.elementAt(index: Long): Long {
         else
             Triple(last, first, first - factor * index)
 
-    return if (start > result || result > end)
+    return if (result < start || result > end)
         outOfBoundsWithoutSize(index)
     else
         result
 }
 
-operator fun IntProgression.contains(value: Int): Boolean {
+fun IntProgression.indexOf(value: Int): Int {
     val comp =
         if (this.first < this.last)
             inOrder<Int>()
@@ -177,14 +203,14 @@ operator fun IntProgression.contains(value: Int): Boolean {
             startIndex = midIndex + 1
         }
         else {
-            return true
+            return midIndex
         }
     }
 
-    return false
+    return -1
 }
 
-operator fun LongProgression.contains(value: Long): Boolean {
+fun LongProgression.indexOf(value: Long): Long {
     val comp =
         if (this.first < this.last)
             inOrder<Long>()
@@ -207,9 +233,15 @@ operator fun LongProgression.contains(value: Long): Boolean {
             startIndex = midIndex + 1L
         }
         else {
-            return true
+            return midIndex
         }
     }
 
-    return false
+    return -1
 }
+
+operator fun IntProgression.contains(value: Int): Boolean =
+    -1 != this.indexOf(value)
+
+operator fun LongProgression.contains(value: Long): Boolean =
+    -1L != this.indexOf(value)

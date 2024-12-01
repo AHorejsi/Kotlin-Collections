@@ -12,9 +12,19 @@ import kotlin.test.*
 @Suppress("SameParameterValue")
 class VectorListTest {
     @Test
-    fun testConstructor() {
+    fun testPrimaryConstructor() {
         assertDoesNotThrow{ VectorList<Int>(0) }
         assertFailsWith<IllegalArgumentException>{ VectorList<Int>(-1) }
+    }
+
+    @Test
+    fun testFillConstructor() {
+        val size = 30
+        val vec = assertDoesNotThrow{ VectorList(size) { Int.MIN_VALUE } }
+
+        assertEquals(size, vec.size)
+        assertLessEqual(size, vec.capacity)
+        assertTrue(vec.all(Int.MIN_VALUE::equals))
     }
 
     @Test
@@ -41,10 +51,10 @@ class VectorListTest {
         val vecFromIter = assertDoesNotThrow{ iter.toVectorList() }
         val vecFromArray = assertDoesNotThrow{ array.toVectorList() }
 
-        this.testIteratorEquality(vecFromSet.iterator(), set.iterator())
-        this.testIteratorEquality(vecFromIter.iterator(), iter.iterator())
-        this.testIteratorEquality(vecFromSeq.iterator(), seq.iterator())
-        this.testIteratorEquality(vecFromArray.iterator(), array.iterator())
+        this.testForEquality(vecFromSet.iterator(), set.iterator())
+        this.testForEquality(vecFromIter.iterator(), iter.iterator())
+        this.testForEquality(vecFromSeq.iterator(), seq.iterator())
+        this.testForEquality(vecFromArray.iterator(), array.iterator())
 
         assertLessEqual(set.size, vecFromSet.capacity)
         assertLessEqual(seq.count(), vecFromSeq.capacity)
@@ -52,7 +62,7 @@ class VectorListTest {
         assertLessEqual(array.size, vecFromArray.capacity)
     }
 
-    private fun testIteratorEquality(left: Iterator<*>, right: Iterator<*>) {
+    private fun testForEquality(left: Iterator<*>, right: Iterator<*>) {
         while (left.hasNext() && right.hasNext()) {
             val leftItem = left.next()
             val rightItem = right.next()
@@ -115,14 +125,16 @@ class VectorListTest {
     fun testSize() {
         val vec = vectorListOf<Int>()
 
-        testSizeAfterAdd(vec, 0)
+        val initialSize = assertDoesNotThrow{ vec.size }
+        assertEquals(0, initialSize)
+
+        testSizeAfterAdd(vec, 1)
         testSizeAfterAddAll(vec, 100)
         testSizeAfterRemoveLast(vec)
         testSizeAfterAddAll(vec, 200)
         testSizeAfterRemoveFromBack(vec, 150)
 
         val finalSize = assertDoesNotThrow{ vec.size }
-
         assertEquals(150, finalSize)
     }
 
@@ -444,6 +456,7 @@ class VectorListTest {
         testResizeByIncrease(vec, 100, 0)
         testResizeByIncrease(vec, 150, 1)
         testResizeByDecrease(vec, 50, 2)
+        
         testInvalidResize(vec, -1, -1)
     }
 
@@ -822,6 +835,20 @@ class VectorListTest {
     }
 
     @Test
+    fun testRotate() {
+        val vec1 = vectorListOf(1, 2, 3, 4, 5, 6)
+        val vec2 = vec1.toVectorList()
+
+        val result1 = vectorListOf(3, 4, 5, 6, 1, 2)
+        val result2 = vectorListOf(5, 6, 1, 2, 3, 4)
+
+        testRotate(vec1, result1, -2)
+        testRotate(vec2, result2, 2)
+
+        println("$vec1 $vec2")
+    }
+
+    @Test
     fun testIntersperse() {
         val even = (1 .. 10).toVectorList()
         val odd = (1 .. 11).toVectorList()
@@ -1067,8 +1094,8 @@ class VectorSublistTest {
     fun testExactly() {
         val vec = (1 .. 20).toVectorList()
 
-        val startIndex = 7
-        val endIndex = 18
+        val startIndex = 5
+        val endIndex = 15
         val size = endIndex - startIndex
 
         val sub1 = vec.subList(startIndex, endIndex - 1)
@@ -1078,16 +1105,26 @@ class VectorSublistTest {
         testExactly(size, sub1, sub2, sub3)
     }
 
-    // TODO
-
     @Test
     fun testTryFirst() {
-        TODO()
+        val vec = (15 .. 55).toVectorList()
+
+        val sub = vec.subList(6, 38)
+        testTryFirst(sub, { 0 == it % 4 }, 21, 24)
+
+        val empty = vec.subList(15, 15)
+        testTryFirstOnEmpty(empty) { 0 == it }
     }
 
     @Test
     fun testTryLast() {
-        TODO()
+        val vec = (15 .. 55).toVectorList()
+
+        val sub = vec.subList(6, 38)
+        testTryLast(sub, { 0 == it % 10 }, 52, 50)
+
+        val empty = vec.subList(15, 15)
+        testTryLastOnEmpty(empty) { 0 == it }
     }
 
     @Test
@@ -1197,18 +1234,79 @@ class VectorSublistTest {
 
     @Test
     fun testAdd() {
-        TODO()
+        val vec = (1 .. 50).toVectorList()
+
+        val startIndex = 14
+        val endIndex = 45
+        val sub = vec.subList(startIndex, endIndex)
+
+        testAddOnSublist(vec, sub, endIndex, -1)
+
+        testIndexedAddOnSublist(vec, sub, startIndex, 0, -2)
+        testIndexedAddOnSublist(vec, sub, startIndex, sub.size, -3)
+        testIndexedAddOnSublist(vec, sub, startIndex, sub.size / 2, -4)
+
+        testIndexedAddOutOfBounds(sub, -1, -5)
+        testIndexedAddOutOfBounds(sub, sub.size + 1, -5)
     }
 
     @Test
     fun testAddAll() {
-        TODO()
+        this.addAllAtEnd()
+        this.addAllAtIndices()
+    }
+
+    private fun addAllAtEnd() {
+        val vec = (1 .. 10).toVectorList()
+
+        val other1 = (-10 .. -1).toList()
+        val other2 = (20 downTo 11).toSet()
+        val other3 = (5 .. 15).toHashSet()
+
+        testAddAllWithOtherOnSublist(vec, other1, 2, 8)
+        testAddAllWithOtherOnSublist(vec, other2, vec.size / 4, 3 * vec.size / 4)
+        testAddAllWithOtherOnSublist(vec, other3, vec.size / 5, 4 * vec.size / 5)
+
+        val empty = emptyList<Int>()
+
+        testAddAllWithEmptyOnSublist(vec, empty, 1, 10)
+
+        testAddAllWithSelfOnSublist(vec, vec.size / 2, 3 * vec.size / 4)
+        testAddAllWithSelfOnSublist(vec, vec.size / 4, vec.size / 2)
+        testAddAllWithSelfOnSublist(vec, vec.size / 4, 3 * vec.size / 4)
+
+        testAddAllWithBaseOnSublist(vec, vec.size / 2, 3 * vec.size / 4)
+        testAddAllWithBaseOnSublist(vec, vec.size / 4, vec.size / 2)
+        testAddAllWithBaseOnSublist(vec, vec.size / 4, 3 * vec.size / 4)
+
+        testAddAllWithSublistOnBaseList(vec, vec.size / 4, 3 * vec.size / 4)
+    }
+
+    private fun addAllAtIndices() {
+        val vec = (1 .. 10).toVectorList()
+
+        val other1 = (-10 .. -1).toList()
+        val other2 = (20 downTo 11).toSet()
+        val other3 = (5 .. 14).toHashSet()
+
+        testIndexedAddAllWithOtherOnSublist(vec, other1, 1, 8, 0)
+        testIndexedAddAllWithOtherOnSublist(vec, other2, 8, 19, 5)
+        testIndexedAddAllWithOtherOnSublist(vec, other3, 3, 27, 24)
+
+        testIndexedAddAllWithSelfOnSublist(vec, vec.size / 2, 3 * vec.size / 4) { 0 }
+        testIndexedAddAllWithSelfOnSublist(vec, vec.size / 4, vec.size / 2) { it.size / 2 }
+        testIndexedAddAllWithSelfOnSublist(vec, vec.size / 4, 3 * vec.size / 4) { it.size }
+
+        testIndexedAddAllWithBaseOnSublist(vec, vec.size / 2, 3 * vec.size / 4) { 0 }
+        testIndexedAddAllWithBaseOnSublist(vec, vec.size / 4, vec.size / 2) { it.size / 2 }
+        testIndexedAddAllWithBaseOnSublist(vec, vec.size / 4, 3 * vec.size / 4) { it.size }
+
+        // TODO: Test addAll where sublist is inserted into base list
     }
 
     @Test
     fun testInsert() {
         TODO()
-        // TODO: Test inserting base list into sublist
     }
 
     @Test
@@ -1303,6 +1401,11 @@ class VectorSublistTest {
 
     @Test
     fun testStableSeparate() {
+        TODO()
+    }
+
+    @Test
+    fun testRotate() {
         TODO()
     }
 

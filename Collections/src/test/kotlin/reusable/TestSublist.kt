@@ -1,8 +1,6 @@
 package reusable
 
-import collections.isRandomAccess
-import collections.removeFromBack
-import collections.swap
+import collections.*
 import org.junit.jupiter.api.assertDoesNotThrow
 import kotlin.test.*
 
@@ -144,6 +142,265 @@ fun testSetOnSublist(list: MutableList<Int>, sub: MutableList<Int>, startIndex: 
 
     assertEquals(initialItem, oldItem)
     assertEquals(currentItem, newItem)
+}
+
+fun testAddOnSublist(list: MutableList<Int>, sub: MutableList<Int>, endIndex: Int, newItem: Int) {
+    val oldSize = list.size
+    val oldSubSize = sub.size
+
+    val result = assertDoesNotThrow{ sub.add(newItem) }
+
+    assertTrue(result)
+    assertEquals(newItem, sub[sub.lastIndex])
+    assertEquals(newItem, list[endIndex])
+
+    assertEquals(list.size, oldSize + 1)
+    assertEquals(sub.size, oldSubSize + 1)
+}
+
+fun testIndexedAddOnSublist(
+    list: MutableList<Int>,
+    sub: MutableList<Int>,
+    startIndex: Int,
+    insertIndex: Int,
+    newItem: Int
+) {
+    val oldSize = list.size
+    val oldSubSize = sub.size
+
+    assertDoesNotThrow{ sub.add(insertIndex, newItem) }
+
+    assertEquals(newItem, sub[insertIndex])
+    assertEquals(newItem, list[startIndex + insertIndex])
+
+    assertEquals(list.size, oldSize + 1)
+    assertEquals(sub.size, oldSubSize + 1)
+}
+
+fun testAddAllWithOtherOnSublist(list: MutableList<Int>, other: Collection<Int>, startIndex: Int, endIndex: Int) {
+    val sub = list.subList(startIndex, endIndex)
+
+    val oldSize = list.size
+    val oldSubSize = sub.size
+
+    val change = assertDoesNotThrow{ sub.addAll(other) }
+
+    assertTrue(change)
+    assertEquals(list.size, other.size + oldSize)
+    assertEquals(sub.size, other.size + oldSubSize)
+
+    val iter = other.iterator()
+
+    for (index in endIndex up other.size) {
+        val listItem = list[index]
+        val subItem = sub[index - startIndex]
+        val otherItem = iter.next()
+
+        assertEquals(listItem, otherItem)
+        assertEquals(otherItem, subItem)
+    }
+}
+
+fun testAddAllWithEmptyOnSublist(list: MutableList<Int>, empty: Collection<Int>, startIndex: Int, endIndex: Int) {
+    val sub = list.subList(startIndex, endIndex)
+
+    val oldSize = list.size
+    val oldSubSize = sub.size
+
+    val change = assertDoesNotThrow{ sub.addAll(empty) }
+
+    assertTrue(!change)
+
+    assertEquals(list.size, oldSize)
+    assertEquals(sub.size, oldSubSize)
+}
+
+fun testAddAllWithSelfOnSublist(list: MutableList<Int>, startIndex: Int, endIndex: Int) {
+    val sub = list.subList(startIndex, endIndex)
+
+    val oldSize = list.size
+    val oldSubSize = sub.size
+
+    val change = assertDoesNotThrow{ sub.addAll(sub) }
+
+    assertTrue(change)
+    assertEquals(list.size, oldSize + oldSubSize)
+    assertEquals(sub.size, 2 * oldSubSize)
+
+    for (index in startIndex until endIndex) {
+        val subIndex = index - startIndex
+
+        val listItem = list[index]
+        val subItem = sub[subIndex]
+        val newSubItem = sub[subIndex + oldSubSize]
+
+        assertEquals(subItem, listItem)
+        assertEquals(listItem, newSubItem)
+    }
+}
+
+fun testAddAllWithBaseOnSublist(list: MutableList<Int>, startIndex: Int, endIndex: Int) {
+    val sub = list.subList(startIndex, endIndex)
+    val copy = list.toList()
+
+    val oldSize = list.size
+    val oldSubSize = sub.size
+
+    val change = assertDoesNotThrow{ sub.addAll(list) }
+
+    val newSize = 2 * oldSize
+    val newSubSize = oldSubSize + oldSize
+
+    assertTrue(change)
+    assertEquals(list.size, newSize)
+    assertEquals(sub.size, newSubSize)
+
+    val iter = copy.iterator()
+
+    for (index in list.indices) {
+        val listItem = list[index]
+
+        if (index in startIndex up sub.size) {
+            val subItem = sub[index - startIndex]
+
+            assertEquals(listItem, subItem)
+        }
+
+        if (index in endIndex up oldSize) {
+            val copyItem = copy[index - endIndex]
+
+            assertEquals(listItem, copyItem)
+        }
+        else {
+            val iterItem = iter.next()
+
+            assertEquals(listItem, iterItem)
+        }
+    }
+}
+
+fun testAddAllWithSublistOnBaseList(list: MutableList<Int>, startIndex: Int, endIndex: Int) {
+    val sub = list.subList(startIndex, endIndex)
+    val copy = sub.toList()
+
+    val oldSize = list.size
+    val oldSubSize = sub.size
+
+    val change = assertDoesNotThrow{ list.addAll(sub) }
+
+    val newSize = oldSize + oldSubSize
+
+    assertTrue(change)
+    assertEquals(list.size, newSize)
+    assertFailsWith<ConcurrentModificationException>{ sub.size }
+}
+
+fun testIndexedAddAllWithOtherOnSublist(
+    list: MutableList<Int>,
+    other: Collection<Int>,
+    startIndex: Int,
+    endIndex: Int,
+    insertIndex: Int
+) {
+    val sub = list.subList(startIndex, endIndex)
+
+    val oldSize = list.size
+    val oldSubSize = sub.size
+
+    val change = assertDoesNotThrow{ sub.addAll(insertIndex, other) }
+
+    assertTrue(change)
+    assertEquals(list.size, oldSize + other.size)
+    assertEquals(sub.size, oldSubSize + other.size)
+
+    val iter = other.iterator()
+
+    for (index in list.indices) {
+        val listItem = list[index]
+
+        if (index in startIndex up sub.size) {
+            val subItem = sub[index - startIndex]
+
+            assertEquals(listItem, subItem)
+        }
+
+        if (index in insertIndex + startIndex up other.size) {
+            val iterItem = iter.next()
+
+            assertEquals(listItem, iterItem)
+        }
+    }
+}
+
+fun testIndexedAddAllWithSelfOnSublist(
+    list: MutableList<Int>,
+    startIndex: Int,
+    endIndex: Int,
+    indexSupplier: (List<Int>) -> Int) {
+    val sub = list.subList(startIndex, endIndex)
+    val insertIndex = indexSupplier(sub)
+
+    val oldSize = list.size
+    val oldSubSize = sub.size
+
+    val change = assertDoesNotThrow{ sub.addAll(insertIndex, sub) }
+
+    assertTrue(change)
+    assertEquals(list.size, oldSize + oldSubSize)
+    assertEquals(sub.size, 2 * oldSubSize)
+
+    for (index in startIndex up sub.size) {
+        val listItem = list[index]
+        val subItem = sub[index - startIndex]
+
+        assertEquals(listItem, subItem)
+    }
+}
+
+fun testIndexedAddAllWithBaseOnSublist(
+    list: MutableList<Int>,
+    startIndex: Int,
+    endIndex: Int,
+    indexSupplier: (List<Int>) -> Int
+) {
+    val sub = list.subList(startIndex, endIndex)
+    val copy = list.toList()
+    val insertIndex = indexSupplier(sub)
+
+    val oldSize = list.size
+    val oldSubSize = sub.size
+
+    val change = assertDoesNotThrow{ sub.addAll(insertIndex, list) }
+
+    val newSize = 2 * oldSize
+    val newSubSize = oldSubSize + oldSize
+
+    assertTrue(change)
+    assertEquals(list.size, newSize)
+    assertEquals(sub.size, newSubSize)
+
+    val iter = copy.iterator()
+
+    for (index in list.indices) {
+        val listItem = list[index]
+
+        if (index in startIndex up sub.size) {
+            val subItem = sub[index - startIndex]
+
+            assertEquals(listItem, subItem)
+        }
+
+        if (index in startIndex + insertIndex up oldSize) {
+            val copyItem = copy[index - insertIndex - startIndex]
+
+            assertEquals(listItem, copyItem)
+        }
+        else {
+            val iterItem = iter.next()
+
+            assertEquals(listItem, iterItem)
+        }
+    }
 }
 
 fun testSwapOnSublist(list: MutableList<String>, sub: MutableList<String>, startIndex: Int, index1: Int, index2: Int) {

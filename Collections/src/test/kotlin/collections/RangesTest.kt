@@ -1,10 +1,7 @@
 package collections
 
 import org.junit.jupiter.api.assertDoesNotThrow
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 @Suppress("SameParameterValue")
 class RangesTest {
@@ -163,9 +160,13 @@ class RangesTest {
             val range2 = range1 step 2
             val range3 = range1 step 3
 
-            assertEquals(range1.count(), range1.asIterable().count())
-            assertEquals(range2.count(), range2.asIterable().count())
-            assertEquals(range3.count(), range3.asIterable().count())
+            val count1 = assertDoesNotThrow{ range1.count() }
+            val count2 = assertDoesNotThrow{ range2.count() }
+            val count3 = assertDoesNotThrow{ range3.count() }
+
+            assertEquals(count1, range1.asIterable().count())
+            assertEquals(count2, range2.asIterable().count())
+            assertEquals(count3, range3.asIterable().count())
         }
     }
 
@@ -178,12 +179,16 @@ class RangesTest {
         )
 
         for (range1 in longRanges) {
-            val range2 = range1 step 2
-            val range3 = range1 step 3
+            val range2 = range1 step 2L
+            val range3 = range1 step 3L
 
-            assertEquals(range1.count(), range1.asIterable().count().toLong())
-            assertEquals(range2.count(), range2.asIterable().count().toLong())
-            assertEquals(range3.count(), range3.asIterable().count().toLong())
+            val count1 = assertDoesNotThrow{ range1.count() }
+            val count2 = assertDoesNotThrow{ range2.count() }
+            val count3 = assertDoesNotThrow{ range3.count() }
+
+            assertEquals(count1, range1.asIterable().count().toLong())
+            assertEquals(count2, range2.asIterable().count().toLong())
+            assertEquals(count3, range3.asIterable().count().toLong())
         }
     }
 
@@ -194,23 +199,31 @@ class RangesTest {
     }
 
     private fun testMoveWithInt() {
-        val amount1 = 10000
+        val amount = 10000
 
-        val upward1 = 0 move amount1
-        val downward1 = 0 move -amount1
+        val upward = assertDoesNotThrow{ 0 move amount }
+        assertEquals(upward.count(), amount)
+        assertEquals(0, upward.first)
+        assertEquals(amount - 1, upward.last)
 
-        assertEquals(upward1.count(), amount1)
-        assertEquals(downward1.count(), amount1)
+        val downward = assertDoesNotThrow{ 0 move -amount }
+        assertEquals(downward.count(), amount)
+        assertEquals(0, downward.first)
+        assertEquals(-amount + 1, downward.last)
     }
 
     private fun testMoveWithLong() {
-        val amount2 = 10000000L
+        val amount = 10000L
 
-        val upward2 = 0L move amount2
-        val downward2 = 0L move -amount2
+        val upward = assertDoesNotThrow{ 0L move amount }
+        assertEquals(upward.count(), amount)
+        assertEquals(0L, upward.first)
+        assertEquals(amount - 1L, upward.last)
 
-        assertEquals(upward2.count(), amount2)
-        assertEquals(downward2.count(), amount2)
+        val downward = assertDoesNotThrow{ 0L move -amount }
+        assertEquals(downward.count(), amount)
+        assertEquals(0L, downward.first)
+        assertEquals(-amount + 1L, downward.last)
     }
 
     @Test
@@ -241,13 +254,17 @@ class RangesTest {
 
     private fun testGetWithIntOn(range: IntProgression) {
         val iter = range.iterator()
+        val size = range.count()
 
-        for (index in 0 until range.count()) {
+        for (index in 0 until size) {
             val iteratedItem = iter.next()
             val indexedItem = assertDoesNotThrow{ range[index] }
 
             assertEquals(indexedItem, iteratedItem)
         }
+
+        assertFailsWith<IndexOutOfBoundsException>{ range[-1] }
+        assertFailsWith<IndexOutOfBoundsException>{ range[size] }
     }
 
     private fun testGetWithLong() {
@@ -272,13 +289,22 @@ class RangesTest {
 
     private fun testGetWithLongOn(range: LongProgression) {
         val iter = range.iterator()
+        val size = range.count()
 
-        for (index in 0L until range.count()) {
-            val indexedItem = assertDoesNotThrow{ range[index] }
+        for (index in 0L until size) {
             val iteratedItem = iter.next()
+            val indexedItem = assertDoesNotThrow{ range[index] }
 
             assertEquals(indexedItem, iteratedItem)
         }
+
+        assertFailsWith<IndexOutOfBoundsException>{ range[-1] }
+        assertFailsWith<IndexOutOfBoundsException>{ range[size] }
+    }
+
+    @Test
+    fun testIndexOf() {
+        TODO()
     }
 
     @Test
@@ -288,70 +314,82 @@ class RangesTest {
     }
 
     private fun testContainsWithInt() {
-        val rangeList = listOf(
-            1 .. 1000,
-            1000 downTo 1,
-            -1000 .. -1,
-            -1 downTo -1000,
-            -1000 .. 1000,
-            1000 downTo -1000
-        )
+        val range1 = 0 .. 1000 step 2
 
-        for (range1 in rangeList) {
-            val range2 = range1 step 2
-            val range3 = range1 step 3
+        testContainsOn(range1, 0, true)
+        testContainsOn(range1, 500, true)
+        testContainsOn(range1, 1000, true)
+        testContainsOn(range1, -1, false)
+        testContainsOn(range1, 1001, false)
 
-            for (value in range1) {
-                val result = assertDoesNotThrow{ value in range1 }
+        val range2 = 1000 downTo 0 step 2
 
-                assertTrue(result)
-            }
+        testContainsOn(range2, 0, true)
+        testContainsOn(range2, 500, true)
+        testContainsOn(range2, 1000, true)
+        testContainsOn(range2, -1, false)
+        testContainsOn(range2, 1001, false)
 
-            for (value in range2) {
-                val result = assertDoesNotThrow{ value in range2 }
+        val range3 = 0 .. 1000 step 3
 
-                assertTrue(result)
-            }
+        testContainsOn(range3, 0, true)
+        testContainsOn(range3, 501, true)
+        testContainsOn(range3, 999, true)
+        testContainsOn(range3, -1, false)
+        testContainsOn(range3, 1000, false)
 
-            for (value in range3) {
-                val result = assertDoesNotThrow{ value in range3 }
+        val range4 = 1000 downTo 0 step 3
 
-                assertTrue(result)
-            }
-        }
+        testContainsOn(range4, 1, true)
+        testContainsOn(range4, 499, true)
+        testContainsOn(range4, 1000, true)
+        testContainsOn(range4, 0, false)
+        testContainsOn(range4, 1001, false)
+    }
+
+    private fun testContainsOn(range: IntProgression, value: Int, expected: Boolean) {
+        val result = assertDoesNotThrow{ value in range }
+
+        assertEquals(expected, result)
     }
 
     private fun testContainsWithLong() {
-        val rangeList = listOf(
-            1L .. 1000L,
-            1000L downTo 1L,
-            -1000L .. -1L,
-            -1L downTo -1000L,
-            -1000L .. 1000L,
-            1000L downTo -1000L
-        )
+        val range1 = 0L .. 1000L step 2L
 
-        for (range1 in rangeList) {
-            val range2 = range1 step 2L
-            val range3 = range1 step 3L
+        testContainsOn(range1, 0L, true)
+        testContainsOn(range1, 500L, true)
+        testContainsOn(range1, 1000L, true)
+        testContainsOn(range1, -1L, false)
+        testContainsOn(range1, 1001L, false)
 
-            for (value in range1) {
-                val result = assertDoesNotThrow{ value in range1 }
+        val range2 = 1000L downTo 0L step 2L
 
-                assertTrue(result)
-            }
+        testContainsOn(range2, 0L, true)
+        testContainsOn(range2, 500L, true)
+        testContainsOn(range2, 1000L, true)
+        testContainsOn(range2, -1L, false)
+        testContainsOn(range2, 1001L, false)
 
-            for (value in range2) {
-                val result = assertDoesNotThrow{ value in range2 }
+        val range3 = 0L .. 1000L step 3L
 
-                assertTrue(result)
-            }
+        testContainsOn(range3, 0L, true)
+        testContainsOn(range3, 501L, true)
+        testContainsOn(range3, 999L, true)
+        testContainsOn(range3, -1L, false)
+        testContainsOn(range3, 1000L, false)
 
-            for (value in range3) {
-                val result = assertDoesNotThrow{ value in range3 }
+        val range4 = 1000L downTo 0L step 3L
 
-                assertTrue(result)
-            }
-        }
+        testContainsOn(range4, 1L, true)
+        testContainsOn(range4, 499L, true)
+        testContainsOn(range4, 1000L, true)
+        testContainsOn(range4, 0L, false)
+        testContainsOn(range4, 1001L, false)
+    }
+
+    private fun testContainsOn(range: LongProgression, value: Long, expected: Boolean) {
+        val result = assertDoesNotThrow{ value in range }
+
+        assertEquals(expected, result)
     }
 }

@@ -9,7 +9,8 @@ abstract class AbstractMap<TKey, TValue> : MutableMap<TKey, TValue> {
     override val values: MutableCollection<TValue>
         get() = ValueCollection(this)
 
-    override fun isEmpty(): Boolean = 0 == this.size
+    override fun isEmpty(): Boolean =
+        0 == this.size
 
     override fun putAll(from: Map<out TKey, TValue>) {
         for ((key, value) in from) {

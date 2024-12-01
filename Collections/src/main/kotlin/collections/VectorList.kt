@@ -15,6 +15,9 @@ class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TEle
 
     private var data: Array<Any?>
 
+    override var size: Int = 0
+        private set
+
     init {
         checkIfNegativeCapacity(initialCapacity)
 
@@ -23,8 +26,13 @@ class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TEle
         this.data = arrayOfNulls(actualCapacity)
     }
 
-    override var size: Int = 0
-        private set
+    constructor(size: Int, supplier: () -> TElement) : this(size) {
+        for (index in 0 until size) {
+            this.data[index] = supplier()
+        }
+
+        this.size = size
+    }
 
     val capacity: Int
         get() = this.data.size
@@ -56,7 +64,13 @@ class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TEle
 
         this.resizeIfNeededAfterInsertion(newSize)
         this.shiftForInsertion(index, amountToAdd)
-        this.insertElements(elements, index)
+
+        if (this === elements) {
+            this.insertSelf(index, amountToAdd)
+        }
+        else {
+            this.insertElements(elements, index)
+        }
 
         this.size = newSize
         ++(super.modCount)
@@ -73,6 +87,23 @@ class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TEle
     private fun shiftForInsertion(insertIndex: Int, amountToAdd: Int) {
         for (index in this.lastIndex downTo insertIndex) {
             this.data[index + amountToAdd] = this.data[index]
+        }
+    }
+
+    private fun insertSelf(insertIndex: Int, amountToAdd: Int) {
+        val before = 0 until insertIndex
+        val after = insertIndex + amountToAdd up this.size - before.count()
+
+        var currentIndex = insertIndex
+
+        for (index in before) {
+            this.data[currentIndex] = this.data[index]
+            ++currentIndex
+        }
+
+        for (index in after) {
+            this.data[currentIndex] = this.data[index]
+            ++currentIndex
         }
     }
 
@@ -95,6 +126,12 @@ class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TEle
         return item
     }
 
+    private fun shiftForRemoval(index: Int) {
+        for (removalIndex in index until this.lastIndex) {
+            this.data[removalIndex] = this.data[removalIndex + 1]
+        }
+    }
+
     fun removeFromBack(amount: Int): Int {
         checkIfNegativeAmount(amount)
 
@@ -108,9 +145,12 @@ class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TEle
         return oldSize - this.size
     }
 
-    private fun shiftForRemoval(index: Int) {
-        for (removalIndex in index until this.lastIndex) {
-            this.data[removalIndex] = this.data[removalIndex + 1]
+    private fun resizeIfNeededAfterRemoval() {
+        val capacityAboveMinimumThreshold = this.capacity > VectorList.MIN_CAPACITY
+        val halfOfSlotsAreEmpty = this.size <= ceil(this.capacity / 2.0).toInt()
+
+        if (capacityAboveMinimumThreshold && halfOfSlotsAreEmpty) {
+            this.reallocate(this.size * 3 / 2)
         }
     }
 
@@ -122,15 +162,6 @@ class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TEle
         this.data = arrayOfNulls(VectorList.MIN_CAPACITY)
         this.size = 0
         ++(super.modCount)
-    }
-
-    private fun resizeIfNeededAfterRemoval() {
-        val capacityAboveMinimumThreshold = this.capacity > VectorList.MIN_CAPACITY
-        val halfOfSlotsAreEmpty = this.size <= ceil(this.capacity / 2.0).toInt()
-
-        if (capacityAboveMinimumThreshold && halfOfSlotsAreEmpty) {
-            this.reallocate(this.size * 3 / 2)
-        }
     }
 
     fun ensureCapacity(newCapacity: Int) {

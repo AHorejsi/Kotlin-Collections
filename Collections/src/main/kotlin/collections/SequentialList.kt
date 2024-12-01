@@ -135,6 +135,15 @@ class SequentialList<TElement> : AbstractList<TElement>(), Serializable {
     }
 
     private fun deleteNode(node: SeqNode<TElement>) {
+        if (node === this.head) {
+            this.head = this.head!!.next
+            this.head!!.prev = null
+        }
+        else if (node === this.tail) {
+            this.tail = this.tail!!.prev
+            this.tail!!.next = null
+        }
+
         node.next?.prev = node.prev
         node.prev?.next = node.next
 
@@ -172,7 +181,7 @@ class SequentialList<TElement> : AbstractList<TElement>(), Serializable {
         this.index(0, element)
 
     override fun lastIndexOf(element: TElement): Int =
-        this.lastIndex(0, element)
+        this.lastIndex(this.size, element)
 
     override fun iterator(): MutableIterator<TElement> =
         this.listIterator()

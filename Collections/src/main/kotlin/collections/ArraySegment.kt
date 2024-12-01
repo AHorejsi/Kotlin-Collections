@@ -1,6 +1,5 @@
 package collections
 
-import arrow.core.Option
 import java.io.Serializable
 import kotlin.random.Random
 
