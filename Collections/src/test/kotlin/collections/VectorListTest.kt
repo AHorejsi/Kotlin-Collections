@@ -911,420 +911,75 @@ class VectorIteratorTest {
 class VectorListIteratorTest {
     @Test
     fun testConstructor() {
-        this.testConstructorWithEmptyVector()
-        this.testConstructorWithFilledVector()
-    }
+        val vec1 = vectorListOf<Int>()
+        testListIteratorConstruction(vec1)
 
-    private fun testConstructorWithEmptyVector() {
-        val vec = vectorListOf<Int>()
-
-        assertDoesNotThrow{ vec.listIterator() }
-        assertDoesNotThrow{ vec.listIterator(0) }
-
-        assertFailsWith<IndexOutOfBoundsException>{ vec.listIterator(1) }
-    }
-
-    private fun testConstructorWithFilledVector() {
-        val vec = vectorListOf(1, 2, 3, 4, 5, 6, 7, 8)
-
-        for (index in 0 .. vec.size) {
-            assertDoesNotThrow{ vec.listIterator(index) }
-        }
-
-        assertFailsWith<IndexOutOfBoundsException>{ vec.listIterator(-1) }
-        assertFailsWith<IndexOutOfBoundsException>{ vec.listIterator(vec.size + 1) }
+        val vec2 = (1 .. 5).toVectorList()
+        testListIteratorConstruction(vec2)
     }
 
     @Test
     fun testPreviousIndex() {
         val vec = (1 .. 13).toVectorList()
 
-        for (index in 1 .. vec.lastIndex) {
-            val iter = vec.listIterator(index)
-            val index1 = assertDoesNotThrow{ iter.previousIndex() }
-            assertEquals(index - 1, index1)
-
-            iter.previous()
-            val index2 = assertDoesNotThrow{ iter.previousIndex() }
-            assertEquals(index - 2, index2)
-
-            iter.next()
-            val index3 = assertDoesNotThrow{ iter.previousIndex() }
-            assertEquals(index - 1, index3)
-
-            iter.next()
-            val index4 = assertDoesNotThrow{ iter.previousIndex() }
-            assertEquals(index, index4)
-        }
+        testPreviousIndexOnListIterator(vec)
     }
 
     @Test
     fun testNextIndex() {
         val vec = (1 .. 13).toVectorList()
 
-        for (index in 1 .. vec.lastIndex) {
-            val iter = vec.listIterator(index)
-            val index1 = assertDoesNotThrow{ iter.nextIndex() }
-            assertEquals(index, index1)
-
-            iter.next()
-            val index2 = assertDoesNotThrow{ iter.nextIndex() }
-            assertEquals(index + 1, index2)
-
-            iter.previous()
-            val index3 = assertDoesNotThrow{ iter.nextIndex() }
-            assertEquals(index, index3)
-
-            iter.previous()
-            val index4 = assertDoesNotThrow{ iter.nextIndex() }
-            assertEquals(index - 1, index4)
-        }
+        testNextIndexOnListIterator(vec)
     }
 
     @Test
     fun testHasPrevious() {
         val vec = vectorListOf(-19, 100, 75, 14, -32, -27, 11, Int.MAX_VALUE, Int.MIN_VALUE)
 
-        this.testAtBeginningForHasPrevious(vec)
-        this.testAfterForHasPrevious(vec)
-    }
-
-    private fun testAtBeginningForHasPrevious(vec: VectorList<Int>) {
-        val iter = vec.listIterator(0)
-
-        val result = assertDoesNotThrow{ iter.hasPrevious() }
-
-        assertFalse(result)
-    }
-
-    private fun testAfterForHasPrevious(vec: VectorList<Int>) {
-        for (index in 1 .. vec.size) {
-            val iter = vec.listIterator(index)
-
-            val result = assertDoesNotThrow{ iter.hasPrevious() }
-
-            assertTrue(result)
-        }
+        testHasPreviousOnListIterator(vec)
     }
 
     @Test
     fun testHasNext() {
         val vec = vectorListOf(Int.MIN_VALUE, Int.MAX_VALUE, 0, 14, 1010, -65, -33, 2)
 
-        this.testAtEndForHasNext(vec)
-        this.testBeforeForHasNext(vec)
-    }
-
-    private fun testAtEndForHasNext(vec: VectorList<Int>) {
-        val iter = vec.listIterator(vec.size)
-
-        val result = assertDoesNotThrow{ iter.hasNext() }
-
-        assertFalse(result)
-    }
-
-    private fun testBeforeForHasNext(vec: VectorList<Int>) {
-        for (index in 0 .. vec.lastIndex) {
-            val iter = vec.listIterator(index)
-
-            val result = assertDoesNotThrow{ iter.hasNext() }
-
-            assertTrue(result)
-        }
+        testHasNextOnListIterator(vec)
     }
 
     @Test
     fun testPrevious() {
         val vec = (1 .. 15).toVectorList()
 
-        for (index in 0 .. vec.size) {
-            val iter = vec.listIterator(index)
-
-            this.testPreviousWithIndex(iter, index, vec)
-        }
-    }
-
-    private fun testPreviousWithIndex(iter: MutableListIterator<Int>, startIndex: Int, vec: VectorList<Int>) {
-        var index = startIndex - 1
-
-        while (iter.hasPrevious()) {
-            val item = assertDoesNotThrow{ iter.previous() }
-
-            assertEquals(vec[index], item)
-
-            --index
-        }
-
-        assertFailsWith<NoSuchElementException>{ iter.previous() }
+        testPreviousOnListIterator(vec)
     }
 
     @Test
     fun testNext() {
         val vec = (1 .. 15).toVectorList()
 
-        for (index in 0 .. vec.size) {
-            val iter = vec.listIterator(index)
-
-            this.testNextWithIndex(iter, index, vec)
-        }
-    }
-
-    private fun testNextWithIndex(iter: MutableListIterator<Int>, startIndex: Int, vec: VectorList<Int>) {
-        var index = startIndex
-
-        while (iter.hasNext()) {
-            val item = assertDoesNotThrow{ iter.next() }
-
-            assertEquals(vec[index], item)
-
-            ++index
-        }
-
-        assertFailsWith<NoSuchElementException>{ iter.next() }
+        testNextOnListIterator(vec)
     }
 
     @Test
     fun testSet() {
-        this.testSetWithNext()
-        this.testSetWithPrevious()
-        this.testSetAtEnds()
-        this.testSetAfterRemove()
-    }
-
-    private fun testSetWithNext() {
-        val oddMax = 101
-        val vec = (1 .. oddMax).toVectorList()
-        val iter = vec.listIterator()
-        val isEven = { num: Int -> 0 == num % 2 }
-        val oldSize = vec.size
-
-        assertFailsWith<IllegalStateException>{ iter.set(0) }
-
-        while (iter.hasNext()) {
-            val item = iter.next()
-
-            if (isEven(item)) {
-                assertDoesNotThrow{ iter.set(-1) }
-            }
-        }
-
-        assertEquals(oldSize, vec.size)
-        assertTrue(vec.none(isEven))
-
-        vec.add(1)
-        assertFailsWith<ConcurrentModificationException>{ iter.set(-1) }
-    }
-
-    private fun testSetWithPrevious() {
-        val evenMax = 100
-        val vec = (1 .. evenMax).toVectorList()
-        val iter = vec.listIterator(vec.size)
-        val isOdd = { num: Int -> 1 == num % 2 }
-        val oldSize = vec.size
-
-        assertFailsWith<IllegalStateException>{ iter.set(0) }
-
-        while (iter.hasPrevious()) {
-            val item = iter.previous()
-
-            if (isOdd(item)) {
-                assertDoesNotThrow{ iter.set(-1) }
-            }
-        }
-
-        assertEquals(oldSize, vec.size)
-        assertTrue(vec.none(isOdd))
-
-        vec.add(1)
-        assertFailsWith<ConcurrentModificationException>{ iter.set(-1) }
-    }
-
-    private fun testSetAtEnds() {
-        val vec = 0.replicate(10).toVectorList()
-
-        val iter1 = vec.listIterator(0)
-        iter1.next()
-
-        val iter2 = vec.listIterator(vec.size)
-        iter2.previous()
-
-        val value1 = 1
-        val value2 = 2
-
-        assertNotEquals(value1, vec.first())
-        assertNotEquals(value2, vec.last())
-
-        assertDoesNotThrow{ iter1.set(value1) }
-        assertDoesNotThrow{ iter2.set(value2) }
-
-        assertEquals(value1, vec.first())
-        assertEquals(value2, vec.last())
-
-        vec.removeLast()
-        assertFailsWith<ConcurrentModificationException>{ iter1.set(-1) }
-        assertFailsWith<ConcurrentModificationException>{ iter2.set(-1) }
-    }
-
-    private fun testSetAfterRemove() {
-        val vec = (1 .. 150).toVectorList()
-        val iter = vec.listIterator()
-
-        repeat(vec.size / 2) {
-            iter.next()
-        }
-        iter.remove()
-        assertFailsWith<IllegalStateException>{ iter.set(-1) }
-
-        repeat(vec.size / 4) {
-            iter.previous()
-        }
-        iter.remove()
-        assertFailsWith<IllegalStateException>{ iter.set(-1) }
+        TODO()
     }
 
     @Test
     fun testRemove() {
-        this.testRemoveWithNext()
-        this.testRemoveWithPrevious()
-        this.testRemoveAfterAdding()
-    }
-
-    private fun testRemoveWithNext() {
-        val vec = (0 .. 100).toVectorList()
-        val iter = vec.listIterator()
-        val isOdd = { num: Int -> 1 == num % 2 }
-        val oldSize = vec.size
-
-        assertFailsWith<IllegalStateException>{ iter.remove() }
-
-        while (iter.hasNext()) {
-            val item = iter.next()
-
-            if (isOdd(item)) {
-                assertDoesNotThrow{ iter.remove() }
-                assertFailsWith<IllegalStateException>{ iter.remove() }
-            }
-        }
-
-        assertGreater(oldSize, vec.size)
-        assertTrue(vec.none(isOdd))
-
-        assertDoesNotThrow{ iter.remove() }
-        assertNotContains(vec, 100)
-        assertFailsWith<IllegalStateException>{ iter.remove() }
-
-        vec.add(vec.size / 2, Int.MAX_VALUE)
-        assertFailsWith<ConcurrentModificationException>{ iter.remove() }
-    }
-
-    private fun testRemoveWithPrevious() {
-        val vec = (1 .. 101).toVectorList()
-        val iter = vec.listIterator(vec.size)
-        val isEven = { num: Int -> 0 == num % 2 }
-        val oldSize = vec.size
-
-        assertFailsWith<IllegalStateException>{ iter.remove() }
-
-        while (iter.hasPrevious()) {
-            val item = iter.previous()
-
-            if (isEven(item)) {
-                assertDoesNotThrow{ iter.remove() }
-                assertFailsWith<IllegalStateException>{ iter.remove() }
-            }
-        }
-
-        assertGreater(oldSize, vec.size)
-        assertTrue(vec.none(isEven))
-
-        assertDoesNotThrow{ iter.remove() }
-        assertNotContains(vec, 1)
-        assertFailsWith<IllegalStateException>{ iter.remove() }
-
-        vec.retainAll(1 .. 10)
-        assertFailsWith<ConcurrentModificationException>{ iter.remove() }
-    }
-
-    private fun testRemoveAfterAdding() {
-        val vec = (1 .. 50).toVectorList()
-        val iter = vec.listIterator()
-        val amountToAdd = 4
-
-        repeat(vec.size / 2) {
-            iter.next()
-        }
-
-        val itemAfterNext = iter.next()
-
-        repeat(amountToAdd) {
-            iter.add(-1 - it)
-        }
-
-        assertDoesNotThrow{ iter.remove() }
-        assertFailsWith<IllegalStateException>{ iter.remove() }
-
-        repeat(vec.size / 4) {
-            iter.previous()
-        }
-
-        val itemAfterPrev = iter.previous()
-
-        repeat(amountToAdd) {
-            iter.add(-1 - it)
-        }
-
-        assertDoesNotThrow{ iter.remove() }
-        assertFailsWith<IllegalStateException>{ iter.remove() }
-
-        assertFalse(itemAfterNext in vec)
-        assertFalse(itemAfterPrev in vec)
+        TODO()
     }
 
     @Test
     fun testAdd() {
-        val vec = (0 until 100).toVectorList()
-
-        this.testAddInMiddleOfListIterator(vec)
-        this.testAddAtEndsOfListIterator(vec)
+        TODO()
     }
 
-    private fun testAddInMiddleOfListIterator(vec: VectorList<Int>) {
-        val iter = vec.listIterator()
+    @Test
+    fun testConcurrentModification() {
+        val vec = (1 .. 10).toVectorList()
 
-        repeat(3 * vec.size / 4) {
-            iter.next()
-        }
-        this.testAddWithIterator(vec, iter, -7)
-
-        repeat(vec.size / 2) {
-            iter.previous()
-        }
-        this.testAddWithIterator(vec, iter, -11)
-
-        iter.remove()
-        this.testAddWithIterator(vec, iter, -3)
-
-        vec.removeFromBack(5)
-        assertFailsWith<ConcurrentModificationException>{ iter.add(0) }
-    }
-
-    private fun testAddWithIterator(vec: VectorList<Int>, iter: MutableListIterator<Int>, item: Int) {
-        assertDoesNotThrow{ iter.add(item) }
-        assertEquals(vec[iter.nextIndex()], item)
-        assertEquals(iter.next(), item)
-    }
-
-    private fun testAddAtEndsOfListIterator(vec: VectorList<Int>) {
-        val edgeItem = -27
-
-        val begin = vec.listIterator(0)
-        assertDoesNotThrow{ begin.add(edgeItem) }
-
-        val end = vec.listIterator(vec.size)
-        assertDoesNotThrow{ end.add(edgeItem) }
-
-        assertEquals(edgeItem, vec.first())
-        assertEquals(edgeItem, vec.last())
+        testConcurrentModification(vec)
     }
 }
 
@@ -1427,78 +1082,12 @@ class VectorSublistTest {
 
     @Test
     fun testTryFirst() {
-        val vec = (1 .. 10).toVectorList()
-
-        this.testTryFirstOnEmpty(vec)
-        this.testTryFirstOnNonempty(vec)
-    }
-
-    private fun testTryFirstOnEmpty(vec: VectorList<Int>) {
-        val index = 7
-        val sub = vec.subList(index, index)
-
-        val result = assertDoesNotThrow{ sub.tryFirst() }
-
-        assertFailsWith<NoSuchElementException>{ result.getOrThrow() }
-    }
-
-    private fun testTryFirstOnNonempty(vec: VectorList<Int>) {
-        val startIndex = 2
-        val endIndex = 8
-
-        val sub = vec.subList(startIndex, endIndex)
-
-        val notPredicated = assertDoesNotThrow{ sub.tryFirst() }
-        val itemWithNoPredicate = assertDoesNotThrow{ notPredicated.getOrThrow() }
-        assertEquals(itemWithNoPredicate, vec[startIndex])
-
-        val success = assertDoesNotThrow{ sub.tryFirst{ 0 == it % 4 } }
-        val successItem = assertDoesNotThrow{ success.getOrThrow() }
-        val vecIndex = vec.indexOf(successItem)
-        assertLess(startIndex, vecIndex)
-        assertGreater(endIndex, vecIndex)
-
-        val max = vec.max()
-        val failed = assertDoesNotThrow{ sub.tryFirst{ it > max } }
-        assertFailsWith<NoSuchElementException>{ failed.getOrThrow() }
+        TODO()
     }
 
     @Test
     fun testTryLast() {
-        val vec = (1 .. 10).toVectorList()
-
-        this.testTryLastOnEmpty(vec)
-        this.testTryLastOnNonempty(vec)
-    }
-
-    private fun testTryLastOnEmpty(vec: VectorList<Int>) {
-        val index = 1
-        val sub = vec.subList(index, index)
-
-        val result = assertDoesNotThrow{ sub.tryLast() }
-
-        assertFailsWith<NoSuchElementException>{ result.getOrThrow() }
-    }
-
-    private fun testTryLastOnNonempty(vec: VectorList<Int>) {
-        val startIndex = 1
-        val endIndex = 6
-
-        val sub = vec.subList(startIndex, endIndex)
-
-        val notPredicated = assertDoesNotThrow{ sub.tryLast() }
-        val itemWithNoPredicate = assertDoesNotThrow{ notPredicated.getOrThrow() }
-        assertEquals(itemWithNoPredicate, vec[endIndex - 1])
-
-        val success = assertDoesNotThrow{ sub.tryLast{ 0 == it % 4 } }
-        val successItem = assertDoesNotThrow{ success.getOrThrow() }
-        val vecIndex = vec.indexOf(successItem)
-        assertLess(startIndex, vecIndex)
-        assertGreater(endIndex, vecIndex)
-
-        val max = vec.max()
-        val failed = assertDoesNotThrow{ sub.tryLast{ it > max } }
-        assertFailsWith<NoSuchElementException>{ failed.getOrThrow() }
+        TODO()
     }
 
     @Test
@@ -1608,157 +1197,158 @@ class VectorSublistTest {
 
     @Test
     fun testAdd() {
-
+        TODO()
     }
 
     @Test
     fun testAddAll() {
-
+        TODO()
     }
 
     @Test
     fun testInsert() {
+        TODO()
         // TODO: Test inserting base list into sublist
     }
 
     @Test
     fun testResize() {
-
+        TODO()
     }
 
     @Test
     fun testRemove() {
-
+        TODO()
     }
 
     @Test
     fun testRemoveAll() {
-
+        TODO()
     }
 
     @Test
     fun testRemoveAt() {
-
+        TODO()
     }
 
     @Test
     fun testDelete() {
-
+        TODO()
     }
 
     @Test
     fun testRetainAll() {
-
+        TODO()
     }
 
     @Test
     fun testKeep() {
-
+        TODO()
     }
 
     @Test
     fun testRemoveAllOf() {
-
+        TODO()
     }
 
     @Test
     fun testRemoveAmount() {
-
+        TODO()
     }
 
     @Test
     fun testRemoveFromBack() {
-
+        TODO()
     }
 
     @Test
     fun testRemoveRange() {
-
+        TODO()
     }
 
     @Test
     fun testClear() {
-
+        TODO()
     }
 
     @Test
     fun testContains() {
-
+        TODO()
     }
 
     @Test
     fun testContainsAll() {
-
+        TODO()
     }
 
     @Test
     fun testIndexOf() {
-
+        TODO()
     }
 
     @Test
     fun testLastIndexOf() {
-
+        TODO()
     }
 
     @Test
     fun testSeparationPoint() {
-
+        TODO()
     }
 
     @Test
     fun testSeparate() {
-
+        TODO()
     }
 
     @Test
     fun testStableSeparate() {
-        
+        TODO()
     }
 
     @Test
     fun testIntersperse() {
-
+        TODO()
     }
 
     @Test
     fun testEquals() {
-
+        TODO()
     }
 
     @Test
     fun testIsPermutationOf() {
-
+        TODO()
     }
 
     @Test
     fun testHashCode() {
-
+        TODO()
     }
 
     @Test
     fun testCompare() {
-
+        TODO()
     }
 
     @Test
     fun testNext() {
-
+        TODO()
     }
 
     @Test
     fun testPrev() {
-
+        TODO()
     }
 
     @Test
     fun testIsSorted() {
-
+        TODO()
     }
 
     @Test
     fun testIsSortedUntil() {
-
+        TODO()
     }
 
     @Test

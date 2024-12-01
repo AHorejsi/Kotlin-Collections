@@ -139,6 +139,16 @@ sealed class PureLine<TElement> : PureList<TElement>, Serializable {
     override fun isEmpty(): Boolean =
         this is PureLine.Empty<*>
 
+    override fun force(): PureLine<TElement> {
+        if (this.isEmpty()) {
+            return PureLine.empty()
+        }
+
+        val nextLine = this.tail.force()
+
+        return nextLine.prepend(this.head)
+    }
+
     override operator fun get(index: Int): TElement =
         this.getter.getOrElse(index) {
             val newItem = this.getHelper(index, this)

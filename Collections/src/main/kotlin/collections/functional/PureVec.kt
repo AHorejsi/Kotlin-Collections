@@ -413,6 +413,20 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
     override fun isEmpty(): Boolean =
         0 == this.size
 
+    override fun force(): PureVec<TElement> {
+        if (this.size <= 1 || this is PureVec.Multiple<TElement>) {
+            return this
+        }
+
+        val base = Array<Option<TElement>>(this.size) { None }
+
+        for ((index, item) in this.withIndex()) {
+            base[index] = Some(item)
+        }
+
+        return PureVec.Multiple(base, 0, this.size)
+    }
+
     override fun update(index: Int, element: TElement): PureVec<TElement> {
         val singleton = mapOf(index to element)
 
@@ -691,7 +705,11 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
     override fun find(predicate: (TElement) -> Boolean): Result<TElement> =
         this.findHelper(this, 0, predicate)
 
-    private tailrec fun findHelper(vec: PureVec<TElement>, index: Int, predicate: (TElement) -> Boolean): Result<TElement> {
+    private tailrec fun findHelper(
+        vec: PureVec<TElement>,
+        index: Int,
+        predicate: (TElement) -> Boolean
+    ): Result<TElement> {
         if (index == vec.size) {
             return Result.failure(ResultUtils.FAILED_SEARCH)
         }
@@ -708,7 +726,11 @@ sealed class PureVec<TElement> : PureList<TElement>, RandomAccess, Serializable 
     override fun findLast(predicate: (TElement) -> Boolean): Result<TElement> =
         this.findLastHelper(this, this.lastIndex, predicate)
 
-    private tailrec fun findLastHelper(vec: PureVec<TElement>, index: Int, predicate: (TElement) -> Boolean): Result<TElement> {
+    private tailrec fun findLastHelper(
+        vec: PureVec<TElement>,
+        index: Int,
+        predicate: (TElement) -> Boolean
+    ): Result<TElement> {
         if (-1 == index) {
             return Result.failure(ResultUtils.FAILED_SEARCH)
         }

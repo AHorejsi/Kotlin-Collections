@@ -43,7 +43,8 @@ class JumpList<TElement>(
         return true
     }
 
-    override fun addAll(elements: Collection<TElement>): Boolean = super<SelfOrgList>.addAll(elements)
+    override fun addAll(elements: Collection<TElement>): Boolean =
+        super<SelfOrgList>.addAll(elements)
 
     override fun remove(element: TElement): Boolean {
         var node = this.head
@@ -77,9 +78,11 @@ class JumpList<TElement>(
         ++(super.modCount)
     }
 
-    override fun removeAll(elements: Collection<TElement>): Boolean = super<SelfOrgList>.removeAll(elements)
+    override fun removeAll(elements: Collection<TElement>): Boolean =
+        super<SelfOrgList>.removeAll(elements)
 
-    override fun retainAll(elements: Collection<TElement>): Boolean = super<SelfOrgList>.retainAll(elements)
+    override fun retainAll(elements: Collection<TElement>): Boolean =
+        super<SelfOrgList>.retainAll(elements)
 
     override fun clear() {
         this.head.next = null
@@ -170,29 +173,23 @@ class JumpList<TElement>(
         return this.jumper(node1, next1)
     }
 
-    override fun containsAll(elements: Collection<TElement>): Boolean = super<SelfOrgList>.containsAll(elements)
+    override fun containsAll(elements: Collection<TElement>): Boolean =
+        super<SelfOrgList>.containsAll(elements)
 
     override fun iterator(): MutableIterator<TElement> = object : MutableIterator<TElement> {
         private var current: OrgNode<TElement> = this@JumpList.head
         private var last: OrgNode<TElement>? = null
         private var modCount: Int = this@JumpList.modCount
 
-        private fun checkModCount() {
-            if (this.modCount != this@JumpList.modCount) {
-                throw ConcurrentModificationException()
-            }
-        }
-
         override fun hasNext(): Boolean {
-            this.checkModCount()
+            checkIfUnderlyingCollectionHasBeenModified(this.modCount, this@JumpList.modCount)
 
             return null !== this.current.next
         }
 
         override fun next(): TElement {
-            if (!this.hasNext()) {
-                throw NoSuchElementException()
-            }
+            checkIfUnderlyingCollectionHasBeenModified(this.modCount, this@JumpList.modCount)
+            checkIfNext(this)
 
             val itemNode = this.current.next
             val item = (itemNode as OrgNode.Item<TElement>).value
@@ -209,7 +206,7 @@ class JumpList<TElement>(
 
                 this.last = null
                 ++(this.modCount)
-            } ?: throw IllegalStateException()
+            } ?: noneToUse()
         }
     }
 }

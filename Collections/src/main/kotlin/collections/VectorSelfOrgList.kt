@@ -21,7 +21,8 @@ class VectorSelfOrgList<TElement>(
     override val isRandomAccess: Boolean
         get() = true
 
-    override fun isEmpty(): Boolean = this.data.isEmpty()
+    override fun isEmpty(): Boolean =
+        this.data.isEmpty()
 
     override fun at(index: Int): TElement {
         if (index < 0 || index >= this.size) {
@@ -31,13 +32,17 @@ class VectorSelfOrgList<TElement>(
         return this.data[index]
     }
 
-    override fun add(element: TElement): Boolean = this.data.add(element)
+    override fun add(element: TElement): Boolean =
+        this.data.add(element)
 
-    override fun addAll(elements: Collection<TElement>): Boolean = this.data.addAll(elements)
+    override fun addAll(elements: Collection<TElement>): Boolean =
+        this.data.addAll(elements)
 
-    override fun remove(element: TElement): Boolean = this.data.remove(element)
+    override fun remove(element: TElement): Boolean =
+        this.data.remove(element)
 
-    override fun clear() = this.data.clear()
+    override fun clear() =
+        this.data.clear()
 
     override fun find(predicate: (element: TElement) -> Boolean): IndexedValue<TElement>? {
         val index = this.data.index(0, predicate)
@@ -80,5 +85,6 @@ class VectorSelfOrgList<TElement>(
         }
     }
 
-    override fun iterator(): MutableIterator<TElement> = this.data.iterator()
+    override fun iterator(): MutableIterator<TElement> =
+        this.data.iterator()
 }

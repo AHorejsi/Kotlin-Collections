@@ -5,7 +5,7 @@ import java.io.Serializable
 @Suppress("RemoveRedundantQualifierName")
 class DequeList<TElement>(
     initialCapacity: Int = DequeList.DEFAULT_CAPACITY
-) : AbstractList<TElement>(), RandomAccess, Serializable {
+) : AbstractRandomAccessList<TElement>(), Serializable {
     private companion object {
         @Suppress("ConstPropertyName")
         const val serialVersionUID: Long = 1L

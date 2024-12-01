@@ -63,18 +63,6 @@ internal fun checkIfRangeInBounds(fromIndex: Int, toIndex: Int, size: Int) {
     }
 }
 
-internal fun checkIfSameSize(size1: Int, size2: Int) {
-    if (size1 != size2) {
-        throw IllegalArgumentException("Sizes must be equal. Size1 = $size1, Size2 = $size2")
-    }
-}
-
-internal fun checkIfEmptyCollection(collect: Collection<*>) {
-    if (collect.isEmpty()) {
-        throw IllegalArgumentException("Collection must be non-empty")
-    }
-}
-
 internal fun checkIfEmptyListForWrappedIndexing(list: List<*>) {
     if (list.isEmpty()) {
         throw IllegalStateException("List must be non-empty for wrapped indexing")

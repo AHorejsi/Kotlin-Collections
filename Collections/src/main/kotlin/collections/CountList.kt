@@ -18,7 +18,10 @@ class CountList<TElement> : SelfOrgList<TElement>, Serializable {
         const val serialVersionUID: Long = 1L
     }
 
-    private val jump: JumpList<Counter<TElement>> = JumpList{ past, now -> past.value.amount > now.value.amount }
+    private val jump: JumpList<Counter<TElement>> =
+        JumpList{ past, now ->
+            past.value.amount > now.value.amount
+        }
 
     override val size: Int
         get() = this.jump.size
@@ -26,7 +29,8 @@ class CountList<TElement> : SelfOrgList<TElement>, Serializable {
     override val isRandomAccess: Boolean
         get() = this.jump.isRandomAccess
 
-    override fun isEmpty(): Boolean = this.jump.isEmpty()
+    override fun isEmpty(): Boolean =
+        this.jump.isEmpty()
 
     override fun add(element: TElement): Boolean {
         val counter = Counter(0, element)
@@ -34,9 +38,11 @@ class CountList<TElement> : SelfOrgList<TElement>, Serializable {
         return this.jump.add(counter)
     }
 
-    override fun remove(element: TElement): Boolean = 1 == this.jump.removeAmount(1) { it.item == element }
+    override fun remove(element: TElement): Boolean =
+        1 == this.jump.removeAmount(1) { it.item == element }
 
-    override fun clear() = this.jump.clear()
+    override fun clear() =
+        this.jump.clear()
 
     override fun find(predicate: (TElement) -> Boolean): IndexedValue<TElement>? =
         this.amount(predicate)?.let { IndexedValue(it.index, it.value.item) }

@@ -207,3 +207,141 @@ fun testIsSortedUntil(list: List<Int>, comp: Comparator<Int>, expectedIndex: Int
 
     assertEquals(expectedIndex, resultIndex)
 }
+
+fun testListIteratorConstruction(list: List<Int>) {
+    assertDoesNotThrow{ list.listIterator() }
+    assertDoesNotThrow{ list.listIterator(list.size) }
+
+    assertFailsWith<IndexOutOfBoundsException>{ list.listIterator(-1) }
+    assertFailsWith<IndexOutOfBoundsException>{ list.listIterator(list.size + 1) }
+}
+
+fun testPreviousIndexOnListIterator(list: List<Int>) {
+    for (index in 1 .. list.lastIndex) {
+        val iter = list.listIterator(index)
+        val index1 = assertDoesNotThrow{ iter.previousIndex() }
+        assertEquals(index - 1, index1)
+
+        iter.previous()
+        val index2 = assertDoesNotThrow{ iter.previousIndex() }
+        assertEquals(index - 2, index2)
+
+        iter.next()
+        val index3 = assertDoesNotThrow{ iter.previousIndex() }
+        assertEquals(index - 1, index3)
+
+        iter.next()
+        val index4 = assertDoesNotThrow{ iter.previousIndex() }
+        assertEquals(index, index4)
+    }
+}
+
+fun testNextIndexOnListIterator(list: List<Int>) {
+    for (index in 1 .. list.lastIndex) {
+        val iter = list.listIterator(index)
+        val index1 = assertDoesNotThrow{ iter.nextIndex() }
+        assertEquals(index, index1)
+
+        iter.next()
+        val index2 = assertDoesNotThrow{ iter.nextIndex() }
+        assertEquals(index + 1, index2)
+
+        iter.previous()
+        val index3 = assertDoesNotThrow{ iter.nextIndex() }
+        assertEquals(index, index3)
+
+        iter.previous()
+        val index4 = assertDoesNotThrow{ iter.nextIndex() }
+        assertEquals(index - 1, index4)
+    }
+}
+
+fun testHasPreviousOnListIterator(list: List<Int>) {
+    val iter = list.listIterator(0)
+    val beginResult = assertDoesNotThrow{ iter.hasPrevious() }
+
+    assertTrue(!beginResult)
+
+    while (iter.hasNext()) {
+        iter.next()
+
+        val result = assertDoesNotThrow{ iter.hasPrevious() }
+
+        assertTrue(result)
+    }
+}
+
+fun testHasNextOnListIterator(list: List<Int>) {
+    val iter = list.listIterator(list.size)
+    val endResult = assertDoesNotThrow{ iter.hasNext() }
+
+    assertTrue(!endResult)
+
+    while (iter.hasPrevious()) {
+        iter.previous()
+
+        val result = assertDoesNotThrow{ iter.hasNext() }
+
+        assertTrue(result)
+    }
+}
+
+fun testPreviousOnListIterator(list: List<Int>) {
+    for (index in 0 .. list.size) {
+        val iter = list.listIterator(index)
+
+        testPreviousWithIndex(iter, index, list)
+    }
+}
+
+private fun testPreviousWithIndex(iter: ListIterator<Int>, startIndex: Int, list: List<Int>) {
+    var index = startIndex - 1
+
+    while (iter.hasPrevious()) {
+        val elem = assertDoesNotThrow{ iter.previous() }
+
+        assertEquals(list[index], elem)
+
+        --index
+    }
+
+    assertFailsWith<NoSuchElementException>{ iter.previous() }
+}
+
+fun testNextOnListIterator(list: List<Int>) {
+    for (index in 0 .. list.size) {
+        val iter = list.listIterator(index)
+
+        testNextWithIndex(iter, index, list)
+    }
+}
+
+private fun testNextWithIndex(iter: ListIterator<Int>, startIndex: Int, list: List<Int>) {
+    var index = startIndex
+
+    while (iter.hasNext()) {
+        val item = assertDoesNotThrow{ iter.next() }
+
+        assertEquals(list[index], item)
+
+        ++index
+    }
+
+    assertFailsWith<NoSuchElementException>{ iter.next() }
+}
+
+fun testConcurrentModification(list: MutableList<Int>) {
+    val iter = list.listIterator()
+
+    list.add(0)
+
+    assertFailsWith<ConcurrentModificationException>{ iter.previousIndex() }
+    assertFailsWith<ConcurrentModificationException>{ iter.nextIndex() }
+    assertFailsWith<ConcurrentModificationException>{ iter.hasPrevious() }
+    assertFailsWith<ConcurrentModificationException>{ iter.hasNext() }
+    assertFailsWith<ConcurrentModificationException>{ iter.previous() }
+    assertFailsWith<ConcurrentModificationException>{ iter.next() }
+    assertFailsWith<ConcurrentModificationException>{ iter.set(-1) }
+    assertFailsWith<ConcurrentModificationException>{ iter.remove() }
+    assertFailsWith<ConcurrentModificationException>{ iter.add(-1) }
+}

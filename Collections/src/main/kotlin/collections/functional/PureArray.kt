@@ -45,6 +45,9 @@ class PureArray<TElement> private constructor(
     override fun isEmpty(): Boolean =
         0 == this.size
 
+    override fun force(): PureArray<TElement> =
+        this
+
     override operator fun get(index: Int): TElement {
         checkIfIndexIsAccessible(index, this.size)
 

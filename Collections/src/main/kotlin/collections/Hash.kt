@@ -22,9 +22,11 @@ interface Hasher {
 
         override val loadFactor: Float = 0.75f
 
-        override fun hashCode2(index: Int, count: Int): Int = index + count
+        override fun hashCode2(index: Int, count: Int): Int =
+            index + count
 
-        override fun findNextCapacity(currentCapacity: Int): Int = currentCapacity * 2
+        override fun findNextCapacity(currentCapacity: Int): Int =
+            currentCapacity * 2
     }
 
     object Quadratic : Hasher {
@@ -32,7 +34,8 @@ interface Hasher {
 
         override val loadFactor: Float = 0.5f
 
-        override fun hashCode2(index: Int, count: Int): Int = index + count * count
+        override fun hashCode2(index: Int, count: Int): Int =
+            index + count * count
 
         override fun findNextCapacity(currentCapacity: Int): Int {
             var newCapacity = currentCapacity + 2
@@ -68,9 +71,11 @@ interface Hasher {
 
 interface EqualityComparator<in TElement> {
     object Default : EqualityComparator<Any?> {
-        override fun equals(left: Any?, right: Any?): Boolean = left == right
+        override fun equals(left: Any?, right: Any?): Boolean =
+            left == right
 
-        override fun hashCode(item: Any?): Int = item.hashCode()
+        override fun hashCode(item: Any?): Int =
+            item.hashCode()
     }
 
     fun equals(left: TElement, right: TElement): Boolean

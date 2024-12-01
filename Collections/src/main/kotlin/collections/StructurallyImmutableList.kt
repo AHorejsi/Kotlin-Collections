@@ -4,7 +4,7 @@ import kotlin.reflect.KCallable
 
 internal class StructurallyImmutableList<TElement>(
     private val base: ArraySegment<TElement>
-) : AbstractList<TElement>(), RandomAccess {
+) : AbstractRandomAccessList<TElement>() {
     override val size: Int
         get() = this.base.size
 

@@ -5,7 +5,7 @@ import kotlin.math.ceil
 import kotlin.math.max
 
 @Suppress("RemoveRedundantQualifierName")
-class VectorList<TElement>(initialCapacity: Int) : AbstractList<TElement>(), RandomAccess, Serializable {
+class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TElement>(), Serializable {
     companion object {
         @Suppress("ConstPropertyName")
         private const val serialVersionUID: Long = 1L

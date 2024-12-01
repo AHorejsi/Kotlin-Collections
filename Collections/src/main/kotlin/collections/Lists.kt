@@ -49,7 +49,7 @@ fun <TElement> MutableList<TElement>.removeFromBack(amount: Int): Int =
     when (this) {
         is DequeList<TElement> -> this.removeFromBack(amount)
         is VectorList<TElement> -> this.removeFromBack(amount)
-        is Sublist<TElement> -> this.removeFromBack(amount)
+        is RandomAccessSublist<TElement> -> this.removeFromBack(amount)
         else -> this.removeFromBackHelper(amount)
     }
 

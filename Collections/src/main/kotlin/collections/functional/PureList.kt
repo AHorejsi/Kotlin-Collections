@@ -8,6 +8,8 @@ interface PureList<TElement> : List<TElement> {
 
     val tail: PureList<TElement>
 
+    fun force(): PureList<TElement>
+
     fun update(index: Int, element: TElement): PureList<TElement>
 
     fun updateAll(elements: Map<Int, TElement>): PureList<TElement>
