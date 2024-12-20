@@ -3,9 +3,9 @@ package collections
 import java.io.Serializable
 
 @Suppress("RemoveRedundantQualifierName")
-class VectorSelfOrgList<TElement>(
-    initialCapacity: Int = VectorSelfOrgList.DEFAULT_CAPACITY
-) : SelfOrgList<TElement>, RandomAccess, Serializable {
+class TransposeList<TElement>(
+    initialCapacity: Int = TransposeList.DEFAULT_CAPACITY
+) : AbstractCollection<TElement>(), SelfOrgList<TElement>, RandomAccess, Serializable {
     private companion object {
         @Suppress("ConstPropertyName")
         const val serialVersionUID: Long = 1L
@@ -44,6 +44,9 @@ class VectorSelfOrgList<TElement>(
     override fun clear() =
         this.data.clear()
 
+    override fun containsAll(elements: Collection<TElement>): Boolean =
+        super<SelfOrgList>.containsAll(elements)
+
     override fun find(predicate: (element: TElement) -> Boolean): IndexedValue<TElement>? {
         val index = this.data.index(0, predicate)
 
@@ -58,10 +61,10 @@ class VectorSelfOrgList<TElement>(
         var index = -1
 
         do {
-            index = this@VectorSelfOrgList.data.index(index + 1, predicate)
+            index = this@TransposeList.data.index(index + 1, predicate)
 
             if (index > 0) {
-                val result = this@VectorSelfOrgList.reorder(index)
+                val result = this@TransposeList.reorder(index)
 
                 yield(result)
             }
