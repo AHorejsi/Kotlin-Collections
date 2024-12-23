@@ -62,15 +62,15 @@ class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TEle
         val amountToAdd = elements.size
         val newSize = this.size + amountToAdd
 
+        if (elements is RandomAccessSublist<TElement> && elements.hasBaseOf(this)) {
+            val copy = elements.toList()
+
+            return this.addAll(index, copy)
+        }
+
         this.resizeIfNeededAfterInsertion(newSize)
         this.shiftForInsertion(index, amountToAdd)
-
-        if (this === elements) {
-            this.insertSelf(index, amountToAdd)
-        }
-        else {
-            this.insertElements(elements, index)
-        }
+        this.insertNewElements(elements, amountToAdd, index)
 
         this.size = newSize
         ++(super.modCount)
@@ -87,6 +87,15 @@ class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TEle
     private fun shiftForInsertion(insertIndex: Int, amountToAdd: Int) {
         for (index in this.lastIndex downTo insertIndex) {
             this.data[index + amountToAdd] = this.data[index]
+        }
+    }
+
+    private fun insertNewElements(elements: Collection<TElement>, amountToAdd: Int, index: Int) {
+        if (this === elements) {
+            this.insertSelf(index, amountToAdd)
+        }
+        else {
+            this.insertElements(elements, index)
         }
     }
 

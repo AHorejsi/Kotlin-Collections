@@ -7,8 +7,17 @@ abstract class AbstractCollection<TElement> : MutableCollection<TElement> {
     override fun isEmpty(): Boolean =
         0 == this.size
 
-    override fun addAll(elements: Collection<TElement>): Boolean =
-        this.insert(elements) > 0
+    override fun addAll(elements: Collection<TElement>): Boolean {
+        var change = false
+
+        for (item in elements) {
+            if (this.add(item)) {
+                change = true
+            }
+        }
+
+        return change
+    }
 
     override fun removeAll(elements: Collection<@UnsafeVariance TElement>): Boolean =
         this.delete(elements) > 0

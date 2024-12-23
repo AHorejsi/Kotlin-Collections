@@ -3,11 +3,20 @@ package collections
 import java.io.Serializable
 
 abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableList<TElement> {
+    override fun add(element: TElement): Boolean {
+        this.add(this.size, element)
+
+        return true
+    }
+
     override fun add(index: Int, element: TElement) {
         val list = listOf(element)
 
         this.addAll(index, list)
     }
+
+    override fun addAll(elements: Collection<TElement>): Boolean =
+        this.addAll(this.size, elements)
 
     override fun remove(element: @UnsafeVariance TElement): Boolean {
         val iter = this.iterator()
@@ -111,6 +120,16 @@ internal class Sublist<TElement>(
         checkIfUnderlyingCollectionHasBeenModified(super.modCount, this.base.modCount)
 
         return this.fromIndex == this.toIndex
+    }
+
+    internal fun hasBaseOf(other: List<TElement>): Boolean {
+        var list = this.base
+
+        while (list is Sublist<TElement>) {
+            list = list.base
+        }
+
+        return list === other
     }
 
     override fun get(index: Int): TElement {

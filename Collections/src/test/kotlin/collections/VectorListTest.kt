@@ -1301,7 +1301,9 @@ class VectorSublistTest {
         testIndexedAddAllWithBaseOnSublist(vec, vec.size / 4, vec.size / 2) { it.size / 2 }
         testIndexedAddAllWithBaseOnSublist(vec, vec.size / 4, 3 * vec.size / 4) { it.size }
 
-        // TODO: Test addAll where sublist is inserted into base list
+        testIndexedAddAllWithSublistOnBaseList(vec, vec.size / 2, 3 * vec.size / 4) { 0 }
+        testIndexedAddAllWithSublistOnBaseList(vec, vec.size / 4, vec.size / 2) { it.size / 2 }
+        testIndexedAddAllWithSublistOnBaseList(vec, vec.size / 4, 3 * vec.size / 4) { it.size }
     }
 
     @Test

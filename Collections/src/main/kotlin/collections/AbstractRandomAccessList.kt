@@ -3,15 +3,6 @@ package collections
 import java.io.Serializable
 
 abstract class AbstractRandomAccessList<TElement> : AbstractList<TElement>(), RandomAccess {
-    override fun add(element: TElement): Boolean {
-        this.add(this.size, element)
-
-        return true
-    }
-
-    override fun addAll(elements: Collection<TElement>): Boolean =
-        this.addAll(this.size, elements)
-
     override fun remove(element: @UnsafeVariance TElement): Boolean {
         val index = this.indexOf(element)
 
@@ -148,10 +139,14 @@ internal class RandomAccessSublist<TElement>(
             return this.toIndex - this.fromIndex
         }
 
-    override fun isEmpty(): Boolean {
-        checkIfUnderlyingCollectionHasBeenModified(super.modCount, this.base.modCount)
+    internal fun hasBaseOf(other: List<TElement>): Boolean {
+        var list = this.base
 
-        return this.fromIndex == this.toIndex
+        while (list is RandomAccessSublist) {
+            list = list.base
+        }
+
+        return list === other
     }
 
     override fun get(index: Int): TElement {
