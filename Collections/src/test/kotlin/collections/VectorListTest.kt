@@ -1308,12 +1308,39 @@ class VectorSublistTest {
 
     @Test
     fun testInsert() {
-        TODO()
+        val vec = (1 .. 10).toVectorList()
+
+        val other1 = (-10 .. -1).toList()
+        val other2 = (20 downTo 11).toSet()
+        val other3 = (5 .. 15).toHashSet()
+
+        testInsertWithOtherOnSublist(vec, 2, 8, other1)
+        testInsertWithOtherOnSublist(vec, vec.size / 4, 3 * vec.size / 4, other2)
+        testInsertWithOtherOnSublist(vec, vec.size / 5, 4 * vec.size / 5, other3)
+
+        val empty = emptyList<Int>()
+
+        testInsertWithEmptyOnSublist(vec, 1, 10, empty)
+
+        testInsertWithSelfOnSublist(vec, vec.size / 2, 3 * vec.size / 4)
+        testInsertWithSelfOnSublist(vec, vec.size / 4, vec.size / 2)
+        testInsertWithSelfOnSublist(vec, vec.size / 4, 3 * vec.size / 4)
+
+        testInsertWithBaseOnSublist(vec, vec.size / 2, 3 * vec.size / 4)
+        testInsertWithBaseOnSublist(vec, vec.size / 4, vec.size / 2)
+        testInsertWithBaseOnSublist(vec, vec.size / 4, 3 * vec.size / 4)
+
+        testInsertWithSublistOnBaseList(vec, vec.size / 4, 3 * vec.size / 4)
     }
 
     @Test
     fun testResize() {
-        TODO()
+        val vec = (1 .. 50).toVectorList()
+        testResizeByIncreaseOnSublist(vec, vec.size / 4, vec.size / 2, 25, -1)
+        testResizeByDecreaseOnSublist(vec, vec.size / 2, 3 * vec.size / 4, 10, -2)
+
+        val sub = vec.subList(vec.size / 5, 4 * vec.size / 5)
+        testInvalidResize(sub, -10, Int.MAX_VALUE)
     }
 
     @Test
@@ -1418,17 +1445,52 @@ class VectorSublistTest {
 
     @Test
     fun testEquals() {
-        TODO()
+        val vec = vectorListOf(1, 2, 3, 0, 1, 2, 3)
+
+        val sub1 = vec.subList(0, 3)
+        val sub2 = vec.subList(4, 7)
+
+        testEquals(sub1, sub2, true)
+
+        val sub3 = vec.subList(0, 4)
+        val sub4 = vec.subList(4, 7)
+
+        testEquals(sub3, sub4, false)
+
+        val sub5 = vec.subList(1, 4)
+        val sub6 = vec.subList(2, 6)
+
+        testEquals(sub5, sub6, false)
     }
 
     @Test
     fun testIsPermutationOf() {
-        TODO()
+        val vec = vectorListOf(1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0)
+
+        val sub1 = vec.subList(0, 4)
+        val sub2 = vec.subList(3, 7)
+
+        testIsPermutationOf(sub1, sub2, true)
+
+        val sub3 = vec.subList(1, 5)
+        val sub4 = vec.subList(8, 12)
+
+        testIsPermutationOf(sub3, sub4, true)
+
+        val sub5 = vec.subList(0, 3)
+        val sub6 = vec.subList(1, 4)
+
+        testIsPermutationOf(sub5, sub6, false)
     }
 
     @Test
     fun testHashCode() {
-        TODO()
+        val vec = vectorListOf(1, 2, 3, 0, 1, 2, 3)
+
+        val sub1 = vec.subList(0, 3)
+        val sub2 = vec.subList(4, 7)
+
+        testHashCode(sub1, sub2)
     }
 
     @Test

@@ -15,10 +15,10 @@ fun testContainsAll(collection: Collection<Int>, other: Collection<Int>, expecte
     assertEquals(expected, result)
 }
 
-fun testEquals(collection: Collection<Int>, other: Collection<Int>, expectedResult: Boolean) {
+fun testEquals(collection: Collection<Int>, other: Collection<Int>, expected: Boolean) {
     val result = assertDoesNotThrow{ collection == other }
 
-    assertEquals(expectedResult, result)
+    assertEquals(expected, result)
 }
 
 fun testHashCode(collection: Collection<Int>, other: Collection<Int>) {

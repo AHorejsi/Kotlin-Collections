@@ -59,18 +59,18 @@ class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TEle
             return false
         }
 
-        val amountToAdd = elements.size
-        val newSize = this.size + amountToAdd
+        var itemsToBeInserted = elements
 
         if (elements is RandomAccessSublist<TElement> && elements.hasBaseOf(this)) {
-            val copy = elements.toList()
-
-            return this.addAll(index, copy)
+            itemsToBeInserted = elements.toList()
         }
+
+        val amountToAdd = itemsToBeInserted.size
+        val newSize = this.size + amountToAdd
 
         this.resizeIfNeededAfterInsertion(newSize)
         this.shiftForInsertion(index, amountToAdd)
-        this.insertNewElements(elements, amountToAdd, index)
+        this.insertElements(itemsToBeInserted, amountToAdd, index)
 
         this.size = newSize
         ++(super.modCount)
@@ -90,12 +90,12 @@ class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TEle
         }
     }
 
-    private fun insertNewElements(elements: Collection<TElement>, amountToAdd: Int, index: Int) {
+    private fun insertElements(elements: Collection<TElement>, amountToAdd: Int, index: Int) {
         if (this === elements) {
             this.insertSelf(index, amountToAdd)
         }
         else {
-            this.insertElements(elements, index)
+            this.insertOther(elements, index)
         }
     }
 
@@ -116,7 +116,7 @@ class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TEle
         }
     }
 
-    private fun insertElements(elements: Collection<TElement>, startIndex: Int) {
+    private fun insertOther(elements: Collection<TElement>, startIndex: Int) {
         for ((index, item) in elements.withIndex(startIndex)) {
             this.data[index] = item
         }

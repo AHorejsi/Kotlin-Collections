@@ -19,7 +19,7 @@ abstract class AbstractRandomAccessList<TElement> : AbstractList<TElement>(), Ra
         if (0 == fromIndex && this.size == toIndex)
             this
         else
-            RandomAccessSublist(this, fromIndex, toIndex, super.modCount)
+            RandomAccessSublist(this, fromIndex, toIndex)
 
     override fun listIterator(index: Int): MutableListIterator<TElement> = object : MutableListIterator<TElement> {
         init {
@@ -117,8 +117,7 @@ abstract class AbstractRandomAccessList<TElement> : AbstractList<TElement>(), Ra
 internal class RandomAccessSublist<TElement>(
     private val base: AbstractRandomAccessList<TElement>,
     private val fromIndex: Int,
-    private var toIndex: Int,
-    baseModCount: Int
+    private var toIndex: Int
 ) : AbstractRandomAccessList<TElement>(), Serializable {
     private companion object {
         @Suppress("ConstPropertyName")
@@ -129,7 +128,7 @@ internal class RandomAccessSublist<TElement>(
         checkIfRangeInBounds(this.fromIndex, this.toIndex, this.base.size)
         checkIfValidRange(this.fromIndex, this.toIndex)
 
-        super.modCount = baseModCount
+        super.modCount = this.base.modCount
     }
 
     override val size: Int

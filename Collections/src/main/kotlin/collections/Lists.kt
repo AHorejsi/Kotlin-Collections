@@ -33,8 +33,10 @@ fun <TElement> MutableList<TElement>.swap(index1: Int, index2: Int) {
     }
 }
 
-fun <TElement> MutableList<TElement>.resize(newSize: Int, supply: () -> TElement) {
+fun <TElement> MutableList<TElement>.resize(newSize: Int, supply: () -> TElement): Int {
     checkIfNegativeAmount(newSize)
+
+    val oldSize = this.size
 
     while (this.size < newSize) {
         this.add(supply())
@@ -43,6 +45,8 @@ fun <TElement> MutableList<TElement>.resize(newSize: Int, supply: () -> TElement
     while (this.size > newSize) {
         this.removeLast()
     }
+
+    return this.size - oldSize
 }
 
 fun <TElement> MutableList<TElement>.removeFromBack(amount: Int): Int =

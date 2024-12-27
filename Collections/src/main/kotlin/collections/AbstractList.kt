@@ -82,7 +82,7 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
         if (0 == fromIndex && this.size == toIndex)
             this
         else
-            Sublist(this, fromIndex, toIndex, super.modCount)
+            Sublist(this, fromIndex, toIndex)
 
     override fun iterator(): MutableIterator<TElement> =
         this.listIterator()
@@ -94,8 +94,7 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
 internal class Sublist<TElement>(
     private val base: AbstractList<TElement>,
     private val fromIndex: Int,
-    private var toIndex: Int,
-    baseModCount: Int
+    private var toIndex: Int
 ) : AbstractList<TElement>(), Serializable {
     private companion object {
         @Suppress("ConstPropertyName")
@@ -106,7 +105,7 @@ internal class Sublist<TElement>(
         checkIfRangeInBounds(this.fromIndex, this.toIndex, this.base.size)
         checkIfValidRange(this.fromIndex, this.toIndex)
 
-        super.modCount = baseModCount
+        super.modCount = this.base.modCount
     }
 
     override val size: Int
