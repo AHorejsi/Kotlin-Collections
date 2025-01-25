@@ -304,7 +304,88 @@ class RangesTest {
 
     @Test
     fun testIndexOf() {
-        TODO()
+        this.testIndexOfWithInt()
+        this.testIndexOfWithLong()
+    }
+
+    private fun testIndexOfWithInt() {
+        val range1 = 0 until 1000 step 2
+
+        this.testIndexOfWith(range1, 0, 0)
+        this.testIndexOfWith(range1, 500, 250)
+        this.testIndexOfWith(range1, 998, 499)
+        this.testIndexOfWith(range1, -1, -1)
+        this.testIndexOfWith(range1, 1000, -1)
+
+        val range2 = 1000 downTo 0 step 2
+
+        this.testIndexOfWith(range2, 0, 500)
+        this.testIndexOfWith(range2, 500, 250)
+        this.testIndexOfWith(range2, 1000, 0)
+        this.testIndexOfWith(range2, -1, -1)
+        this.testIndexOfWith(range2, 1001, -1)
+
+        val range3 = 0 .. 1000 step 3
+
+        this.testIndexOfWith(range3, 0, 0)
+        this.testIndexOfWith(range3, 501, 167)
+        this.testIndexOfWith(range3, 999, 333)
+        this.testIndexOfWith(range3, -1, -1)
+        this.testIndexOfWith(range3, 1000, -1)
+
+        val range4 = 1000 downTo 0 step 3
+
+        this.testIndexOfWith(range4, 1, 333)
+        this.testIndexOfWith(range4, 499, 167)
+        this.testIndexOfWith(range4, 1000, 0)
+        this.testIndexOfWith(range4, 0, -1)
+        this.testIndexOfWith(range4, 1001, -1)
+    }
+
+    private fun testIndexOfWith(range: IntProgression, value: Int, expectedIndex: Int) {
+        val resultIndex = assertDoesNotThrow{ range.indexOf(value) }
+
+        assertEquals(expectedIndex, resultIndex)
+    }
+
+    private fun testIndexOfWithLong() {
+        val range1 = 0L until 1000L step 2L
+
+        this.testIndexOfWith(range1, 0L, 0L)
+        this.testIndexOfWith(range1, 500L, 250L)
+        this.testIndexOfWith(range1, 998L, 499L)
+        this.testIndexOfWith(range1, -1L, -1L)
+        this.testIndexOfWith(range1, 1000L, -1L)
+
+        val range2 = 1000L downTo 0L step 2L
+
+        this.testIndexOfWith(range2, 0L, 500L)
+        this.testIndexOfWith(range2, 500L, 250L)
+        this.testIndexOfWith(range2, 1000L, 0L)
+        this.testIndexOfWith(range2, -1L, -1L)
+        this.testIndexOfWith(range2, 1001L, -1L)
+
+        val range3 = 0L .. 1000L step 3L
+
+        this.testIndexOfWith(range3, 0L, 0L)
+        this.testIndexOfWith(range3, 501L, 167L)
+        this.testIndexOfWith(range3, 999L, 333L)
+        this.testIndexOfWith(range3, -1L, -1L)
+        this.testIndexOfWith(range3, 1000L, -1L)
+
+        val range4 = 1000L downTo 0L step 3L
+
+        this.testIndexOfWith(range4, 1L, 333L)
+        this.testIndexOfWith(range4, 499L, 167L)
+        this.testIndexOfWith(range4, 1000L, 0L)
+        this.testIndexOfWith(range4, 0L, -1L)
+        this.testIndexOfWith(range4, 1001L, -1L)
+    }
+
+    private fun testIndexOfWith(range: LongProgression, value: Long, expectedIndex: Long) {
+        val resultIndex = assertDoesNotThrow{ range.indexOf(value) }
+
+        assertEquals(expectedIndex, resultIndex)
     }
 
     @Test
@@ -316,35 +397,35 @@ class RangesTest {
     private fun testContainsWithInt() {
         val range1 = 0 .. 1000 step 2
 
-        testContainsOn(range1, 0, true)
-        testContainsOn(range1, 500, true)
-        testContainsOn(range1, 1000, true)
-        testContainsOn(range1, -1, false)
-        testContainsOn(range1, 1001, false)
+        this.testContainsOn(range1, 0, true)
+        this.testContainsOn(range1, 500, true)
+        this.testContainsOn(range1, 1000, true)
+        this.testContainsOn(range1, -1, false)
+        this.testContainsOn(range1, 1001, false)
 
         val range2 = 1000 downTo 0 step 2
 
-        testContainsOn(range2, 0, true)
-        testContainsOn(range2, 500, true)
-        testContainsOn(range2, 1000, true)
-        testContainsOn(range2, -1, false)
-        testContainsOn(range2, 1001, false)
+        this.testContainsOn(range2, 0, true)
+        this.testContainsOn(range2, 500, true)
+        this.testContainsOn(range2, 1000, true)
+        this.testContainsOn(range2, -1, false)
+        this.testContainsOn(range2, 1001, false)
 
         val range3 = 0 .. 1000 step 3
 
-        testContainsOn(range3, 0, true)
-        testContainsOn(range3, 501, true)
-        testContainsOn(range3, 999, true)
-        testContainsOn(range3, -1, false)
-        testContainsOn(range3, 1000, false)
+        this.testContainsOn(range3, 0, true)
+        this.testContainsOn(range3, 501, true)
+        this.testContainsOn(range3, 999, true)
+        this.testContainsOn(range3, -1, false)
+        this.testContainsOn(range3, 1000, false)
 
         val range4 = 1000 downTo 0 step 3
 
-        testContainsOn(range4, 1, true)
-        testContainsOn(range4, 499, true)
-        testContainsOn(range4, 1000, true)
-        testContainsOn(range4, 0, false)
-        testContainsOn(range4, 1001, false)
+        this.testContainsOn(range4, 1, true)
+        this.testContainsOn(range4, 499, true)
+        this.testContainsOn(range4, 1000, true)
+        this.testContainsOn(range4, 0, false)
+        this.testContainsOn(range4, 1001, false)
     }
 
     private fun testContainsOn(range: IntProgression, value: Int, expected: Boolean) {
@@ -356,35 +437,35 @@ class RangesTest {
     private fun testContainsWithLong() {
         val range1 = 0L .. 1000L step 2L
 
-        testContainsOn(range1, 0L, true)
-        testContainsOn(range1, 500L, true)
-        testContainsOn(range1, 1000L, true)
-        testContainsOn(range1, -1L, false)
-        testContainsOn(range1, 1001L, false)
+        this.testContainsOn(range1, 0L, true)
+        this.testContainsOn(range1, 500L, true)
+        this.testContainsOn(range1, 1000L, true)
+        this.testContainsOn(range1, -1L, false)
+        this.testContainsOn(range1, 1001L, false)
 
         val range2 = 1000L downTo 0L step 2L
 
-        testContainsOn(range2, 0L, true)
-        testContainsOn(range2, 500L, true)
-        testContainsOn(range2, 1000L, true)
-        testContainsOn(range2, -1L, false)
-        testContainsOn(range2, 1001L, false)
+        this.testContainsOn(range2, 0L, true)
+        this.testContainsOn(range2, 500L, true)
+        this.testContainsOn(range2, 1000L, true)
+        this.testContainsOn(range2, -1L, false)
+        this.testContainsOn(range2, 1001L, false)
 
         val range3 = 0L .. 1000L step 3L
 
-        testContainsOn(range3, 0L, true)
-        testContainsOn(range3, 501L, true)
-        testContainsOn(range3, 999L, true)
-        testContainsOn(range3, -1L, false)
-        testContainsOn(range3, 1000L, false)
+        this.testContainsOn(range3, 0L, true)
+        this.testContainsOn(range3, 501L, true)
+        this.testContainsOn(range3, 999L, true)
+        this.testContainsOn(range3, -1L, false)
+        this.testContainsOn(range3, 1000L, false)
 
         val range4 = 1000L downTo 0L step 3L
 
-        testContainsOn(range4, 1L, true)
-        testContainsOn(range4, 499L, true)
-        testContainsOn(range4, 1000L, true)
-        testContainsOn(range4, 0L, false)
-        testContainsOn(range4, 1001L, false)
+        this.testContainsOn(range4, 1L, true)
+        this.testContainsOn(range4, 499L, true)
+        this.testContainsOn(range4, 1000L, true)
+        this.testContainsOn(range4, 0L, false)
+        this.testContainsOn(range4, 1001L, false)
     }
 
     private fun testContainsOn(range: LongProgression, value: Long, expected: Boolean) {
