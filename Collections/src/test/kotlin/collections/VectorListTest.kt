@@ -83,7 +83,7 @@ class VectorListTest {
 
     @Test
     fun testWithIndex() {
-        val vec = (1 .. 16).toVectorList()
+        val vec = (1 .. 10).toVectorList()
 
         testWithIndex(vec)
     }
@@ -844,8 +844,6 @@ class VectorListTest {
 
         testRotate(vec1, result1, -2)
         testRotate(vec2, result2, 2)
-
-        println("$vec1 $vec2")
     }
 
     @Test
@@ -1345,21 +1343,98 @@ class VectorSublistTest {
 
     @Test
     fun testRemove() {
-        TODO()
-    }
+        val vec = (0 until 100).toVectorList()
 
-    @Test
-    fun testRemoveAll() {
-        TODO()
+        val startIndex = 8
+        val endIndex = 77
+        val sub = vec.subList(startIndex, endIndex)
+
+        val value1 = 10
+        val value2 = 53
+        val value3 = 71
+
+        val value4 = -1
+        val value5 = 5
+        val value6 = 77
+        val value7 = 100
+
+        testRemoveByElementOnSublist(vec, sub, value1, true)
+        testRemoveByElementOnSublist(vec, sub, value2, true)
+        testRemoveByElementOnSublist(vec, sub, value3, true)
+
+        testRemoveByElementOnSublist(vec, sub, value4, false)
+        testRemoveByElementOnSublist(vec, sub, value5, false)
+        testRemoveByElementOnSublist(vec, sub, value6, false)
+        testRemoveByElementOnSublist(vec, sub, value7, false)
+
+        assertNotContains(vec, value1)
+        assertNotContains(vec, value2)
+        assertNotContains(vec, value3)
+
+        assertNotContains(vec, value4)
+        assertContains(vec, value5)
+        assertContains(vec, value6)
+        assertNotContains(vec, value7)
     }
 
     @Test
     fun testRemoveAt() {
-        TODO()
+        val vec = (50 .. 100).toVectorList()
+
+        val oldSize = vec.size
+
+        testRemoveAtOnSublist(vec, 14, 37) { 0 }
+        testRemoveAtOnSublist(vec, 2, 18) { it.size / 4 }
+        testRemoveAtOnSublist(vec, 16, 45) { it.size / 2 }
+        testRemoveAtOnSublist(vec, 26, 39) { 3 * it.size / 4 }
+        testRemoveAtOnSublist(vec, 33, 44) { it.lastIndex }
+
+        assertEquals(vec.size, oldSize - 5)
+    }
+
+    @Test
+    fun testRemoveAll() {
+        val vec1 = (1 .. 50).toVectorList()
+        val fullyInRange = (15 .. 25).toSet()
+        testRemoveAllOnSublist(vec1, fullyInRange, 11, 40, 11, true)
+
+        val vec2 = (1 .. 50).toVectorList()
+        val partiallyInRange = (5 .. 15).toList()
+        testRemoveAllOnSublist(vec2, partiallyInRange, 1, 7, 3, true)
+
+        val vec3 = (1 .. 50).toVectorList()
+        val notInRange = (25 .. 35).toHashSet()
+        testRemoveAllOnSublist(vec3, notInRange, 15, 23, 0, false)
+
+        val vec4 = vectorListOf(1, 2, 3, 3, 3, 2, 1, 1)
+        testRemoveAllWithSublistOnBaseList(vec4, 4, 8, listOf(3, 3, 2, 1))
     }
 
     @Test
     fun testDelete() {
+        val vec1 = (1 .. 50).toVectorList()
+        val fullyInRange = (15 .. 25).toSet()
+        testDeleteOnSublist(vec1, fullyInRange, 11, 40, 11)
+
+        val vec2 = (1 .. 50).toVectorList()
+        val partiallyInRange = (5 .. 15).toList()
+        testDeleteOnSublist(vec2, partiallyInRange, 1, 7, 3)
+
+        val vec3 = (1 .. 50).toVectorList()
+        val notInRange = (25 .. 35).toHashSet()
+        testDeleteOnSublist(vec3, notInRange, 15, 23, 0)
+
+        val vec4 = vectorListOf(1, 2, 3, 3, 3, 2, 1, 1)
+        testDeleteWithSublistOnBaseList(vec4, 4, 8, listOf(3, 3, 2, 1))
+    }
+
+    @Test
+    fun testRemoveAllOf() {
+        TODO()
+    }
+
+    @Test
+    fun testRemoveAmount() {
         TODO()
     }
 
@@ -1374,28 +1449,38 @@ class VectorSublistTest {
     }
 
     @Test
-    fun testRemoveAllOf() {
-        TODO()
-    }
-
-    @Test
-    fun testRemoveAmount() {
-        TODO()
-    }
-
-    @Test
     fun testRemoveFromBack() {
-        TODO()
+        val vec1 = (1 .. 30).toVectorList()
+        testRemoveFromBackOnSublist(vec1, 13, 24, 6)
+
+        val vec2 = (1 .. 30).toVectorList()
+        testRemoveFromBackOnSublist(vec2, 2, 8, 10)
+
+        val vec3 = (1 .. 30).toVectorList()
+        val sub3 = vec3.subList(10, 20)
+        testRemoveFromBackWithNegativeAmount(sub3, -1)
     }
 
     @Test
     fun testRemoveRange() {
-        TODO()
+        val vec1 = (1 .. 50).toVectorList()
+        testRemoveRangeOnSublist(vec1, 5, 29, { it.size / 4 }, { 3 * it.size / 4 })
+
+        val vec2 = (1 .. 50).toVectorList()
+        testRemoveRangeOnSublist(vec2, 31, 49, { 0 }, { it.size / 2 })
+
+        val vec3 = (1 .. 50).toVectorList()
+        testRemoveRangeOnSublist(vec3, 29, 38, { it.size / 2 }, { it.size })
     }
 
     @Test
     fun testClear() {
-        TODO()
+        val vec = (1 .. 25).toVectorList()
+
+        val startIndex = 4
+        val endIndex = 21
+
+        testClearOnSublist(vec, startIndex, endIndex)
     }
 
     @Test
@@ -1500,12 +1585,24 @@ class VectorSublistTest {
 
     @Test
     fun testNext() {
-        TODO()
+        val vec = (1 .. 8).toVectorList()
+
+        val startIndex = 2
+        val endIndex = 7
+        val sub = vec.subList(startIndex, endIndex)
+
+        testNext(sub)
     }
 
     @Test
     fun testPrev() {
-        TODO()
+        val vec = (8 downTo 1).toVectorList()
+
+        val startIndex = 2
+        val endIndex = 7
+        val sub = vec.subList(startIndex, endIndex)
+
+        testPrev(sub)
     }
 
     @Test

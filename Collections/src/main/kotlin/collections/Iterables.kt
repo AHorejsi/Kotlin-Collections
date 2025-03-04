@@ -50,7 +50,7 @@ private fun Iterable<*>.countUpTo(size: Int): Int {
 
 fun <TElement> MutableIterable<TElement>.removeAllOf(element: @UnsafeVariance TElement): Int =
     when (this) {
-        is MutableSet<TElement> -> if (this.remove(element)) 1 else 0
+        is MutableSet<*> -> if (this.remove(element)) 1 else 0
         else -> this.removeAllOf{ it == element }
     }
 

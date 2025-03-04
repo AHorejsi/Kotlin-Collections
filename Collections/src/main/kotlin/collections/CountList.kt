@@ -2,7 +2,7 @@ package collections
 
 import java.io.Serializable
 
-data class Counter<TKey>(
+data class SearchCounter<TKey>(
     var amount: Int,
     val item: TKey
 ) : Serializable {
@@ -18,7 +18,7 @@ class CountList<TElement> : AbstractCollection<TElement>(), SelfOrgList<TElement
         const val serialVersionUID: Long = 1L
     }
 
-    private val jump: JumpList<Counter<TElement>> =
+    private val jump: JumpList<SearchCounter<TElement>> =
         JumpList{ past, now ->
             past.value.amount > now.value.amount
         }
@@ -33,7 +33,7 @@ class CountList<TElement> : AbstractCollection<TElement>(), SelfOrgList<TElement
         this.jump.isEmpty()
 
     override fun add(element: TElement): Boolean {
-        val counter = Counter(0, element)
+        val counter = SearchCounter(0, element)
 
         return this.jump.add(counter)
     }
@@ -44,16 +44,19 @@ class CountList<TElement> : AbstractCollection<TElement>(), SelfOrgList<TElement
     override fun clear() =
         this.jump.clear()
 
+    override operator fun contains(element: TElement): Boolean =
+        super<SelfOrgList>.contains(element)
+
     override fun containsAll(elements: Collection<TElement>): Boolean =
         super<SelfOrgList>.containsAll(elements)
 
     override fun find(predicate: (TElement) -> Boolean): IndexedValue<TElement>? =
         this.amount(predicate)?.let { IndexedValue(it.index, it.value.item) }
 
-    fun amount(element: @UnsafeVariance TElement): IndexedValue<Counter<TElement>>? =
+    fun amount(element: @UnsafeVariance TElement): IndexedValue<SearchCounter<TElement>>? =
         this.amount{ it == element }
 
-    fun amount(predicate: (TElement) -> Boolean): IndexedValue<Counter<TElement>>? {
+    fun amount(predicate: (TElement) -> Boolean): IndexedValue<SearchCounter<TElement>>? {
         val search = this.jump.find{ predicate(it.item) }
 
         this.countUp(search)
@@ -64,10 +67,10 @@ class CountList<TElement> : AbstractCollection<TElement>(), SelfOrgList<TElement
     override fun findAll(predicate: (TElement) -> Boolean): Sequence<IndexedValue<TElement>> =
         this.amountAll(predicate).map{ IndexedValue(it.index, it.value.item) }
 
-    fun amountAll(elements: Collection<@UnsafeVariance TElement>): Sequence<IndexedValue<Counter<TElement>>> =
+    fun amountAll(elements: Collection<@UnsafeVariance TElement>): Sequence<IndexedValue<SearchCounter<TElement>>> =
         this.amountAll{ it in elements }
 
-    fun amountAll(predicate: (TElement) -> Boolean): Sequence<IndexedValue<Counter<TElement>>> = sequence {
+    fun amountAll(predicate: (TElement) -> Boolean): Sequence<IndexedValue<SearchCounter<TElement>>> = sequence {
         for (indexed in this@CountList.jump.withIndex()) {
             val counter = indexed.value
 
@@ -79,7 +82,7 @@ class CountList<TElement> : AbstractCollection<TElement>(), SelfOrgList<TElement
         }
     }
 
-    private fun countUp(indexed: IndexedValue<Counter<TElement>>?) {
+    private fun countUp(indexed: IndexedValue<SearchCounter<TElement>>?) {
         if (null === indexed) {
             return
         }

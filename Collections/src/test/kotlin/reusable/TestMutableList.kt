@@ -56,7 +56,7 @@ fun testIsEmpty(list: MutableList<Int>) {
     val onFirstAdd = assertDoesNotThrow{ list.isEmpty() }
     assertTrue(!onFirstAdd)
 
-    list.add(1)
+    list.add(0)
     val onSecondAdd = assertDoesNotThrow{ list.isEmpty() }
     assertTrue(!onSecondAdd)
 

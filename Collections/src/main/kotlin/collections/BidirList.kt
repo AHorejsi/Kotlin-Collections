@@ -32,33 +32,3 @@ class BidirList<TElement> : AbstractLinkedList<TElement>(), Serializable {
         super.addAfter(node, newNode)
     }
 }
-
-fun <TElement> bidirListOf(): BidirList<TElement> =
-    BidirList()
-
-fun <TElement> bidirListOf(vararg elements: TElement): BidirList<TElement> =
-    elements.toBidirList()
-
-fun <TElement> Iterable<TElement>.toBidirList(): BidirList<TElement> {
-    val list = BidirList<TElement>()
-
-    list.addAll(this)
-
-    return list
-}
-
-fun <TElement> Sequence<TElement>.toBidirList(): BidirList<TElement> {
-    val list = BidirList<TElement>()
-
-    list.addAll(this)
-
-    return list
-}
-
-fun <TElement> Array<out TElement>.toBidirList(): BidirList<TElement> {
-    val list = BidirList<TElement>()
-
-    list.addAll(this)
-
-    return list
-}

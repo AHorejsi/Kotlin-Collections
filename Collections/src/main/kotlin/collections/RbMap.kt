@@ -49,32 +49,6 @@ class RbMap<TKey, TValue>(
         const val serialVersionUID: Long = 1L
     }
 
-    constructor(compObj: Comparator<TKey>? = null) : this(compObj.function)
-
-    constructor(
-        elements: Sequence<Map.Entry<TKey, TValue>>,
-        compObj: Comparator<TKey>? = null
-    ) : this(elements.asIterable(), compObj)
-
-    constructor(
-        elements: Map<TKey, TValue>,
-        compObj: Comparator<TKey>? = null
-    ) : this(elements.asIterable(), compObj)
-
-    constructor(
-        elements: Collection<Map.Entry<TKey, TValue>>,
-        compObj: Comparator<TKey>? = null
-    ) : this(elements.asIterable(), compObj)
-
-    constructor(
-        elements: Iterable<Map.Entry<TKey, TValue>>,
-        compObj: Comparator<TKey>? = null
-    ) : this(compObj) {
-        for ((key, value) in elements) {
-            this[key] = value
-        }
-    }
-
     override fun balanceTreeAfterInsertion(node: BstNode<TKey, TValue>) {
         val newNode = node as RbNode<TKey, TValue>
 
@@ -229,11 +203,3 @@ class RbMap<TKey, TValue>(
         }
     }
 }
-
-fun <TKey, TValue> Map<TKey, TValue>.toRbMap(): RbMap<TKey, TValue> = RbMap(this)
-
-fun <TKey, TValue> Collection<Map.Entry<TKey, TValue>>.toRbMap(): RbMap<TKey, TValue> = RbMap(this)
-
-fun <TKey, TValue> Iterable<Map.Entry<TKey, TValue>>.toRbMap(): RbMap<TKey, TValue> = RbMap(this)
-
-fun <TKey, TValue> Sequence<Map.Entry<TKey, TValue>>.toRbMap(): RbMap<TKey, TValue> = RbMap(this)

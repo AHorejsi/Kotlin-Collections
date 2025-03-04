@@ -1,7 +1,6 @@
 package reusable
 
-import asserts.assertGreater
-import asserts.assertLess
+import asserts.assertContainsAll
 import asserts.assertNotContains
 import collections.*
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -625,4 +624,167 @@ fun testResizeByDecreaseOnSublist(
     assertEquals(list.size, newSize)
 
     assertNotContains(sub, value)
+}
+
+fun testRemoveByElementOnSublist(list: MutableList<Int>, sub: MutableList<Int>, value: Int, succeeds: Boolean) {
+    val oldSize = list.size
+    val oldSubSize = sub.size
+
+    val change = assertDoesNotThrow{ sub.remove(value) }
+
+    assertEquals(succeeds, change)
+
+    if (succeeds) {
+        assertEquals(list.size, oldSize - 1)
+        assertEquals(sub.size, oldSubSize - 1)
+    }
+    else {
+        assertEquals(list.size, oldSize)
+        assertEquals(sub.size, oldSubSize)
+    }
+}
+
+fun testRemoveAtOnSublist(list: MutableList<Int>, startIndex: Int, endIndex: Int, indexSupplier: (List<Int>) -> Int) {
+    val sub = list.subList(startIndex, endIndex)
+    val index = indexSupplier(sub)
+
+    val item = sub[index]
+    val beforeItem = sub.tryGet(index - 1)
+    val afterItem = sub.tryGet(index + 1)
+
+    val oldSize = list.size
+    val oldSubSize = sub.size
+
+    val removedItem = assertDoesNotThrow{ sub.removeAt(index) }
+
+    assertEquals(item, removedItem)
+
+    if (beforeItem.isSuccess) {
+        assertEquals(sub[index - 1], beforeItem.getOrThrow())
+    }
+    if (afterItem.isSuccess) {
+        assertEquals(sub[index], afterItem.getOrThrow())
+    }
+
+    assertEquals(list.size, oldSize - 1)
+    assertEquals(sub.size, oldSubSize - 1)
+}
+
+fun testRemoveAllOnSublist(
+    list: MutableList<Int>,
+    other: Collection<Int>,
+    startIndex: Int,
+    endIndex: Int,
+    expectedRemovedAmount: Int,
+    expectedResult: Boolean
+) {
+    val sub = list.subList(startIndex, endIndex)
+
+    val oldSize = list.size
+    val oldSubSize = sub.size
+
+    val change = assertDoesNotThrow{ sub.removeAll(other) }
+
+    assertEquals(expectedResult, change)
+    assertEquals(list.size, oldSize - expectedRemovedAmount)
+    assertEquals(sub.size, oldSubSize - expectedRemovedAmount)
+}
+
+fun testRemoveAllWithSublistOnBaseList(
+    list: MutableList<Int>,
+    startIndex: Int,
+    endIndex: Int,
+    expectedOutput: List<Int>
+) {
+    val sub = list.subList(startIndex, endIndex)
+
+    val change = assertDoesNotThrow{ list.removeAll(sub) }
+
+    assertTrue(change)
+    assertEquals(expectedOutput, list)
+    assertFailsWith<ConcurrentModificationException>{ sub.size }
+}
+
+fun testDeleteOnSublist(
+    list: MutableList<Int>,
+    other: Collection<Int>,
+    startIndex: Int,
+    endIndex: Int,
+    expected: Int
+) {
+    val sub = list.subList(startIndex, endIndex)
+
+    val oldSize = list.size
+    val oldSubSize = sub.size
+
+    val amountRemoved = assertDoesNotThrow{ sub.delete(other) }
+
+    assertEquals(expected, amountRemoved)
+    assertEquals(list.size, oldSize - amountRemoved)
+    assertEquals(sub.size, oldSubSize - amountRemoved)
+}
+
+fun testDeleteWithSublistOnBaseList(
+    list: MutableList<Int>,
+    startIndex: Int,
+    endIndex: Int,
+    expectedOutput: List<Int>
+) {
+    val sub = list.subList(startIndex, endIndex)
+
+    val oldSize = list.size
+
+    val amountRemoved = assertDoesNotThrow{ list.delete(sub) }
+
+    assertEquals(expectedOutput, list)
+    assertEquals(list.size, oldSize - amountRemoved)
+    assertFailsWith<ConcurrentModificationException>{ sub.size }
+}
+
+fun testRemoveFromBackOnSublist(list: MutableList<Int>, startIndex: Int, endIndex: Int, amount: Int) {
+    val sub = list.subList(startIndex, endIndex)
+
+    val oldSize = list.size
+    val oldSubSize = sub.size
+
+    val amountRemoved = assertDoesNotThrow{ sub.removeFromBack(amount) }
+
+    assertEquals(list.size, oldSize - amountRemoved)
+    assertEquals(sub.size, oldSubSize - amountRemoved)
+}
+
+fun testRemoveRangeOnSublist(
+    list: MutableList<Int>,
+    startIndex: Int,
+    endIndex: Int,
+    fromIndexSupplier: (List<Int>) -> Int,
+    toIndexSupplier: (List<Int>) -> Int
+) {
+    val sub = list.subList(startIndex, endIndex)
+
+    val fromIndex = fromIndexSupplier(sub)
+    val toIndex = toIndexSupplier(sub)
+    val rangeSize = toIndex - fromIndex
+
+    val oldSize = list.size
+    val oldSubSize = sub.size
+
+    assertDoesNotThrow{ sub.removeRange(fromIndex, toIndex) }
+
+    assertEquals(list.size, oldSize - rangeSize)
+    assertEquals(sub.size, oldSubSize - rangeSize)
+}
+
+fun testClearOnSublist(list: MutableList<Int>, startIndex: Int, endIndex: Int) {
+    val sub = list.subList(startIndex, endIndex)
+
+    val oldSize = list.size
+    val oldSubSize = sub.size
+
+    assertDoesNotThrow{ sub.clear() }
+
+    assertEquals(sub.size, 0)
+    assertEquals(list.size, oldSize - oldSubSize)
+
+    assertFailsWith<IndexOutOfBoundsException>{ sub[0] }
 }

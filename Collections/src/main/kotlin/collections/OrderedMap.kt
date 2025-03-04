@@ -11,34 +11,6 @@ class OrderedMap<TKey, TValue>(
         const val serialVersionUID: Long = 1L
     }
 
-    constructor(
-        elements: Sequence<Map.Entry<TKey, TValue>>,
-        map: MutableMap<TKey, MutableLinkedListNode<MutableEntry<TKey, TValue>>> = ChainMap(),
-        list: MutableLinkedList<MutableEntry<TKey, TValue>> = BidirList()
-    ) : this(elements.asIterable(), map, list)
-
-    constructor(
-        elements: Map<TKey, TValue>,
-        map: MutableMap<TKey, MutableLinkedListNode<MutableEntry<TKey, TValue>>> = ChainMap(),
-        list: MutableLinkedList<MutableEntry<TKey, TValue>> = BidirList()
-    ) : this(elements.asIterable(), map, list)
-
-    constructor(
-        elements: Collection<Map.Entry<TKey, TValue>>,
-        map: MutableMap<TKey, MutableLinkedListNode<MutableEntry<TKey, TValue>>> = ChainMap(),
-        list: MutableLinkedList<MutableEntry<TKey, TValue>> = BidirList()
-    ) : this(elements.asIterable(), map, list)
-
-    constructor(
-        elements: Iterable<Map.Entry<TKey, TValue>>,
-        map: MutableMap<TKey, MutableLinkedListNode<MutableEntry<TKey, TValue>>> = ChainMap(),
-        list: MutableLinkedList<MutableEntry<TKey, TValue>> = BidirList()
-    ) : this(map, list) {
-        for ((key, value) in elements) {
-            this[key] = value
-        }
-    }
-
     override val size: Int
         get() = this.list.size
 
@@ -111,11 +83,3 @@ class OrderedMap<TKey, TValue>(
             }
         }
 }
-
-fun <TKey, TValue> Map<TKey, TValue>.toOrderedMap(): OrderedMap<TKey, TValue> = OrderedMap(this)
-
-fun <TKey, TValue> Collection<Map.Entry<TKey, TValue>>.toOrderedMap(): OrderedMap<TKey, TValue> = OrderedMap(this)
-
-fun <TKey, TValue> Iterable<Map.Entry<TKey, TValue>>.toOrderedMap(): OrderedMap<TKey, TValue> = OrderedMap(this)
-
-fun <TKey, TValue> Sequence<Map.Entry<TKey, TValue>>.toOrderedMap(): OrderedMap<TKey, TValue> = OrderedMap(this)

@@ -8,13 +8,13 @@ fun <TElement> Sequence<TElement>.withIndex(startIndex: Int): Sequence<IndexedVa
 }
 
 fun Sequence<*>.atLeast(size: Int): Boolean =
-    this.asIterable().atLeast(size)
+    this.count() >= size
 
 fun Sequence<*>.atMost(size: Int): Boolean =
-    this.asIterable().atMost(size)
+    this.count() <= size
 
 fun Sequence<*>.exactly(size: Int): Boolean =
-    this.asIterable().exactly(size)
+    this.count() == size
 
 fun <TElement> Sequence<TElement>.prepend(item: TElement): Sequence<TElement> = sequence {
     yield(item)

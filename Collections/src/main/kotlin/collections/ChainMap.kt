@@ -22,38 +22,6 @@ class ChainMap<TKey, TValue>(
         require(this.loadFactor > 0 && this.loadFactor <= 1)
     }
 
-    constructor(
-        elements: Sequence<Map.Entry<TKey, TValue>>,
-        initialCapacity: Int = ChainMap.DEFAULT_CAPACITY,
-        loadFactor: Float = ChainMap.DEFAULT_LOAD_FACTOR,
-        comparator: EqualityComparator<TKey> = ChainMap.DEFAULT_COMPARATOR
-    ) : this(elements.asIterable(), initialCapacity, loadFactor, comparator)
-
-    constructor(
-        elements: Map<TKey, TValue>,
-        initialCapacity: Int = ChainMap.DEFAULT_CAPACITY,
-        loadFactor: Float = ChainMap.DEFAULT_LOAD_FACTOR,
-        comparator: EqualityComparator<TKey> = ChainMap.DEFAULT_COMPARATOR
-    ) : this(elements.asIterable(), initialCapacity, loadFactor, comparator)
-
-    constructor(
-        elements: Collection<Map.Entry<TKey, TValue>>,
-        initialCapacity: Int = ChainMap.DEFAULT_CAPACITY,
-        loadFactor: Float = ChainMap.DEFAULT_LOAD_FACTOR,
-        comparator: EqualityComparator<TKey> = ChainMap.DEFAULT_COMPARATOR
-    ) : this(elements.asIterable(), initialCapacity, loadFactor, comparator)
-
-    constructor(
-        elements: Iterable<Map.Entry<TKey, TValue>>,
-        initialCapacity: Int = ChainMap.DEFAULT_CAPACITY,
-        loadFactor: Float = ChainMap.DEFAULT_LOAD_FACTOR,
-        comparator: EqualityComparator<TKey> = ChainMap.DEFAULT_COMPARATOR
-    ) : this(initialCapacity, loadFactor, comparator) {
-        for ((key, value) in elements) {
-            this[key] = value
-        }
-    }
-
     private var data: Array<Chain.Head<MutableEntry<TKey, TValue>>> =
         Array((this.initialCapacity / this.loadFactor).toInt()) { Chain.Head() }
 
@@ -247,11 +215,3 @@ class ChainMap<TKey, TValue>(
             }
         }
 }
-
-fun <TKey, TValue> Map<TKey, TValue>.toChainMap(): ChainMap<TKey, TValue> = ChainMap(this)
-
-fun <TKey, TValue> Collection<Map.Entry<TKey, TValue>>.toChainMap(): ChainMap<TKey, TValue> = ChainMap(this)
-
-fun <TKey, TValue> Iterable<Map.Entry<TKey, TValue>>.toChainMap(): ChainMap<TKey, TValue> = ChainMap(this)
-
-fun <TKey, TValue> Sequence<Map.Entry<TKey, TValue>>.toChainMap(): ChainMap<TKey, TValue> = ChainMap(this)

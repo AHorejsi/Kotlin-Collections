@@ -2,7 +2,7 @@ package collections
 
 import java.io.Serializable
 
-@Suppress("RemoveRedundantQualifierName")
+@Suppress("RemoveRedundantQualifierName", "RedundantSuppression")
 class DequeList<TElement>(
     initialCapacity: Int = DequeList.DEFAULT_CAPACITY
 ) : AbstractRandomAccessList<TElement>(), Serializable {
@@ -82,17 +82,13 @@ class DequeList<TElement>(
     }
 
     private fun shiftForInsertion(index: Int, amountToAdd: Int) {
-        @Suppress("UnnecessaryVariable")
-        val distanceFromStart = index
-        val distanceFromEnd = this.size - index
-
-        if (distanceFromStart > distanceFromEnd) {
+        if (index > this.size / 2) {
             this.shiftRightForInsertion(index, amountToAdd)
         }
         else {
             this.shiftLeftForInsertion(index, amountToAdd)
 
-            this.startIndex = (this.startIndex - amountToAdd) % this.capacity
+            this.startIndex = this.actualIndex(-amountToAdd)
         }
     }
 
@@ -119,7 +115,7 @@ class DequeList<TElement>(
 
         for (item in elements) {
             this.data[insertIndex] = item
-            insertIndex = (insertIndex + 1) % this.capacity
+            insertIndex = (insertIndex + 1).mod(this.capacity)
         }
     }
 
@@ -136,7 +132,7 @@ class DequeList<TElement>(
             return oldSize
         }
         else {
-            this.startIndex = (this.startIndex + amount) % this.capacity
+            this.startIndex = this.actualIndex(amount)
             this.size -= amount
             ++(super.modCount)
 
@@ -171,17 +167,13 @@ class DequeList<TElement>(
     }
 
     private fun shiftForRemoval(index: Int) {
-        @Suppress("UnnecessaryVariable")
-        val distanceFromStart = index
-        val distanceFromEnd = this.size - index
-
-        if (distanceFromStart > distanceFromEnd) {
+        if (index > this.size / 2) {
             this.shiftFromRightForRemoval(index)
         }
         else {
             this.shiftFromLeftForRemoval(index)
 
-            this.startIndex = (this.startIndex + 1) % this.capacity
+            this.startIndex = this.actualIndex(1)
         }
     }
 
@@ -228,52 +220,4 @@ class DequeList<TElement>(
         this.data = newData
         this.startIndex = 0
     }
-}
-
-fun <TElement> dequeListOf(): DequeList<TElement> =
-    DequeList()
-
-fun <TElement> dequeListOf(vararg elements: TElement): DequeList<TElement> =
-    elements.toDequeList()
-
-fun <TElement> Iterable<TElement>.toDequeList(): DequeList<TElement> {
-    if (this is Collection<TElement>) {
-        return this.toDequeList()
-    }
-
-    val deque = DequeList<TElement>()
-
-    for (item in this) {
-        deque.addLast(item)
-    }
-
-    return deque
-}
-
-fun <TElement> Sequence<TElement>.toDequeList(): DequeList<TElement> {
-    val deque = DequeList<TElement>()
-
-    for (item in this) {
-        deque.addLast(item)
-    }
-
-    return deque
-}
-
-fun <TElement> Collection<TElement>.toDequeList(): DequeList<TElement> {
-    val deque = DequeList<TElement>(this.size)
-
-    deque.addAll(this)
-
-    return deque
-}
-
-fun <TElement> Array<out TElement>.toDequeList(): DequeList<TElement> {
-    val deque = DequeList<TElement>(this.size)
-
-    for (item in this) {
-        deque.addLast(item)
-    }
-
-    return deque
 }

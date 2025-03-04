@@ -90,9 +90,11 @@ class VectorDeque<TElement>(initialCapacity: Int = VectorDeque.DEFAULT_CAPACITY)
         return item
     }
 
-    override fun front(): TElement = this.at(0)
+    override fun front(): TElement =
+        this.at(0)
 
-    override fun back(): TElement = this.at(this.size - 1)
+    override fun back(): TElement =
+        this.at(this.size - 1)
 
     private fun at(index: Int): TElement =
         if (this.isEmpty())

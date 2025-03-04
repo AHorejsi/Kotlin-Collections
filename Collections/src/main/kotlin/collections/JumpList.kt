@@ -164,6 +164,9 @@ class JumpList<TElement>(
         return this.jumper(node1, next1)
     }
 
+    override operator fun contains(element: TElement): Boolean =
+        super<SelfOrgList>.contains(element)
+
     override fun containsAll(elements: Collection<TElement>): Boolean =
         super<SelfOrgList>.containsAll(elements)
 

@@ -15,6 +15,28 @@ abstract class AbstractRandomAccessList<TElement> : AbstractList<TElement>(), Ra
         return true
     }
 
+    override fun removeAll(elements: Collection<TElement>): Boolean {
+        val values =
+            if (elements is RandomAccessSublist && elements.hasBaseOf(this))
+                elements.toList()
+            else
+                elements
+
+        @Suppress("ConvertArgumentToSet")
+        return super.removeAll(values)
+    }
+
+    override fun retainAll(elements: Collection<TElement>): Boolean {
+        val values =
+            if (elements is RandomAccessSublist && elements.hasBaseOf(this))
+                elements.toList()
+            else
+                elements
+
+        @Suppress("ConvertArgumentToSet")
+        return super.retainAll(values)
+    }
+
     override fun subList(fromIndex: Int, toIndex: Int): MutableList<TElement> =
         if (0 == fromIndex && this.size == toIndex)
             this

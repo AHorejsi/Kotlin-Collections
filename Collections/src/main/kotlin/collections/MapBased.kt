@@ -2,7 +2,7 @@ package collections
 
 import java.io.Serializable
 
-private class MapBasedSet<TElement>(
+class MapBasedSet<TElement>(
     base: MutableMap<TElement, Unit>
 ) : AbstractSet<TElement>(base), Serializable {
     private companion object {
@@ -11,7 +11,7 @@ private class MapBasedSet<TElement>(
     }
 }
 
-private class MapBasedSortedSet<TElement>(
+class MapBasedSortedSet<TElement>(
     base: MutableSortedMap<TElement, Unit>
 ) : AbstractSortedSet<TElement>(base), Serializable {
     private companion object {
@@ -19,9 +19,3 @@ private class MapBasedSortedSet<TElement>(
         const val serialVersionUID: Long = 1L
     }
 }
-
-fun <TElement> asMutableSet(base: MutableMap<TElement, Unit>): MutableSet<TElement> =
-    MapBasedSet(base)
-
-fun <TElement> asMutableSortedSet(base: MutableSortedMap<TElement, Unit>): MutableSortedSet<TElement> =
-    MapBasedSortedSet(base)

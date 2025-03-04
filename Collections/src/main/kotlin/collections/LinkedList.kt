@@ -38,11 +38,18 @@ sealed interface LinkedList<out TElement> : Collection<TElement> {
 
     val tail: LinkedListNode<TElement>?
 
-    fun front(): TElement = this.head?.item ?: empty(this::class)
+    fun front(): TElement =
+        this.head?.let {
+            return it.item
+        } ?: empty(LinkedList::class)
 
-    fun back(): TElement = this.tail?.item ?: empty(this::class)
+    fun back(): TElement =
+        this.tail?.let {
+            return it.item
+        } ?: empty(LinkedList::class)
 
-    fun listIterator(): ListIterator<TElement> = this.listIterator(0)
+    fun listIterator(): ListIterator<TElement> =
+        this.listIterator(0)
 
     fun listIterator(index: Int): ListIterator<TElement>
 
@@ -84,9 +91,11 @@ sealed interface MutableLinkedList<TElement> : LinkedList<TElement>, MutableColl
 
     fun removeFromBack(amount: Int): Int
 
-    override fun iterator(): MutableIterator<TElement> = this.listIterator()
+    override fun iterator(): MutableIterator<TElement> =
+        this.listIterator()
 
-    override fun listIterator(): MutableListIterator<TElement> = this.listIterator(0)
+    override fun listIterator(): MutableListIterator<TElement> =
+        this.listIterator(0)
 
     override fun listIterator(index: Int): MutableListIterator<TElement>
 

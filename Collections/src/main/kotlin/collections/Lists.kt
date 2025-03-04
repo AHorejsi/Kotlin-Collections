@@ -83,6 +83,10 @@ fun <TElement> List<TElement>.index(fromIndex: Int, element: @UnsafeVariance TEl
 fun <TElement> List<TElement>.index(fromIndex: Int, predicate: (TElement) -> Boolean): Int {
     checkIfIndexCanBeInsertedAt(fromIndex, this.size)
 
+    if (this.isRandomAccess) {
+        return searchWithIndexing(this, fromIndex, predicate)
+    }
+
     val iter = this.listIterator(fromIndex)
 
     while (iter.hasNext()) {
@@ -96,11 +100,27 @@ fun <TElement> List<TElement>.index(fromIndex: Int, predicate: (TElement) -> Boo
     return -1
 }
 
+private fun <TElement> searchWithIndexing(list: List<TElement>, fromIndex: Int, predicate: (TElement) -> Boolean): Int {
+    for (index in fromIndex until list.size) {
+        val element = list[index]
+
+        if (predicate(element)) {
+            return index
+        }
+    }
+
+    return -1
+}
+
 fun <TElement> List<TElement>.lastIndex(fromIndex: Int, element: @UnsafeVariance TElement): Int =
     this.lastIndex(fromIndex) { it == element }
 
 fun <TElement> List<TElement>.lastIndex(fromIndex: Int, predicate: (TElement) -> Boolean): Int {
     checkIfIndexCanBeInsertedAt(fromIndex, this.size)
+
+    if (this.isRandomAccess) {
+        return searchBackwardWithIndexing(this, fromIndex, predicate)
+    }
 
     val iter = this.listIterator(fromIndex)
 
@@ -109,6 +129,22 @@ fun <TElement> List<TElement>.lastIndex(fromIndex: Int, predicate: (TElement) ->
 
         if (predicate(elem)) {
             return iter.nextIndex()
+        }
+    }
+
+    return -1
+}
+
+private fun <TElement> searchBackwardWithIndexing(
+    list: List<TElement>,
+    fromIndex: Int,
+    predicate: (TElement) -> Boolean
+): Int {
+    for (index in (fromIndex - 1) downTo 0) {
+        val element = list[index]
+
+        if (predicate(element)) {
+            return index
         }
     }
 

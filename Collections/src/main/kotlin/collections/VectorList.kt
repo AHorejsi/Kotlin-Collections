@@ -155,8 +155,10 @@ class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TEle
     }
 
     private fun resizeIfNeededAfterRemoval() {
-        val capacityAboveMinimumThreshold = this.capacity > VectorList.MIN_CAPACITY
-        val halfOfSlotsAreEmpty = this.size <= ceil(this.capacity / 2.0).toInt()
+        val cap = this.capacity
+
+        val capacityAboveMinimumThreshold = cap > VectorList.MIN_CAPACITY
+        val halfOfSlotsAreEmpty = this.size <= ceil(cap / 2.0).toInt()
 
         if (capacityAboveMinimumThreshold && halfOfSlotsAreEmpty) {
             this.reallocate(this.size * 3 / 2)

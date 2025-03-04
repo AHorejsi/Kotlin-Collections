@@ -44,6 +44,9 @@ class TransposeList<TElement>(
     override fun clear() =
         this.data.clear()
 
+    override operator fun contains(element: TElement): Boolean =
+        super<SelfOrgList>.contains(element)
+
     override fun containsAll(elements: Collection<TElement>): Boolean =
         super<SelfOrgList>.containsAll(elements)
 

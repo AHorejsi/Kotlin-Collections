@@ -34,9 +34,6 @@ abstract class AbstractList<TElement> : AbstractCollection<TElement>(), MutableL
         return false
     }
 
-    override operator fun contains(element: @UnsafeVariance TElement): Boolean =
-        -1 != this.indexOf(element)
-
     override fun indexOf(element: @UnsafeVariance TElement): Int =
         this.index(0, element)
 
