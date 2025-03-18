@@ -495,7 +495,7 @@ fun testRemoveAllByPredicate(list: MutableList<Int>, predicate: (Int) -> Boolean
     assertEquals(removalAmount, amountRemoved)
 }
 
-fun testRemoveAmountByElement(list: MutableList<Int>, item: Int, amountToRemove: Int, removalAmount: Int) {
+fun testRemoveAmountByElement(list: MutableList<Int>, item: Int, amountToRemove: Int, expectedAmountToBeRemoved: Int) {
     val oldSize = list.size
     val oldCount = list.count{ it == item }
 
@@ -507,7 +507,7 @@ fun testRemoveAmountByElement(list: MutableList<Int>, item: Int, amountToRemove:
     assertEquals(oldSize, newSize + amountRemoved)
     assertEquals(oldCount, newCount + amountRemoved)
 
-    assertEquals(removalAmount, amountRemoved)
+    assertEquals(expectedAmountToBeRemoved, amountRemoved)
 }
 
 fun testRemoveNegativeAmountByElement(list: MutableList<Int>, item: Int, amountToRemove: Int) {
@@ -523,7 +523,12 @@ fun testRemoveNegativeAmountByElement(list: MutableList<Int>, item: Int, amountT
     assertEquals(oldCount, newCount)
 }
 
-fun testRemoveAmountByPredicate(list: MutableList<Int>, predicate: (Int) -> Boolean, amountToRemove: Int, removalAmount: Int) {
+fun testRemoveAmountByPredicate(
+    list: MutableList<Int>,
+    predicate: (Int) -> Boolean,
+    amountToRemove: Int,
+    expectedAmountToBeRemoved: Int
+) {
     val oldSize = list.size
     val oldCount = list.count(predicate)
 
@@ -535,7 +540,7 @@ fun testRemoveAmountByPredicate(list: MutableList<Int>, predicate: (Int) -> Bool
     assertEquals(oldSize, newSize + amountRemoved)
     assertEquals(oldCount, newCount + amountRemoved)
 
-    assertEquals(removalAmount, amountRemoved)
+    assertEquals(expectedAmountToBeRemoved, amountRemoved)
 }
 
 fun testRemoveNegativeAmount(list: MutableList<Int>, predicate: (Int) -> Boolean, amountToRemove: Int) {

@@ -1430,12 +1430,43 @@ class VectorSublistTest {
 
     @Test
     fun testRemoveAllOf() {
-        TODO()
+        val vec1 = vectorListOf(1, 4, 3, 1, 4, 3, 1, 4, 3)
+        val sub1 = vec1.subList(1, 7)
+        val value1 = 4
+
+        testRemoveAllByElement(sub1, value1, 2)
+        assertNotContains(sub1, value1)
+        assertContains(vec1, value1)
+
+        val vec2 = (1 .. 50).toVectorList()
+        val sub2 = vec2.subList(23, 48)
+        val pred2 = { num: Int -> 0 == num % 2 }
+
+        testRemoveAllByPredicate(sub2, pred2, 13)
+        assertTrue(!sub2.any(pred2))
+        assertTrue(vec2.any(pred2))
     }
 
     @Test
     fun testRemoveAmount() {
-        TODO()
+        val vec1 = vectorListOf(1, 2, 3, 3, 2, 1, 1, 2, 3, 3, 2, 1)
+        val sub1 = vec1.subList(2, 9)
+        val value1 = 3
+
+        testRemoveAmountByElement(sub1, value1, 4, 3)
+        assertEquals(vec1.count{ it == value1 }, 1)
+
+        val vec2 = (1 .. 50).toVectorList()
+        val sub2 = vec2.subList(23, 48)
+        val pred2 = { num: Int -> 0 == num % 2 }
+
+        testRemoveAmountByPredicate(sub2, pred2, 10, 10)
+        assertEquals(sub2.count(pred2), 3)
+
+        testRemoveAmountByPredicate(sub2, pred2, 10, 3)
+        assertEquals(sub2.count(pred2), 0)
+
+        assertTrue(vec2.any(pred2))
     }
 
     @Test
