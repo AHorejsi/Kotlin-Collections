@@ -1012,50 +1012,27 @@ class VectorListIteratorTest {
 class VectorSublistTest {
     @Test
     fun testConstructor() {
-        val vec = (1 .. 25).toVectorList()
-
-        testConstructionOnSublist(vec)
+        TODO()
     }
 
     @Test
     fun testIsRandomAccess() {
-        val vec = vectorListOf<Int>()
-
-        testIsRandomAccessOnSublist(vec)
+        TODO()
     }
 
     @Test
     fun testWithIndex() {
-        val vec = (1 .. 10).toVectorList()
-
-        testWithIndexOnSublists(vec)
+        TODO()
     }
 
     @Test
     fun testSize() {
-        val vec = (1 .. 500).toVectorList()
-        testSizeOnSublistConstruction(vec, 43, 98)
-
-        val other = listOf(15, 87, 90, 21, 65, 87, 82, 55, 59, 69)
-        testSizeAfterAddingOnSublist(vec, 15, 91, other)
-
-        val amountToRemove = 38
-        testSizeAfterRemovingOnSublist(vec, 3, 61, amountToRemove)
-
-        val sub = vec.subList(16, 80)
-        testSizeAfterAdd(sub, -1)
-        testSizeAfterAddAll(sub, 100)
-        testSizeAfterRemoveLast(sub)
-        testSizeAfterAddAll(sub, 200)
-        testSizeAfterRemoveFromBack(sub, 150)
+        TODO()
     }
 
     @Test
     fun testIsEmpty() {
-        val vec = (1 .. 50).toVectorList()
-
-        testIsEmptyAfterConstructionOnSublist(vec)
-        testIsEmptyAfterModificationOnSublist(vec, vec.size / 2)
+        TODO()
     }
 
     @Test
@@ -1127,346 +1104,87 @@ class VectorSublistTest {
 
     @Test
     fun testGet() {
-        val vec = (1 .. 100).toVectorList()
-
-        for (startIndex in 0 until vec.size) {
-            for (endIndex in startIndex .. vec.size) {
-                testGetOnSublist(vec, startIndex, endIndex)
-            }
-        }
+        TODO()
     }
 
     @Test
     fun testTryGet() {
-        val vec = (1 .. 10).toVectorList()
-
-        for (startIndex in vec.indices) {
-            for (endIndex in startIndex .. vec.size) {
-                val sub = vec.subList(startIndex, endIndex)
-
-                testTryGetInBounds(sub)
-                testTryGetOutOfBounds(sub)
-            }
-        }
+        TODO()
     }
 
     @Test
     fun testWrapGet() {
-        val vec = (1 .. 10).toVectorList()
-
-        for (startIndex in 0 until vec.size) {
-            for (endIndex in startIndex .. vec.size) {
-                val sub = vec.subList(startIndex, endIndex)
-
-                if (startIndex == endIndex) {
-                    testWrapGetOnEmpty(sub)
-                }
-                else {
-                    testWrapGetRelative(sub)
-                    testWrapGetAtEnds(sub)
-                }
-            }
-        }
+        TODO()
     }
 
     @Test
     fun testSet() {
-        val vec = (1 .. 50).toVectorList()
-
-        val startIndex = 25
-        val endIndex = 39
-        val sub = vec.subList(startIndex, endIndex)
-
-        testSetOnSublist(vec, sub, startIndex, 0, -1)
-        testSetOnSublist(vec, sub, startIndex, sub.lastIndex, -2)
-        testSetOnSublist(vec, sub, startIndex, sub.size / 2, -3)
-
-        testSetOutOfBounds(sub, -4)
+        TODO()
     }
 
     @Test
     fun testTrySet() {
-        val vec = (1 .. 10).toVectorList()
-
-        val startIndex = 2
-        val endIndex = 9
-        val sub = vec.subList(startIndex, endIndex)
-
-        testTrySetAt(sub, 0, -1)
-        testTrySetAt(sub, sub.lastIndex, -2)
-        testTrySetAt(sub, sub.size / 2, -3)
-
-        testTrySetOutOfBounds(sub, -1)
+        TODO()
     }
 
     @Test
     fun testWrapSet() {
-        val vec = (1 .. 20).toVectorList()
-
-        val startIndex = 10
-        val endIndex = 16
-        val sub1 = vec.subList(startIndex, endIndex)
-
-        testWrapSetAt(sub1, 0, -1)
-        testWrapSetAt(sub1, sub1.size / 2, -2)
-        testWrapSetAt(sub1, sub1.lastIndex, -3)
-        testWrapSetAt(sub1, -1, -4)
-        testWrapSetAt(sub1, sub1.size, -5)
-
-        val index2 = 4
-        val sub2 = vec.subList(index2, index2)
-        testWrapSetOnEmpty(sub2, -6)
+        TODO()
     }
 
     @Test
     fun testSwap() {
-        val vec = (1 .. 10).map{ it.toString() }.toVectorList()
-
-        val startIndex = 3
-        val endIndex = 10
-        val sub = vec.subList(startIndex, endIndex)
-
-        testSwapOnSublist(vec, sub, startIndex, 0, sub.lastIndex)
-        testSwap(sub, 1, sub.lastIndex - 1)
+        TODO()
     }
 
     @Test
     fun testAdd() {
-        val vec = (1 .. 50).toVectorList()
-
-        val startIndex = 14
-        val endIndex = 45
-        val sub = vec.subList(startIndex, endIndex)
-
-        testAddOnSublist(vec, sub, endIndex, -1)
-
-        testIndexedAddOnSublist(vec, sub, startIndex, 0, -2)
-        testIndexedAddOnSublist(vec, sub, startIndex, sub.size, -3)
-        testIndexedAddOnSublist(vec, sub, startIndex, sub.size / 2, -4)
-
-        testIndexedAddOutOfBounds(sub, -1, -5)
-        testIndexedAddOutOfBounds(sub, sub.size + 1, -5)
+        TODO()
     }
 
     @Test
     fun testAddAll() {
-        this.addAllAtEnd()
-        this.addAllAtIndices()
-    }
-
-    private fun addAllAtEnd() {
-        val vec = (1 .. 10).toVectorList()
-
-        val other1 = (-10 .. -1).toList()
-        val other2 = (20 downTo 11).toSet()
-        val other3 = (5 .. 15).toHashSet()
-
-        testAddAllWithOtherOnSublist(vec, other1, 2, 8)
-        testAddAllWithOtherOnSublist(vec, other2, vec.size / 4, 3 * vec.size / 4)
-        testAddAllWithOtherOnSublist(vec, other3, vec.size / 5, 4 * vec.size / 5)
-
-        val empty = emptyList<Int>()
-
-        testAddAllWithEmptyOnSublist(vec, empty, 1, 10)
-
-        testAddAllWithSelfOnSublist(vec, vec.size / 2, 3 * vec.size / 4)
-        testAddAllWithSelfOnSublist(vec, vec.size / 4, vec.size / 2)
-        testAddAllWithSelfOnSublist(vec, vec.size / 4, 3 * vec.size / 4)
-
-        testAddAllWithBaseOnSublist(vec, vec.size / 2, 3 * vec.size / 4)
-        testAddAllWithBaseOnSublist(vec, vec.size / 4, vec.size / 2)
-        testAddAllWithBaseOnSublist(vec, vec.size / 4, 3 * vec.size / 4)
-
-        testAddAllWithSublistOnBaseList(vec, vec.size / 4, 3 * vec.size / 4)
-    }
-
-    private fun addAllAtIndices() {
-        val vec = (1 .. 10).toVectorList()
-
-        val other1 = (-10 .. -1).toList()
-        val other2 = (20 downTo 11).toSet()
-        val other3 = (5 .. 14).toHashSet()
-
-        testIndexedAddAllWithOtherOnSublist(vec, other1, 1, 8, 0)
-        testIndexedAddAllWithOtherOnSublist(vec, other2, 8, 19, 5)
-        testIndexedAddAllWithOtherOnSublist(vec, other3, 3, 27, 24)
-
-        testIndexedAddAllWithSelfOnSublist(vec, vec.size / 2, 3 * vec.size / 4) { 0 }
-        testIndexedAddAllWithSelfOnSublist(vec, vec.size / 4, vec.size / 2) { it.size / 2 }
-        testIndexedAddAllWithSelfOnSublist(vec, vec.size / 4, 3 * vec.size / 4) { it.size }
-
-        testIndexedAddAllWithBaseOnSublist(vec, vec.size / 2, 3 * vec.size / 4) { 0 }
-        testIndexedAddAllWithBaseOnSublist(vec, vec.size / 4, vec.size / 2) { it.size / 2 }
-        testIndexedAddAllWithBaseOnSublist(vec, vec.size / 4, 3 * vec.size / 4) { it.size }
-
-        testIndexedAddAllWithSublistOnBaseList(vec, vec.size / 2, 3 * vec.size / 4) { 0 }
-        testIndexedAddAllWithSublistOnBaseList(vec, vec.size / 4, vec.size / 2) { it.size / 2 }
-        testIndexedAddAllWithSublistOnBaseList(vec, vec.size / 4, 3 * vec.size / 4) { it.size }
+        TODO()
     }
 
     @Test
     fun testInsert() {
-        val vec = (1 .. 10).toVectorList()
-
-        val other1 = (-10 .. -1).toList()
-        val other2 = (20 downTo 11).toSet()
-        val other3 = (5 .. 15).toHashSet()
-
-        testInsertWithOtherOnSublist(vec, 2, 8, other1)
-        testInsertWithOtherOnSublist(vec, vec.size / 4, 3 * vec.size / 4, other2)
-        testInsertWithOtherOnSublist(vec, vec.size / 5, 4 * vec.size / 5, other3)
-
-        val empty = emptyList<Int>()
-
-        testInsertWithEmptyOnSublist(vec, 1, 10, empty)
-
-        testInsertWithSelfOnSublist(vec, vec.size / 2, 3 * vec.size / 4)
-        testInsertWithSelfOnSublist(vec, vec.size / 4, vec.size / 2)
-        testInsertWithSelfOnSublist(vec, vec.size / 4, 3 * vec.size / 4)
-
-        testInsertWithBaseOnSublist(vec, vec.size / 2, 3 * vec.size / 4)
-        testInsertWithBaseOnSublist(vec, vec.size / 4, vec.size / 2)
-        testInsertWithBaseOnSublist(vec, vec.size / 4, 3 * vec.size / 4)
-
-        testInsertWithSublistOnBaseList(vec, vec.size / 4, 3 * vec.size / 4)
+        TODO()
     }
 
     @Test
     fun testResize() {
-        val vec = (1 .. 50).toVectorList()
-        testResizeByIncreaseOnSublist(vec, vec.size / 4, vec.size / 2, 25, -1)
-        testResizeByDecreaseOnSublist(vec, vec.size / 2, 3 * vec.size / 4, 10, -2)
-
-        val sub = vec.subList(vec.size / 5, 4 * vec.size / 5)
-        testInvalidResize(sub, -10, Int.MAX_VALUE)
+        TODO()
     }
 
     @Test
     fun testRemove() {
-        val vec = (0 until 100).toVectorList()
-
-        val startIndex = 8
-        val endIndex = 77
-        val sub = vec.subList(startIndex, endIndex)
-
-        val value1 = 10
-        val value2 = 53
-        val value3 = 71
-
-        val value4 = -1
-        val value5 = 5
-        val value6 = 77
-        val value7 = 100
-
-        testRemoveByElementOnSublist(vec, sub, value1, true)
-        testRemoveByElementOnSublist(vec, sub, value2, true)
-        testRemoveByElementOnSublist(vec, sub, value3, true)
-
-        testRemoveByElementOnSublist(vec, sub, value4, false)
-        testRemoveByElementOnSublist(vec, sub, value5, false)
-        testRemoveByElementOnSublist(vec, sub, value6, false)
-        testRemoveByElementOnSublist(vec, sub, value7, false)
-
-        assertNotContains(vec, value1)
-        assertNotContains(vec, value2)
-        assertNotContains(vec, value3)
-
-        assertNotContains(vec, value4)
-        assertContains(vec, value5)
-        assertContains(vec, value6)
-        assertNotContains(vec, value7)
+        TODO()
     }
 
     @Test
     fun testRemoveAt() {
-        val vec = (50 .. 100).toVectorList()
-
-        val oldSize = vec.size
-
-        testRemoveAtOnSublist(vec, 14, 37) { 0 }
-        testRemoveAtOnSublist(vec, 2, 18) { it.size / 4 }
-        testRemoveAtOnSublist(vec, 16, 45) { it.size / 2 }
-        testRemoveAtOnSublist(vec, 26, 39) { 3 * it.size / 4 }
-        testRemoveAtOnSublist(vec, 33, 44) { it.lastIndex }
-
-        assertEquals(vec.size, oldSize - 5)
+        TODO()
     }
 
     @Test
     fun testRemoveAll() {
-        val vec1 = (1 .. 50).toVectorList()
-        val fullyInRange = (15 .. 25).toSet()
-        testRemoveAllOnSublist(vec1, fullyInRange, 11, 40, 11, true)
-
-        val vec2 = (1 .. 50).toVectorList()
-        val partiallyInRange = (5 .. 15).toList()
-        testRemoveAllOnSublist(vec2, partiallyInRange, 1, 7, 3, true)
-
-        val vec3 = (1 .. 50).toVectorList()
-        val notInRange = (25 .. 35).toHashSet()
-        testRemoveAllOnSublist(vec3, notInRange, 15, 23, 0, false)
-
-        val vec4 = vectorListOf(1, 2, 3, 3, 3, 2, 1, 1)
-        testRemoveAllWithSublistOnBaseList(vec4, 4, 8, listOf(3, 3, 2, 1))
+        TODO()
     }
 
     @Test
     fun testDelete() {
-        val vec1 = (1 .. 50).toVectorList()
-        val fullyInRange = (15 .. 25).toSet()
-        testDeleteOnSublist(vec1, fullyInRange, 11, 40, 11)
-
-        val vec2 = (1 .. 50).toVectorList()
-        val partiallyInRange = (5 .. 15).toList()
-        testDeleteOnSublist(vec2, partiallyInRange, 1, 7, 3)
-
-        val vec3 = (1 .. 50).toVectorList()
-        val notInRange = (25 .. 35).toHashSet()
-        testDeleteOnSublist(vec3, notInRange, 15, 23, 0)
-
-        val vec4 = vectorListOf(1, 2, 3, 3, 3, 2, 1, 1)
-        testDeleteWithSublistOnBaseList(vec4, 4, 8, listOf(3, 3, 2, 1))
+        TODO()
     }
 
     @Test
     fun testRemoveAllOf() {
-        val vec1 = vectorListOf(1, 4, 3, 1, 4, 3, 1, 4, 3)
-        val sub1 = vec1.subList(1, 7)
-        val value1 = 4
-
-        testRemoveAllByElement(sub1, value1, 2)
-        assertNotContains(sub1, value1)
-        assertContains(vec1, value1)
-
-        val vec2 = (1 .. 50).toVectorList()
-        val sub2 = vec2.subList(23, 48)
-        val pred2 = { num: Int -> 0 == num % 2 }
-
-        testRemoveAllByPredicate(sub2, pred2, 13)
-        assertTrue(!sub2.any(pred2))
-        assertTrue(vec2.any(pred2))
+        TODO()
     }
 
     @Test
     fun testRemoveAmount() {
-        val vec1 = vectorListOf(1, 2, 3, 3, 2, 1, 1, 2, 3, 3, 2, 1)
-        val sub1 = vec1.subList(2, 9)
-        val value1 = 3
-
-        testRemoveAmountByElement(sub1, value1, 4, 3)
-        assertEquals(vec1.count{ it == value1 }, 1)
-
-        val vec2 = (1 .. 50).toVectorList()
-        val sub2 = vec2.subList(23, 48)
-        val pred2 = { num: Int -> 0 == num % 2 }
-
-        testRemoveAmountByPredicate(sub2, pred2, 10, 10)
-        assertEquals(sub2.count(pred2), 3)
-
-        testRemoveAmountByPredicate(sub2, pred2, 10, 3)
-        assertEquals(sub2.count(pred2), 0)
-
-        assertTrue(vec2.any(pred2))
+        TODO()
     }
 
     @Test
@@ -1481,37 +1199,17 @@ class VectorSublistTest {
 
     @Test
     fun testRemoveFromBack() {
-        val vec1 = (1 .. 30).toVectorList()
-        testRemoveFromBackOnSublist(vec1, 13, 24, 6)
-
-        val vec2 = (1 .. 30).toVectorList()
-        testRemoveFromBackOnSublist(vec2, 2, 8, 10)
-
-        val vec3 = (1 .. 30).toVectorList()
-        val sub3 = vec3.subList(10, 20)
-        testRemoveFromBackWithNegativeAmount(sub3, -1)
+        TODO()
     }
 
     @Test
     fun testRemoveRange() {
-        val vec1 = (1 .. 50).toVectorList()
-        testRemoveRangeOnSublist(vec1, 5, 29, { it.size / 4 }, { 3 * it.size / 4 })
-
-        val vec2 = (1 .. 50).toVectorList()
-        testRemoveRangeOnSublist(vec2, 31, 49, { 0 }, { it.size / 2 })
-
-        val vec3 = (1 .. 50).toVectorList()
-        testRemoveRangeOnSublist(vec3, 29, 38, { it.size / 2 }, { it.size })
+        TODO()
     }
 
     @Test
     fun testClear() {
-        val vec = (1 .. 25).toVectorList()
-
-        val startIndex = 4
-        val endIndex = 21
-
-        testClearOnSublist(vec, startIndex, endIndex)
+        TODO()
     }
 
     @Test
@@ -1561,52 +1259,17 @@ class VectorSublistTest {
 
     @Test
     fun testEquals() {
-        val vec = vectorListOf(1, 2, 3, 0, 1, 2, 3)
-
-        val sub1 = vec.subList(0, 3)
-        val sub2 = vec.subList(4, 7)
-
-        testEquals(sub1, sub2, true)
-
-        val sub3 = vec.subList(0, 4)
-        val sub4 = vec.subList(4, 7)
-
-        testEquals(sub3, sub4, false)
-
-        val sub5 = vec.subList(1, 4)
-        val sub6 = vec.subList(2, 6)
-
-        testEquals(sub5, sub6, false)
+        TODO()
     }
 
     @Test
     fun testIsPermutationOf() {
-        val vec = vectorListOf(1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0)
-
-        val sub1 = vec.subList(0, 4)
-        val sub2 = vec.subList(3, 7)
-
-        testIsPermutationOf(sub1, sub2, true)
-
-        val sub3 = vec.subList(1, 5)
-        val sub4 = vec.subList(8, 12)
-
-        testIsPermutationOf(sub3, sub4, true)
-
-        val sub5 = vec.subList(0, 3)
-        val sub6 = vec.subList(1, 4)
-
-        testIsPermutationOf(sub5, sub6, false)
+        TODO()
     }
 
     @Test
     fun testHashCode() {
-        val vec = vectorListOf(1, 2, 3, 0, 1, 2, 3)
-
-        val sub1 = vec.subList(0, 3)
-        val sub2 = vec.subList(4, 7)
-
-        testHashCode(sub1, sub2)
+        TODO()
     }
 
     @Test
@@ -1616,24 +1279,12 @@ class VectorSublistTest {
 
     @Test
     fun testNext() {
-        val vec = (1 .. 8).toVectorList()
-
-        val startIndex = 2
-        val endIndex = 7
-        val sub = vec.subList(startIndex, endIndex)
-
-        testNext(sub)
+        TODO()
     }
 
     @Test
     fun testPrev() {
-        val vec = (8 downTo 1).toVectorList()
-
-        val startIndex = 2
-        val endIndex = 7
-        val sub = vec.subList(startIndex, endIndex)
-
-        testPrev(sub)
+        TODO()
     }
 
     @Test
@@ -1648,15 +1299,6 @@ class VectorSublistTest {
 
     @Test
     fun testToString() {
-        val vec = (1 .. 10).toVectorList()
-
-        val empty = vec.subList(0, 0)
-        testToString(empty, "[]")
-
-        val single = vec.subList(5, 6)
-        testToString(single, "[6]")
-
-        val multiple = vec.subList(3, 7)
-        testToString(multiple, "[4, 5, 6, 7]")
+        TODO()
     }
 }
