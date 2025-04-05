@@ -59,11 +59,7 @@ class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TEle
             return false
         }
 
-        var itemsToBeInserted = elements
-
-        if (elements is RandomAccessSublist<TElement> && elements.hasBaseOf(this)) {
-            itemsToBeInserted = elements.toList()
-        }
+        val itemsToBeInserted = this.determineItems(elements)
 
         val amountToAdd = itemsToBeInserted.size
         val newSize = this.size + amountToAdd
@@ -76,6 +72,16 @@ class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TEle
         ++(super.modCount)
 
         return true
+    }
+
+    private fun determineItems(elements: Collection<TElement>): Collection<TElement> {
+        var itemsToBeInserted = elements
+
+        if (elements is RandomAccessSublist<TElement> && elements.hasBaseOf(this)) {
+            itemsToBeInserted = elements.toList()
+        }
+
+        return itemsToBeInserted
     }
 
     private fun resizeIfNeededAfterInsertion(newSize: Int) {
