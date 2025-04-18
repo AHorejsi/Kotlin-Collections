@@ -1008,7 +1008,6 @@ class VectorListIteratorTest {
     }
 }
 
-@Suppress("SameParameterValue")
 class VectorSublistTest {
     @Test
     fun testConstructor() {
@@ -1037,69 +1036,27 @@ class VectorSublistTest {
 
     @Test
     fun testAtLeast() {
-        val vec = (1 .. 20).toVectorList()
-
-        val startIndex = 5
-        val endIndex = 15
-        val size = endIndex - startIndex
-
-        val sub1 = vec.subList(startIndex, endIndex - 1)
-        val sub2 = vec.subList(startIndex, endIndex)
-        val sub3 = vec.subList(startIndex, endIndex + 1)
-
-        testAtLeast(size, sub1, sub2, sub3)
+        TODO()
     }
 
     @Test
     fun testAtMost() {
-        val vec = (1 .. 20).toVectorList()
-
-        val startIndex = 5
-        val endIndex = 15
-        val size = endIndex - startIndex
-
-        val sub1 = vec.subList(startIndex, endIndex - 1)
-        val sub2 = vec.subList(startIndex, endIndex)
-        val sub3 = vec.subList(startIndex, endIndex + 1)
-
-        testAtMost(size, sub1, sub2, sub3)
+        TODO()
     }
 
     @Test
     fun testExactly() {
-        val vec = (1 .. 20).toVectorList()
-
-        val startIndex = 5
-        val endIndex = 15
-        val size = endIndex - startIndex
-
-        val sub1 = vec.subList(startIndex, endIndex - 1)
-        val sub2 = vec.subList(startIndex, endIndex)
-        val sub3 = vec.subList(startIndex, endIndex + 1)
-
-        testExactly(size, sub1, sub2, sub3)
+        TODO()
     }
 
     @Test
     fun testTryFirst() {
-        val vec = (15 .. 55).toVectorList()
-
-        val sub = vec.subList(6, 38)
-        testTryFirst(sub, { 0 == it % 4 }, 21, 24)
-
-        val empty = vec.subList(15, 15)
-        testTryFirstOnEmpty(empty) { 0 == it }
+        TODO()
     }
 
     @Test
     fun testTryLast() {
-        val vec = (15 .. 55).toVectorList()
-
-        val sub = vec.subList(6, 38)
-        testTryLast(sub, { 0 == it % 10 }, 52, 50)
-
-        val empty = vec.subList(15, 15)
-        testTryLastOnEmpty(empty) { 0 == it }
+        TODO()
     }
 
     @Test
