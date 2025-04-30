@@ -48,7 +48,7 @@ abstract class AbstractCollection<TElement> : MutableCollection<TElement> {
         return change
     }
 
-    override operator fun contains(element: TElement): Boolean {
+    override operator fun contains(element: @UnsafeVariance TElement): Boolean {
         for (item in this) {
             if (item == element) {
                 return true

@@ -14,9 +14,7 @@ val <TElement> ((TElement, TElement) -> Int).reversed: (TElement, TElement) -> I
 fun <TElement> inOrder(): Comparator<TElement> =
     Comparator { p0, p1 ->
         @Suppress("UNCHECKED_CAST")
-        val comp = p0 as Comparable<TElement>
-
-        comp.compareTo(p1)
+        (p0 as Comparable<TElement>).compareTo(p1)
     }
 
 fun <TElement> nullFirst(comp: (TElement, TElement) -> Int): (TElement, TElement) -> Int {
