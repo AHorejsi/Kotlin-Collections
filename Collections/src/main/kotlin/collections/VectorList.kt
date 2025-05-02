@@ -64,7 +64,7 @@ class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TEle
         val amountToAdd = itemsToBeInserted.size
         val newSize = this.size + amountToAdd
 
-        this.resizeIfNeededAfterInsertion(newSize)
+        this.resizeIfNeededBeforeInsertion(newSize)
         this.shiftForInsertion(index, amountToAdd)
         this.insertElements(itemsToBeInserted, amountToAdd, index)
 
@@ -84,7 +84,7 @@ class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TEle
         return itemsToBeInserted
     }
 
-    private fun resizeIfNeededAfterInsertion(newSize: Int) {
+    private fun resizeIfNeededBeforeInsertion(newSize: Int) {
         if (newSize > this.capacity) {
             this.reallocate(newSize * 3 / 2)
         }
