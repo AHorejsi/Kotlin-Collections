@@ -69,14 +69,14 @@ class SequentialList<TElement> : AbstractList<TElement>(), Serializable {
 
         if (null === this.head) {
             this.head = newNode
-            this.tail = newNode
         }
         else {
             newNode.prev = this.tail
 
             this.tail!!.next = newNode
-            this.tail = newNode
         }
+
+        this.tail = newNode
 
         ++(this.size)
         ++(super.modCount)
