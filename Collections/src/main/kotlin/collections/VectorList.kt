@@ -172,7 +172,7 @@ class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TEle
     }
 
     override fun clear() {
-        if (this.isEmpty()) {
+        if (this.isEmpty() && null === this.data[0]) {
             return
         }
 
@@ -196,11 +196,8 @@ class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TEle
     }
 
     private fun reallocate(newCapacity: Int) {
-        if (newCapacity <= VectorList.MIN_CAPACITY) {
-            return
-        }
-
-        val newData = arrayOfNulls<Any>(newCapacity)
+        val actualCapacity = max(newCapacity, VectorList.MIN_CAPACITY)
+        val newData = arrayOfNulls<Any>(actualCapacity)
 
         for (index in this.indices) {
             newData[index] = this.data[index]

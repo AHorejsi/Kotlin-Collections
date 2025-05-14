@@ -330,6 +330,71 @@ private fun testNextWithIndex(iter: ListIterator<Int>, startIndex: Int, list: Li
     assertFailsWith<NoSuchElementException>{ iter.next() }
 }
 
+fun testSetOnListIterator(list: MutableList<Int>) {
+    testSetWithNext(list)
+    testSetWithPrevious(list)
+    testSetAfterRemove(list)
+    testSetAfterAdd(list)
+}
+
+private fun testSetWithNext(list: MutableList<Int>) {
+    val index = list.size / 2
+    val value = -1
+
+    val iter = list.listIterator(index)
+
+    assertFailsWith<IllegalStateException>{ iter.set(value) }
+
+    iter.next()
+    assertDoesNotThrow{ iter.set(value) }
+
+    assertEquals(value, iter.previous())
+    assertEquals(value, list[index])
+}
+
+private fun testSetWithPrevious(list: MutableList<Int>) {
+    val index = list.size / 3
+    val value = -1
+
+    val iter = list.listIterator(index)
+
+    assertFailsWith<IllegalStateException>{ iter.set(value) }
+
+    iter.previous()
+    assertDoesNotThrow{ iter.set(value) }
+
+    assertEquals(value, iter.next())
+    assertEquals(value, list[index - 1])
+}
+
+private fun testSetAfterRemove(list: MutableList<Int>) {
+    val index = 3 * list.size / 4
+    val value = -1
+
+    val iter = list.listIterator(index)
+
+    iter.next()
+    iter.remove()
+
+    assertFailsWith<IllegalStateException>{ iter.set(value) }
+}
+
+private fun testSetAfterAdd(list: MutableList<Int>) {
+    val index = 4 * list.size / 5
+
+    val value1 = -1
+    val value2 = -2
+
+    val iter = list.listIterator(index)
+
+    iter.next()
+
+    iter.add(value2)
+    iter.add(value2)
+
+    assertFailsWith<IllegalStateException>{ iter.set(value1) }
+}
+
 fun testConcurrentModification(list: MutableList<Int>) {
     val iter = list.listIterator()
 
@@ -341,7 +406,7 @@ fun testConcurrentModification(list: MutableList<Int>) {
     assertFailsWith<ConcurrentModificationException>{ iter.hasNext() }
     assertFailsWith<ConcurrentModificationException>{ iter.previous() }
     assertFailsWith<ConcurrentModificationException>{ iter.next() }
-    assertFailsWith<ConcurrentModificationException>{ iter.set(-1) }
+    assertFailsWith<ConcurrentModificationException>{ iter.set(0) }
     assertFailsWith<ConcurrentModificationException>{ iter.remove() }
-    assertFailsWith<ConcurrentModificationException>{ iter.add(-1) }
+    assertFailsWith<ConcurrentModificationException>{ iter.add(0) }
 }

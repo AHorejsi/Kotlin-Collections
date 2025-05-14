@@ -87,6 +87,12 @@ internal fun checkIfUnderlyingCollectionHasBeenModified(modCount1: Int, modCount
     }
 }
 
+internal fun checkIfCalledAddOnListIterator(called: Boolean) {
+    if (called) {
+        throw IllegalStateException("Called add function on list iterator")
+    }
+}
+
 internal fun checkForOverflowOnAddition(left: Int, right: Int): Int {
     val output = left + right
     val hasOverflow = left > 0 && right > 0 && output < 0

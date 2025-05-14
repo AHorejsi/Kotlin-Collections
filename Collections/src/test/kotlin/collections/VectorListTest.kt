@@ -987,7 +987,9 @@ class VectorListIteratorTest {
 
     @Test
     fun testSet() {
-        TODO()
+        val vec = (1 .. 100).toVectorList()
+
+        testSetOnListIterator(vec)
     }
 
     @Test

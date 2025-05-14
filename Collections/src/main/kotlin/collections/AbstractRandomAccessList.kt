@@ -50,7 +50,7 @@ abstract class AbstractRandomAccessList<TElement> : AbstractList<TElement>(), Ra
 
         private var currentIndex: Int = index
         private var lastUsedIndex: Int? = null
-        private var calledPreviousLast: Boolean = false
+        private var calledAdd: Boolean = false
         private var modCount: Int = this@AbstractRandomAccessList.modCount
 
         override fun previousIndex(): Int {
@@ -78,8 +78,8 @@ abstract class AbstractRandomAccessList<TElement> : AbstractList<TElement>(), Ra
             val item = this@AbstractRandomAccessList[usedIndex]
 
             this.lastUsedIndex = usedIndex
-            this.calledPreviousLast = true
             --(this.currentIndex)
+            this.calledAdd = false
 
             return item
         }
@@ -91,14 +91,15 @@ abstract class AbstractRandomAccessList<TElement> : AbstractList<TElement>(), Ra
             val item = this@AbstractRandomAccessList[usedIndex]
 
             this.lastUsedIndex = usedIndex
-            this.calledPreviousLast = false
             ++(this.currentIndex)
+            this.calledAdd = false
 
             return item
         }
 
         override fun set(element: TElement) {
             checkIfUnderlyingCollectionHasBeenModified(this.modCount, this@AbstractRandomAccessList.modCount)
+            checkIfCalledAddOnListIterator(this.calledAdd)
 
             this.lastUsedIndex?.let {
                 this@AbstractRandomAccessList[it] = element
@@ -107,6 +108,7 @@ abstract class AbstractRandomAccessList<TElement> : AbstractList<TElement>(), Ra
 
         override fun remove() {
             checkIfUnderlyingCollectionHasBeenModified(this.modCount, this@AbstractRandomAccessList.modCount)
+            checkIfCalledAddOnListIterator(this.calledAdd)
 
             this.lastUsedIndex?.let {
                 this@AbstractRandomAccessList.removeAt(it)
@@ -123,14 +125,15 @@ abstract class AbstractRandomAccessList<TElement> : AbstractList<TElement>(), Ra
         override fun add(element: TElement) {
             checkIfUnderlyingCollectionHasBeenModified(this.modCount, this@AbstractRandomAccessList.modCount)
 
-            this@AbstractRandomAccessList.add(this.nextIndex(), element)
-
-            this.lastUsedIndex?.let {
-                if (this.calledPreviousLast) {
-                    this.lastUsedIndex = it + 1
-                }
+            if (0 == this.currentIndex) {
+                this@AbstractRandomAccessList.add(0, element)
+                ++(this.currentIndex)
+            }
+            else {
+                this@AbstractRandomAccessList.add(this.previousIndex(), element)
             }
 
+            this.calledAdd = true
             ++(this.modCount)
         }
     }
