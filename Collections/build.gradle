@@ -1,17 +1,17 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '2.0.0'
-    id 'org.jetbrains.dokka' version '1.9.20'
+    id "org.jetbrains.kotlin.jvm" version "2.0.0"
+    id "org.jetbrains.dokka" version "1.9.20"
 }
 
-group = 'com.alexh'
-version = '1.0-SNAPSHOT'
+group = "com.alexh"
+version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    testImplementation 'org.jetbrains.kotlin:kotlin-test'
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
 }
 
 test {

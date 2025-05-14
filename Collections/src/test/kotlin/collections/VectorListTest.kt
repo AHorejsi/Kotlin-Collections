@@ -92,9 +92,9 @@ class VectorListTest {
     fun testAtLeast() {
         val count = 100
 
-        val lesser = 0.replicate(count - 1).toVectorList()
-        val equal = 0.replicate(count).toVectorList()
-        val greater = 0.replicate(count + 1).toVectorList()
+        val lesser = VectorList(count - 1) { 0 }
+        val equal = VectorList(count) { 0 }
+        val greater = VectorList(count + 1) { 0 }
 
         testAtLeast(count, lesser, equal, greater)
     }
@@ -103,9 +103,9 @@ class VectorListTest {
     fun testAtMost() {
         val count = 100
 
-        val lesser = 0.replicate(count - 1).toVectorList()
-        val equal = 0.replicate(count).toVectorList()
-        val greater = 0.replicate(count + 1).toVectorList()
+        val lesser = VectorList(count - 1) { 0 }
+        val equal = VectorList(count) { 0 }
+        val greater = VectorList(count + 1) { 0 }
 
         testAtMost(count, lesser, equal, greater)
     }
@@ -114,9 +114,9 @@ class VectorListTest {
     fun testExactly() {
         val count = 100
 
-        val lesser = 0.replicate(count - 1).toVectorList()
-        val equal = 0.replicate(count).toVectorList()
-        val greater = 0.replicate(count + 1).toVectorList()
+        val lesser = VectorList(count - 1) { 0 }
+        val equal = VectorList(count) { 0 }
+        val greater = VectorList(count + 1) { 0 }
 
         testExactly(count, lesser, equal, greater)
     }

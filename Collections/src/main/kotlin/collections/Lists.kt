@@ -335,16 +335,15 @@ fun <TElement> MutableList<TElement>.intersperse(separator: TElement) {
 
     val iter = this.listIterator()
 
-    while (true) {
+    iter.next()
+
+    while (iter.hasNext()) {
         iter.next()
-
-        if (!iter.hasNext()) {
-            break
-        }
-
         iter.add(separator)
         iter.next()
     }
+
+    println(this)
 }
 
 fun <TElement> compare(leftList: List<TElement>, rightList: List<TElement>, comp: Comparator<TElement>? = null): Int =
