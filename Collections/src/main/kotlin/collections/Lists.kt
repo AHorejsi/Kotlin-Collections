@@ -342,8 +342,6 @@ fun <TElement> MutableList<TElement>.intersperse(separator: TElement) {
         iter.add(separator)
         iter.next()
     }
-
-    println(this)
 }
 
 fun <TElement> compare(leftList: List<TElement>, rightList: List<TElement>, comp: Comparator<TElement>? = null): Int =
