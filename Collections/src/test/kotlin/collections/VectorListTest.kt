@@ -994,12 +994,16 @@ class VectorListIteratorTest {
 
     @Test
     fun testRemove() {
-        TODO()
+        val vec = (1 .. 100).toVectorList()
+
+        testRemoveOnListIterator(vec)
     }
 
     @Test
     fun testAdd() {
-        TODO()
+        val vec = (1 .. 100).toVectorList()
+
+        testAddOnListIterator(vec)
     }
 
     @Test

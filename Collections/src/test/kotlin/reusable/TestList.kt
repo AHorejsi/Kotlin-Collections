@@ -395,10 +395,85 @@ private fun testSetAfterAdd(list: MutableList<Int>) {
     assertFailsWith<IllegalStateException>{ iter.set(value1) }
 }
 
+fun testRemoveOnListIterator(list: MutableList<Int>) {
+    testRemoveWithNext(list)
+    testRemoveWithPrevious(list)
+    testIllegalStatesWithRemove(list)
+}
+
+private fun testRemoveWithNext(list: MutableList<Int>) {
+    val index = list.size / 3
+
+    val iter = list.listIterator(index)
+
+    val elem = iter.next()
+
+    val oldSize = list.size
+    assertDoesNotThrow{ iter.remove() }
+    val newSize = list.size
+
+    assertEquals(oldSize - 1, newSize)
+    assertNotContains(list, elem)
+}
+
+private fun testRemoveWithPrevious(list: MutableList<Int>) {
+    val index = 2 * list.size / 3
+
+    val iter = list.listIterator(index)
+
+    val elem = iter.previous()
+
+    val oldSize = list.size
+    assertDoesNotThrow{ iter.remove() }
+    val newSize = list.size
+
+    assertEquals(oldSize - 1, newSize)
+    assertNotContains(list, elem)
+}
+
+private fun testIllegalStatesWithRemove(list: MutableList<Int>) {
+    val index = list.size / 2
+
+    val iter = list.listIterator(index)
+
+    assertFailsWith<IllegalStateException>{ iter.remove() }
+
+    iter.next()
+
+    assertDoesNotThrow{ iter.remove() }
+    assertFailsWith<IllegalStateException>{ iter.remove() }
+}
+
+fun testAddOnListIterator(list: MutableList<Int>) {
+    testAddHelper(list, -1, 0)
+    testAddHelper(list, -2, list.size / 2)
+    testAddHelper(list, -3, list.size)
+}
+
+private fun testAddHelper(list: MutableList<Int>, value: Int, index: Int) {
+    val iter = list.listIterator(index)
+
+    val oldSize = list.size
+    assertDoesNotThrow{ iter.add(value) }
+    val newSize = list.size
+
+    println(index)
+    println(value)
+    println(list)
+
+    assertEquals(value, list[index])
+    assertEquals(oldSize + 1, newSize)
+
+    if (iter.hasPrevious()) {
+        assertEquals(value, iter.previous())
+    }
+}
+
 fun testConcurrentModification(list: MutableList<Int>) {
     val iter = list.listIterator()
 
     list.add(0)
+    list.removeAt(0)
 
     assertFailsWith<ConcurrentModificationException>{ iter.previousIndex() }
     assertFailsWith<ConcurrentModificationException>{ iter.nextIndex() }

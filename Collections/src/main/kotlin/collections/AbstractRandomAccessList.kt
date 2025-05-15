@@ -125,14 +125,9 @@ abstract class AbstractRandomAccessList<TElement> : AbstractList<TElement>(), Ra
         override fun add(element: TElement) {
             checkIfUnderlyingCollectionHasBeenModified(this.modCount, this@AbstractRandomAccessList.modCount)
 
-            if (0 == this.currentIndex) {
-                this@AbstractRandomAccessList.add(0, element)
-                ++(this.currentIndex)
-            }
-            else {
-                this@AbstractRandomAccessList.add(this.previousIndex(), element)
-            }
+            this@AbstractRandomAccessList.add(this.currentIndex, element)
 
+            ++(this.currentIndex)
             this.calledAdd = true
             ++(this.modCount)
         }
