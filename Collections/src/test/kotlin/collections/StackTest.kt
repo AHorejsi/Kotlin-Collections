@@ -1,10 +1,7 @@
 package collections
 
 import org.junit.jupiter.api.assertDoesNotThrow
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class StackTest {
     @Test
@@ -30,7 +27,7 @@ class StackTest {
 
         val total = 50
 
-        for (count in 1 .. total) {
+        repeat(total) {
             val oldSize = assertDoesNotThrow{ stack.size }
             stack.push(0)
             val newSize = assertDoesNotThrow{ stack.size }
@@ -73,42 +70,133 @@ class StackTest {
     }
 
     @Test
-    fun testPush() {
+    fun testPushAndPopAndPeek() {
+        val vector = VectorStack<Int>()
+        val linked = LinkedStack<Int>()
 
+        this.testPushAndPopAndPeekHelper(vector)
+        this.testPushAndPopAndPeekHelper(linked)
+    }
+
+    private fun testPushAndPopAndPeekHelper(stack: Stack<Int>) {
+        assertFailsWith<NoSuchElementException>{ stack.peek() }
+        assertFailsWith<NoSuchElementException>{ stack.pop() }
+
+        val total = 50
+
+        repeat(total) {
+            assertDoesNotThrow{ stack.push(it) }
+
+            val item = assertDoesNotThrow{ stack.peek() }
+
+            assertEquals(it, item)
+        }
+
+        while (!stack.isEmpty()) {
+            val peekedItem = assertDoesNotThrow{ stack.peek() }
+            val poppedItem = assertDoesNotThrow{ stack.pop() }
+
+            assertEquals(peekedItem, poppedItem)
+        }
+
+        assertFailsWith<NoSuchElementException>{ stack.peek() }
+        assertFailsWith<NoSuchElementException>{ stack.pop() }
     }
 
     @Test
-    fun testPop() {
+    fun testPush_And_PopOrNull_And_PeekOrNull() {
+        val vector = VectorStack<Int>()
+        val linked = LinkedStack<Int>()
 
+        this.testPush_And_PopOrNull_And_PeekOrNull_Helper(vector)
+        this.testPush_And_PopOrNull_And_PeekOrNull_Helper(linked)
+    }
+
+    private fun testPush_And_PopOrNull_And_PeekOrNull_Helper(stack: Stack<Int>) {
+        this.testOrNull(stack)
+
+        val total = 75
+
+        repeat(total) {
+            stack.push(0)
+        }
+
+        repeat(total) {
+            val peekedItem = assertDoesNotThrow{ stack.peekOrNull() }
+            val poppedItem = assertDoesNotThrow{ stack.popOrNull() }
+
+            assertNotNull(peekedItem)
+            assertNotNull(poppedItem)
+        }
+
+        this.testOrNull(stack)
+    }
+
+    private fun testOrNull(stack: Stack<Int>) {
+        val peekedItem = assertDoesNotThrow{ stack.peekOrNull() }
+        val poppedItem = assertDoesNotThrow{ stack.popOrNull() }
+
+        assertNull(peekedItem)
+        assertNull(poppedItem)
     }
 
     @Test
-    fun testPopOrNull() {
+    fun testPush_And_TryPop_And_TryPeek() {
+        val vector = VectorStack<Int?>()
+        val linked = LinkedStack<Int?>()
 
+        this.testPush_And_TryPop_And_TryPeek_Helper(vector)
+        this.testPush_And_TryPop_And_TryPeek_Helper(linked)
     }
 
-    @Test
-    fun testTryPop() {
+    private fun testPush_And_TryPop_And_TryPeek_Helper(stack: Stack<Int?>) {
+        this.testTry(stack)
 
+        val total = 75
+
+        repeat(total) {
+            stack.push(0)
+        }
+
+        repeat(total) {
+            val peekedItem = assertDoesNotThrow{ stack.tryPeek() }
+            val poppedItem = assertDoesNotThrow{ stack.tryPop() }
+
+            assertTrue(peekedItem.isSuccess)
+            assertTrue(peekedItem.isSuccess)
+        }
+
+        this.testTry(stack)
     }
 
-    @Test
-    fun testPeek() {
+    private fun testTry(stack: Stack<Int?>) {
+        val peekedResult = assertDoesNotThrow{ stack.tryPeek() }
+        val poppedResult = assertDoesNotThrow{ stack.tryPop() }
 
-    }
-
-    @Test
-    fun testPeekOrNull() {
-
-    }
-
-    @Test
-    fun testTryPeek() {
-
+        assertFailsWith<NoSuchElementException>{ peekedResult.getOrThrow() }
+        assertFailsWith<NoSuchElementException>{ poppedResult.getOrThrow() }
     }
 
     @Test
     fun testClear() {
+        val vector = VectorStack<Int>()
+        val linked = LinkedStack<Int>()
 
+        this.testClearHelper(vector)
+        this.testClearHelper(linked)
+    }
+
+    private fun testClearHelper(stack: Stack<Int>) {
+        val total = 100
+
+        repeat(total) {
+            stack.push(it)
+        }
+
+        assertTrue(!stack.isEmpty())
+        assertDoesNotThrow{ stack.clear() }
+        assertTrue(stack.isEmpty())
+
+        assertDoesNotThrow{ stack.clear() }
     }
 }
