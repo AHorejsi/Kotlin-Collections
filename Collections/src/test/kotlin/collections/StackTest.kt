@@ -163,7 +163,7 @@ class StackTest {
             val poppedItem = assertDoesNotThrow{ stack.tryPop() }
 
             assertTrue(peekedItem.isSuccess)
-            assertTrue(peekedItem.isSuccess)
+            assertTrue(poppedItem.isSuccess)
         }
 
         this.testTry(stack)

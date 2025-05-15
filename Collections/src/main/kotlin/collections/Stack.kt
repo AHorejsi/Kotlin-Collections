@@ -34,7 +34,7 @@ class VectorStack<TElement>(initialCapacity: Int = VectorStack.DEFAULT_CAPACITY)
 
     override fun push(element: TElement) {
         if (this.data.size == this.size) {
-            this.reallocate(this.size * 3 / 2)
+            this.reallocate()
         }
 
         this.data[this.size] = element
@@ -60,8 +60,8 @@ class VectorStack<TElement>(initialCapacity: Int = VectorStack.DEFAULT_CAPACITY)
         this.size = 0
     }
 
-    private fun reallocate(newCapacity: Int) {
-        val newData = arrayOfNulls<Any>(newCapacity)
+    private fun reallocate() {
+        val newData = arrayOfNulls<Any>(this.data.size * 3 / 2)
 
         for (index in 0 until this.size) {
             newData[index] = this.data[index]

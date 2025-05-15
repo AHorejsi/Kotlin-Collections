@@ -35,7 +35,7 @@ class VectorQueue<TElement>(initialCapacity: Int = VectorQueue.DEFAULT_CAPACITY)
 
     override fun enqueue(element: TElement) {
         if (this.data.size == this.size) {
-            this.reallocate(this.size * 3 / 2)
+            this.reallocate()
         }
 
         this.data[this.actualIndex(this.size)] = element
@@ -63,8 +63,8 @@ class VectorQueue<TElement>(initialCapacity: Int = VectorQueue.DEFAULT_CAPACITY)
         this.frontIndex = 0
     }
 
-    private fun reallocate(newCapacity: Int) {
-        val newData = arrayOfNulls<Any>(newCapacity)
+    private fun reallocate() {
+        val newData = arrayOfNulls<Any>(this.data.size * 3 / 2)
 
         for (index in 0 until this.size) {
             newData[index] = this.data[this.actualIndex(index)]
