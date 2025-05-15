@@ -25,19 +25,21 @@ class StackTest {
     }
 
     private fun testSizeHelper(stack: Stack<Int>) {
-        assertEquals(0, stack.size)
+        val initialSize = assertDoesNotThrow{ stack.size }
+        assertEquals(0, initialSize)
 
         val total = 50
 
         for (count in 1 .. total) {
-            val oldSize = stack.size
+            val oldSize = assertDoesNotThrow{ stack.size }
             stack.push(0)
-            val newSize = stack.size
+            val newSize = assertDoesNotThrow{ stack.size }
 
             assertEquals(oldSize + 1, newSize)
         }
 
-        assertEquals(total, stack.size)
+        val finalSize = assertDoesNotThrow{ stack.size }
+        assertEquals(total, finalSize)
     }
 
     @Test
@@ -50,19 +52,24 @@ class StackTest {
     }
 
     private fun testIsEmptyHelper(stack: Stack<Int>) {
-        assertTrue(stack.isEmpty())
+        val initial = assertDoesNotThrow{ stack.isEmpty()}
+        assertTrue(initial)
 
         stack.push(0)
-        assertTrue(!stack.isEmpty())
+        val firstAdd = assertDoesNotThrow{ stack.isEmpty() }
+        assertTrue(!firstAdd)
 
         stack.push(0)
-        assertTrue(!stack.isEmpty())
+        val secondAdd = assertDoesNotThrow{ stack.isEmpty() }
+        assertTrue(!secondAdd)
 
         stack.pop()
-        assertTrue(!stack.isEmpty())
+        val firstRemove = assertDoesNotThrow{ stack.isEmpty() }
+        assertTrue(!firstRemove)
 
         stack.pop()
-        assertTrue(stack.isEmpty())
+        val secondRemove = assertDoesNotThrow{ stack.isEmpty() }
+        assertTrue(secondRemove)
     }
 
     @Test
