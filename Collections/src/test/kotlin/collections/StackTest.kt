@@ -35,8 +35,19 @@ class StackTest {
             assertEquals(oldSize + 1, newSize)
         }
 
-        val finalSize = assertDoesNotThrow{ stack.size }
-        assertEquals(total, finalSize)
+        val finalSize1 = assertDoesNotThrow{ stack.size }
+        assertEquals(total, finalSize1)
+
+        repeat(total) {
+            val oldSize = assertDoesNotThrow{ stack.size }
+            stack.pop()
+            val newSize = assertDoesNotThrow{ stack.size }
+
+            assertEquals(oldSize - 1, newSize)
+        }
+
+        val finalSize2 = assertDoesNotThrow{ stack.size }
+        assertEquals(0, finalSize2)
     }
 
     @Test
