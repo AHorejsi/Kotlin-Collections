@@ -129,7 +129,7 @@ class StackTest {
         val total = 75
 
         repeat(total) {
-            stack.push(0)
+            assertDoesNotThrow{ stack.push(0) }
         }
 
         repeat(total) {
@@ -163,10 +163,10 @@ class StackTest {
     private fun testPush_And_TryPop_And_TryPeek_Helper(stack: Stack<Int?>) {
         this.testTry(stack)
 
-        val total = 75
+        val total = 100
 
         repeat(total) {
-            stack.push(0)
+            assertDoesNotThrow{ stack.push(0) }
         }
 
         repeat(total) {
@@ -198,7 +198,7 @@ class StackTest {
     }
 
     private fun testClearHelper(stack: Stack<Int>) {
-        val total = 100
+        val total = 200
 
         repeat(total) {
             stack.push(it)
