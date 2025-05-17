@@ -1,24 +1,35 @@
 package collections
 
 import java.io.Serializable
+import kotlin.math.max
 
 @Suppress("RemoveRedundantQualifierName", "RedundantSuppression")
-class DequeList<TElement>(
-    initialCapacity: Int = DequeList.DEFAULT_CAPACITY
-) : AbstractRandomAccessList<TElement>(), Serializable {
-    private companion object {
+class DequeList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TElement>(), Serializable {
+    companion object {
         @Suppress("ConstPropertyName")
-        const val serialVersionUID: Long = 1L
+        private const val serialVersionUID: Long = 1L
 
-        const val DEFAULT_CAPACITY: Int = 16
+        const val MIN_CAPACITY: Int = 16
     }
+
+    private var data: Array<Any?>
+    private var startIndex: Int = 0
 
     init {
         checkIfNegativeCapacity(initialCapacity)
+
+        val actualCapacity = max(initialCapacity, DequeList.MIN_CAPACITY)
+
+        this.data = arrayOfNulls(actualCapacity)
     }
 
-    private var data: Array<Any?> = arrayOfNulls(initialCapacity)
-    private var startIndex: Int = 0
+    constructor(size: Int, supplier: () -> TElement) : this(size) {
+        for (index in 0 until size) {
+            this.data[index] = supplier()
+        }
+
+        this.size = size
+    }
 
     override var size: Int = 0
         private set
@@ -220,4 +231,46 @@ class DequeList<TElement>(
         this.data = newData
         this.startIndex = 0
     }
+}
+
+fun <TElement> dequeListOf(): DequeList<TElement> =
+    DequeList(DequeList.MIN_CAPACITY)
+
+fun <TElement> dequeListOf(vararg elements: TElement): DequeList<TElement> =
+    elements.toDequeList()
+
+fun <TElement> Iterable<TElement>.toDequeList(): DequeList<TElement> {
+    if (this is Collection<TElement>) {
+        return this.toDequeList()
+    }
+
+    val deque = dequeListOf<TElement>()
+
+    deque.addAll(this)
+
+    return deque
+}
+
+fun <TElement> Collection<TElement>.toDequeList(): DequeList<TElement> {
+    val deque = DequeList<TElement>(this.size)
+
+    deque.addAll(this)
+
+    return deque
+}
+
+fun <TElement> Sequence<TElement>.toDequeList(): DequeList<TElement> {
+    val deque = dequeListOf<TElement>()
+
+    deque.addAll(this)
+
+    return deque
+}
+
+fun <TElement> Array<out TElement>.toDequeList(): DequeList<TElement> {
+    val deque = DequeList<TElement>(this.size)
+
+    deque.addAll(this)
+
+    return deque
 }
