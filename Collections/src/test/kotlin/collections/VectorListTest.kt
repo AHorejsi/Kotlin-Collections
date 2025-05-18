@@ -13,12 +13,18 @@ import kotlin.test.*
 class VectorListTest {
     @Test
     fun testPrimaryConstructor() {
-        testCapacityInitializationConstructor(::VectorList)
+        assertDoesNotThrow{ VectorList<Int>(0) }
+        assertFailsWith<IllegalArgumentException>{ VectorList<Int>(-1) }
     }
 
     @Test
     fun testFillConstructor() {
-        testFillConstructor(::VectorList)
+        val size = 30
+        val vec = assertDoesNotThrow{ VectorList(size) { 0 } }
+
+        assertEquals(size, vec.size)
+        assertLessEqual(size, vec.capacity)
+        assertTrue(vec.all(0::equals))
     }
 
     @Test

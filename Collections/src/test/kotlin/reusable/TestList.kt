@@ -5,19 +5,6 @@ import collections.*
 import org.junit.jupiter.api.assertDoesNotThrow
 import kotlin.test.*
 
-fun testCapacityInitializationConstructor(construct: (Int) -> List<Int>) {
-    assertDoesNotThrow{ construct(0) }
-    assertFailsWith<IllegalArgumentException>{ construct(-1) }
-}
-
-fun testFillConstructor(construct: (Int, () -> Int) -> List<Int>) {
-    val size = 30
-    val vec = assertDoesNotThrow{ construct(size) { 0 } }
-
-    assertEquals(size, vec.size)
-    assertTrue(vec.all(0::equals))
-}
-
 fun testIsRandomAccess(list: List<Int>, expected: Boolean) {
     val success = assertDoesNotThrow{ list.isRandomAccess }
 

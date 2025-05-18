@@ -1,18 +1,24 @@
 package collections
 
-import reusable.testCapacityInitializationConstructor
-import reusable.testFillConstructor
+import asserts.assertLessEqual
+import org.junit.jupiter.api.assertDoesNotThrow
 import kotlin.test.*
 
 class DequeListTest {
     @Test
     fun testPrimaryConstructor() {
-        testCapacityInitializationConstructor(::DequeList)
+        assertDoesNotThrow{ DequeList<Int>(0) }
+        assertFailsWith<IllegalArgumentException>{ DequeList<Int>(-1) }
     }
 
     @Test
     fun testFillConstructor() {
-        testFillConstructor(::DequeList)
+        val size = 30
+        val vec = assertDoesNotThrow{ DequeList(size) { 0 } }
+
+        assertEquals(size, vec.size)
+        assertLessEqual(size, vec.capacity)
+        assertTrue(vec.all(0::equals))
     }
 
     @Test
