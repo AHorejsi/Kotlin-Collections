@@ -107,18 +107,94 @@ class HeapTest {
     }
 
     @Test
-    fun testPush_And_TryPop_And_TryPeek() {
-        TODO()
+    fun testPush_And_PopOrNull_And_PeekOrNull() {
+        val binary = BinaryHeap<Int>()
+
+        this.testPush_And_PopOrNull_And_PeekOrNull_Helper(binary)
+    }
+
+    private fun testPush_And_PopOrNull_And_PeekOrNull_Helper(heap: Heap<Int>) {
+        this.testOrNull(heap)
+
+        val total = 175
+
+        repeat(total) {
+            assertDoesNotThrow{ heap.push(it) }
+        }
+
+        repeat(total) {
+            val peekedItem = assertDoesNotThrow{ heap.peekOrNull() }
+            val poppedItem = assertDoesNotThrow{ heap.popOrNull() }
+
+            assertNotNull(peekedItem)
+            assertNotNull(poppedItem)
+        }
+
+        this.testOrNull(heap)
+    }
+
+    private fun testOrNull(heap: Heap<Int>) {
+        val peekedItem = assertDoesNotThrow{ heap.peekOrNull() }
+        val poppedItem = assertDoesNotThrow{ heap.popOrNull() }
+
+        assertNull(peekedItem)
+        assertNull(poppedItem)
     }
 
     @Test
-    fun testPush_And_PopOrNull_And_PeekOrNull() {
-        TODO()
+    fun testPush_And_TryPop_And_TryPeek() {
+        val binary = BinaryHeap<Int>()
+
+        this.testPush_And_TryPop_And_TryPeek_Helper(binary)
+    }
+
+    private fun testPush_And_TryPop_And_TryPeek_Helper(heap: Heap<Int>) {
+        this.testTry(heap)
+
+        val total = 200
+
+        repeat(total) {
+            assertDoesNotThrow{ heap.push(it) }
+        }
+
+        repeat(total) {
+            val peekedItem = assertDoesNotThrow{ heap.tryPeek() }
+            val poppedItem = assertDoesNotThrow{ heap.tryPop() }
+
+            assertTrue(peekedItem.isSuccess)
+            assertTrue(poppedItem.isSuccess)
+        }
+
+        this.testTry(heap)
+    }
+
+    private fun testTry(heap: Heap<Int>) {
+        val peekedResult = assertDoesNotThrow{ heap.tryPeek() }
+        val poppedResult = assertDoesNotThrow{ heap.tryPop() }
+
+        assertFailsWith<NoSuchElementException>{ peekedResult.getOrThrow() }
+        assertFailsWith<NoSuchElementException>{ poppedResult.getOrThrow() }
     }
 
     @Test
     fun testClear() {
-        TODO()
+        val binary = BinaryHeap<Int>()
+
+        this.testClearHelper(binary)
+    }
+
+    private fun testClearHelper(heap: Heap<Int>) {
+        val total = 200
+
+        repeat(total) {
+            heap.push(it)
+        }
+
+        assertTrue(!heap.isEmpty())
+        assertDoesNotThrow{ heap.clear() }
+        assertTrue(heap.isEmpty())
+
+        assertDoesNotThrow{ heap.clear() }
     }
 
     @Test
@@ -131,6 +207,9 @@ class HeapTest {
     private fun testClassCastExceptionHelper(heap: Heap<TestObject>) {
         val obj = TestObject(0)
 
+        assertDoesNotThrow{ heap.push(obj) }
+
         assertFailsWith<ClassCastException>{ heap.push(obj) }
+        assertFailsWith<ClassCastException>{ heap.pop() }
     }
 }
