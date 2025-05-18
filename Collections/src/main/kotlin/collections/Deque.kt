@@ -2,37 +2,22 @@ package collections
 
 import java.io.Serializable
 
-interface Deque<TElement> : Stack<TElement>, Queue<TElement> {
-    override val size: Int
-
-    override fun enqueue(element: TElement) =
-        this.pushFront(element)
-
-    override fun push(element: TElement) =
-        this.pushBack(element)
+interface Deque<TElement> {
+    val size: Int
 
     fun pushFront(element: TElement)
 
     fun pushBack(element: TElement)
 
-    override fun dequeue(): TElement =
-        this.popBack()
-
-    override fun pop(): TElement =
-        this.popBack()
-
     fun popFront(): TElement
 
     fun popBack(): TElement
 
-    override fun peek(): TElement =
-        this.back()
-
-    override fun front(): TElement
+    fun front(): TElement
 
     fun back(): TElement
 
-    override fun clear()
+    fun clear()
 }
 
 @Suppress("RemoveRedundantQualifierName")
