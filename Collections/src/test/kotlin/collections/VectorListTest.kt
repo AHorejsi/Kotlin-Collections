@@ -13,18 +13,12 @@ import kotlin.test.*
 class VectorListTest {
     @Test
     fun testPrimaryConstructor() {
-        assertDoesNotThrow{ VectorList<Int>(0) }
-        assertFailsWith<IllegalArgumentException>{ VectorList<Int>(-1) }
+        testCapacityInitializationConstructor(::VectorList)
     }
 
     @Test
     fun testFillConstructor() {
-        val size = 30
-        val vec = assertDoesNotThrow{ VectorList(size) { 0 } }
-
-        assertEquals(size, vec.size)
-        assertLessEqual(size, vec.capacity)
-        assertTrue(vec.all(0::equals))
+        testFillConstructor(::VectorList)
     }
 
     @Test
@@ -453,7 +447,7 @@ class VectorListTest {
         testResizeByIncrease(vec, 100, 0)
         testResizeByIncrease(vec, 150, 1)
         testResizeByDecrease(vec, 50, 2)
-        
+
         testInvalidResize(vec, -1, -1)
     }
 

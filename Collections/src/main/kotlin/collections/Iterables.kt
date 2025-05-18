@@ -1,5 +1,7 @@
 package collections
 
+typealias Provider<TElement> = () -> TElement
+
 fun <TElement> Iterable<TElement>.withIndex(startIndex: Int): Iterable<IndexedValue<TElement>> =
     this.asSequence().withIndex(startIndex).asIterable()
 

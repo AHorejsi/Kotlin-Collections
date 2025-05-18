@@ -26,9 +26,9 @@ class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TEle
         this.data = arrayOfNulls(actualCapacity)
     }
 
-    constructor(size: Int, supplier: () -> TElement) : this(size) {
+    constructor(size: Int, provider: Provider<TElement>) : this(size) {
         for (index in 0 until size) {
-            this.data[index] = supplier()
+            this.data[index] = provider()
         }
 
         this.size = size
