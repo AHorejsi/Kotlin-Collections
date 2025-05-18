@@ -11,7 +11,7 @@ fun <TType> assertLess(left: TType, right: TType, comp: Comparator<TType>) {
     val comparison = assertDoesNotThrow{ comp.compare(left, right) }
 
     if (comparison >= 0) {
-        asserter.fail("<$left> must be less than <$right>")
+        asserter.fail("<$left> is not less than <$right>")
     }
 }
 
@@ -23,7 +23,7 @@ fun <TType> assertLessEqual(left: TType, right: TType, comp: Comparator<TType>) 
     val comparison = assertDoesNotThrow{ comp.compare(left, right) }
 
     if (comparison > 0) {
-        asserter.fail("<$left> must be less than or equal to <$right>")
+        asserter.fail("<$left> is not less than or equal to <$right>")
     }
 }
 
@@ -35,7 +35,7 @@ fun <TType> assertGreater(left: TType, right: TType, comp: Comparator<TType>) {
     val comparison = assertDoesNotThrow{ comp.compare(left, right) }
 
     if (comparison <= 0) {
-        asserter.fail("<$left> must be greater than <$right>")
+        asserter.fail("<$left> is not greater than <$right>")
     }
 }
 
@@ -47,6 +47,6 @@ fun <TType> assertGreaterEqual(left: TType, right: TType, comp: Comparator<TType
     val comparison = assertDoesNotThrow{ comp.compare(left, right) }
 
     if (comparison < 0) {
-        asserter.fail("<$left> must be greater than or equal to <$right>")
+        asserter.fail("<$left> is not greater than or equal to <$right>")
     }
 }

@@ -26,6 +26,15 @@ class BinaryHeap<TElement>(
         const val serialVersionUID: Long = 1L
 
         const val DEFAULT_CAPACITY: Int = 16
+
+        fun parent(index: Int): Int =
+            (index - 1) / 2
+
+        fun leftChild(index: Int): Int =
+            2 * index + 1
+
+        fun rightChild(index: Int): Int =
+            2 * index + 2
     }
 
     private val data: MutableList<TElement> = VectorList(initialCapacity)
@@ -40,53 +49,44 @@ class BinaryHeap<TElement>(
     override fun push(element: TElement) {
         this.data.add(element)
 
-        this.heapifyInsertion()
+        this.heapifyForInsertion()
     }
 
-    private fun heapifyInsertion() {
+    private fun heapifyForInsertion() {
         var currentIndex = this.data.lastIndex
-        var parentIndex = this.parent(currentIndex)
+        var parentIndex = BinaryHeap.parent(currentIndex)
 
-        while (parentIndex >= 0) {
-            if (this.comparator(this.data[currentIndex], this.data[parentIndex]) <= 0) {
-                break
-            }
-
+        while (currentIndex > 0 && this.comparator(this.data[currentIndex], this.data[parentIndex]) < 0) {
             this.data.swap(currentIndex, parentIndex)
 
             currentIndex = parentIndex
-            parentIndex = this.parent(currentIndex)
+            parentIndex = BinaryHeap.parent(currentIndex)
         }
     }
 
-    private fun parent(currentIndex: Int): Int =
-        (currentIndex - 1) / 2
-
     override fun pop(): TElement {
-        if (this.isEmpty()) {
-            empty(BinaryHeap::class)
-        }
+        val item = this.peek()
 
-        val item = this.data.removeLast()
-
-        this.heapifyRemoval()
+        this.data[0] = this.data[this.data.lastIndex]
+        this.heapifyForRemoval()
+        this.data.removeLast()
 
         return item
     }
 
-    private fun heapifyRemoval() {
-        var currentIndex = this.data.lastIndex
+    private fun heapifyForRemoval() {
+        var currentIndex = 0
 
         while (true) {
             var indexOfLargest = currentIndex
-            val leftIndex = 2 * currentIndex + 1
-            val rightIndex = 2 * currentIndex + 2
+            val leftIndex = BinaryHeap.leftChild(indexOfLargest)
+            val rightIndex = BinaryHeap.rightChild(indexOfLargest)
 
-            if (this.inBounds(leftIndex) && this.comparator(this.data[leftIndex], this.data[indexOfLargest]) > 0) {
+            if (this.inBounds(leftIndex) && this.comparator(this.data[leftIndex], this.data[indexOfLargest]) < 0) {
                 indexOfLargest = leftIndex
             }
 
-            if (this.inBounds(rightIndex) && this.comparator(this.data[rightIndex], this.data[indexOfLargest]) > 0) {
+            if (this.inBounds(rightIndex) && this.comparator(this.data[rightIndex], this.data[indexOfLargest]) < 0) {
                 indexOfLargest = rightIndex
             }
 
@@ -102,7 +102,7 @@ class BinaryHeap<TElement>(
     }
 
     private fun inBounds(index: Int): Boolean =
-        0 <= index && index < this.size
+        index < this.size
 
     override fun peek(): TElement =
         if (this.isEmpty())
