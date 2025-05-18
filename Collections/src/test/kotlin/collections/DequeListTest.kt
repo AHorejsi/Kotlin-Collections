@@ -1,5 +1,6 @@
 package collections
 
+import asserts.assertLessEqual
 import org.junit.jupiter.api.assertDoesNotThrow
 import kotlin.test.*
 
@@ -12,7 +13,12 @@ class DequeListTest {
 
     @Test
     fun testFillConstructor() {
-        TODO()
+        val size = 30
+        val vec = assertDoesNotThrow{ DequeList(size) { 0 } }
+
+        assertEquals(size, vec.size)
+        assertLessEqual(size, vec.capacity)
+        assertTrue(vec.all(0::equals))
     }
 
     @Test

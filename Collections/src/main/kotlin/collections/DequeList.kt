@@ -15,6 +15,9 @@ class DequeList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TElem
     private var data: Array<Any?>
     private var startIndex: Int = 0
 
+    override var size: Int = 0
+        private set
+
     init {
         checkIfNegativeCapacity(initialCapacity)
 
@@ -30,9 +33,6 @@ class DequeList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TElem
 
         this.size = size
     }
-
-    override var size: Int = 0
-        private set
 
     val capacity: Int
         get() = this.data.size
@@ -64,6 +64,10 @@ class DequeList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TElem
 
     override fun addAll(index: Int, elements: Collection<TElement>): Boolean {
         checkIfIndexCanBeInsertedAt(index, this.size)
+
+        if (elements.isEmpty()) {
+            return false
+        }
 
         val amountToAdd = elements.size
         val newSize = this.size + amountToAdd
