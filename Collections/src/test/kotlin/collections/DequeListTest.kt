@@ -1,12 +1,13 @@
 package collections
 
-import reusable.*
-import kotlin.test.Test
+import org.junit.jupiter.api.assertDoesNotThrow
+import kotlin.test.*
 
 class DequeListTest {
     @Test
     fun testPrimaryConstructor() {
-        TODO()
+        assertDoesNotThrow{ DequeList<Int>(0) }
+        assertFailsWith<IllegalArgumentException>{ DequeList<Int>(-1) }
     }
 
     @Test
@@ -641,9 +642,7 @@ class DequeSublistTest {
 
     @Test
     fun testNext() {
-        val vec = (1 .. 8).toVectorList()
-
-        testNext(vec)
+        TODO()
     }
 
     @Test
