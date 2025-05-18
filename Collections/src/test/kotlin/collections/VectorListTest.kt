@@ -41,7 +41,7 @@ class VectorListTest {
 
     @Test
     fun testToVectorList() {
-        val set = (1 .. 17).toHashSet()
+        val set = hashSetOf(7, 17, 2, -7, 0, 4, 22)
         val seq = sequenceOf(0, 5, 7, -8, -4, 4, 2)
         val iter = (-7 until 11 step 3).asIterable()
         val array = arrayOf(-1, 4, 0, -6, 8, -9, 8, 5)
