@@ -698,11 +698,13 @@ class VectorListTest {
         val vec = (1 .. 5).map{ it.toString() }.toVectorList()
 
         testSwap(vec, 1, 4)
+        testSwap(vec, 0, 3)
+        testSwap(vec, 3, 1)
     }
 
     @Test
     fun testIsSorted() {
-        val ordering =  inOrder<Int>()
+        val ordering = inOrder<Int>()
         val reverseOrdering = reverseOrder<Int>()
 
         val vec1 = vectorListOf(7, -7, 8, 33, -100, 11, 5, -1011, 35382, 87, -19)
@@ -1031,16 +1033,6 @@ class VectorSublistTest {
     }
 
     @Test
-    fun testSize() {
-        TODO()
-    }
-
-    @Test
-    fun testIsEmpty() {
-        TODO()
-    }
-
-    @Test
     fun testAtLeast() {
         TODO()
     }
@@ -1056,7 +1048,42 @@ class VectorSublistTest {
     }
 
     @Test
+    fun testSize() {
+        TODO()
+    }
+
+    @Test
+    fun testIsEmpty() {
+        TODO()
+    }
+
+    @Test
+    fun testCapacity() {
+        TODO()
+    }
+
+    @Test
+    fun testEnsureCapacity() {
+        TODO()
+    }
+
+    @Test
+    fun testTrimToSize() {
+        TODO()
+    }
+
+    @Test
+    fun testFirst() {
+        TODO()
+    }
+
+    @Test
     fun testTryFirst() {
+        TODO()
+    }
+
+    @Test
+    fun testLast() {
         TODO()
     }
 
@@ -1071,12 +1098,12 @@ class VectorSublistTest {
     }
 
     @Test
-    fun testTryGet() {
+    fun testWrapGet() {
         TODO()
     }
 
     @Test
-    fun testWrapGet() {
+    fun testTryGet() {
         TODO()
     }
 
@@ -1086,17 +1113,12 @@ class VectorSublistTest {
     }
 
     @Test
-    fun testTrySet() {
-        TODO()
-    }
-
-    @Test
     fun testWrapSet() {
         TODO()
     }
 
     @Test
-    fun testSwap() {
+    fun testTrySet() {
         TODO()
     }
 
@@ -1126,17 +1148,27 @@ class VectorSublistTest {
     }
 
     @Test
-    fun testRemoveAt() {
-        TODO()
-    }
-
-    @Test
     fun testRemoveAll() {
         TODO()
     }
 
     @Test
     fun testDelete() {
+        TODO()
+    }
+
+    @Test
+    fun testRemoveAt() {
+        TODO()
+    }
+
+    @Test
+    fun testRemoveFromBack() {
+        TODO()
+    }
+
+    @Test
+    fun testRemoveRange() {
         TODO()
     }
 
@@ -1157,16 +1189,6 @@ class VectorSublistTest {
 
     @Test
     fun testKeep() {
-        TODO()
-    }
-
-    @Test
-    fun testRemoveFromBack() {
-        TODO()
-    }
-
-    @Test
-    fun testRemoveRange() {
         TODO()
     }
 
@@ -1196,6 +1218,48 @@ class VectorSublistTest {
     }
 
     @Test
+    fun testSwap() {
+        TODO()
+    }
+
+    @Test
+    fun testIsSorted() {
+        TODO()
+    }
+
+    @Test
+    fun testIsSortedUntil() {
+        TODO()
+    }
+
+    @Test
+    fun testEquals() {
+        TODO()
+    }
+
+    @Test
+    fun testHashCode() {
+        TODO()
+    }
+
+    @Test
+    fun testIsPermutationOf() {
+        TODO()
+    }
+
+    @Test
+    fun testNext() {
+        val vec = (1 .. 8).toVectorList()
+
+        testNext(vec)
+    }
+
+    @Test
+    fun testPrev() {
+        TODO()
+    }
+
+    @Test
     fun testSeparationPoint() {
         TODO()
     }
@@ -1221,42 +1285,7 @@ class VectorSublistTest {
     }
 
     @Test
-    fun testEquals() {
-        TODO()
-    }
-
-    @Test
-    fun testIsPermutationOf() {
-        TODO()
-    }
-
-    @Test
-    fun testHashCode() {
-        TODO()
-    }
-
-    @Test
     fun testCompare() {
-        TODO()
-    }
-
-    @Test
-    fun testNext() {
-        TODO()
-    }
-
-    @Test
-    fun testPrev() {
-        TODO()
-    }
-
-    @Test
-    fun testIsSorted() {
-        TODO()
-    }
-
-    @Test
-    fun testIsSortedUntil() {
         TODO()
     }
 

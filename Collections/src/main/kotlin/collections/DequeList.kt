@@ -3,7 +3,7 @@ package collections
 import java.io.Serializable
 import kotlin.math.max
 
-@Suppress("RemoveRedundantQualifierName", "RedundantSuppression")
+@Suppress("RemoveRedundantQualifierName")
 class DequeList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TElement>(), Serializable {
     companion object {
         @Suppress("ConstPropertyName")
