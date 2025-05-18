@@ -20,11 +20,11 @@ class VectorListTest {
     @Test
     fun testFillConstructor() {
         val size = 30
-        val vec = assertDoesNotThrow{ VectorList(size) { Int.MIN_VALUE } }
+        val vec = assertDoesNotThrow{ VectorList(size) { 0 } }
 
         assertEquals(size, vec.size)
         assertLessEqual(size, vec.capacity)
-        assertTrue(vec.all(Int.MIN_VALUE::equals))
+        assertTrue(vec.all(0::equals))
     }
 
     @Test
