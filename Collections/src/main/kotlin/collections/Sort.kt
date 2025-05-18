@@ -16,14 +16,3 @@ fun <TElement> inOrder(): Comparator<TElement> =
         @Suppress("UNCHECKED_CAST")
         (p0 as Comparable<TElement>).compareTo(p1)
     }
-
-fun <TElement> nullFirst(comp: (TElement, TElement) -> Int): (TElement, TElement) -> Int {
-    return { left, right ->
-        when (left to right) {
-            null to null -> 0
-            null to right -> -1
-            left to null -> 1
-            else -> comp(left, right)
-        }
-    }
-}

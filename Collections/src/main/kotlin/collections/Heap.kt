@@ -33,6 +33,10 @@ class BinaryHeap<TElement>(
     override val size: Int
         get() = this.data.size
 
+    @Suppress("UNCHECKED_CAST")
+    constructor(initialCapacity: Int = BinaryHeap.DEFAULT_CAPACITY)
+            : this(initialCapacity, { left, right -> (left as Comparable<TElement>).compareTo(right) })
+
     override fun push(element: TElement) {
         this.data.add(element)
 
@@ -78,11 +82,11 @@ class BinaryHeap<TElement>(
             val leftIndex = 2 * currentIndex + 1
             val rightIndex = 2 * currentIndex + 2
 
-            if (leftIndex < this.size && this.comparator(this.data[leftIndex], this.data[indexOfLargest]) > 0) {
+            if (this.inBounds(leftIndex) && this.comparator(this.data[leftIndex], this.data[indexOfLargest]) > 0) {
                 indexOfLargest = leftIndex
             }
 
-            if (rightIndex < this.size && this.comparator(this.data[rightIndex], this.data[indexOfLargest]) > 0) {
+            if (this.inBounds(rightIndex) && this.comparator(this.data[rightIndex], this.data[indexOfLargest]) > 0) {
                 indexOfLargest = rightIndex
             }
 
@@ -97,11 +101,14 @@ class BinaryHeap<TElement>(
         }
     }
 
+    private fun inBounds(index: Int): Boolean =
+        0 <= index && index < this.size
+
     override fun peek(): TElement =
         if (this.isEmpty())
             empty(BinaryHeap::class)
         else
-            this.data.first()
+            this.data[0]
 
     override fun clear() =
         this.data.clear()
