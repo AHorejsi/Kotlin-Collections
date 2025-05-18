@@ -32,11 +32,8 @@ class VectorListTest {
         val vec1 = assertDoesNotThrow{ vectorListOf<Int>() }
         val vec2 = assertDoesNotThrow{ vectorListOf(1, 2, 3) }
 
-        val size1 = 0
-        val size2 = 3
-
-        assertEquals(size1, vec1.size)
-        assertEquals(size2, vec2.size)
+        assertEquals(0, vec1.size)
+        assertEquals(3, vec2.size)
     }
 
     @Test
