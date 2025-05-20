@@ -78,17 +78,35 @@ class DequeListTest {
 
     @Test
     fun testAtLeast() {
-        TODO()
+        val amount = 100
+
+        val lesser = assertDoesNotThrow{ DequeList(amount - 1) { 0 } }
+        val equal = assertDoesNotThrow{ DequeList(amount) { 0 } }
+        val greater = assertDoesNotThrow{ DequeList(amount + 1) { 0 } }
+
+        testAtLeast(amount, lesser, equal, greater)
     }
 
     @Test
     fun testAtMost() {
-        TODO()
+        val amount = 100
+
+        val lesser = assertDoesNotThrow{ DequeList(amount - 1) { 0 } }
+        val equal = assertDoesNotThrow{ DequeList(amount) { 0 } }
+        val greater = assertDoesNotThrow{ DequeList(amount + 1) { 0 } }
+
+        testAtMost(amount, lesser, equal, greater)
     }
 
     @Test
     fun testExactly() {
-        TODO()
+        val amount = 100
+
+        val lesser = assertDoesNotThrow{ DequeList(amount - 1) { 0 } }
+        val equal = assertDoesNotThrow{ DequeList(amount) { 0 } }
+        val greater = assertDoesNotThrow{ DequeList(amount + 1) { 0 } }
+
+        testExactly(amount, lesser, equal, greater)
     }
 
     @Test
