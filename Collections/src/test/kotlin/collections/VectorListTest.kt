@@ -20,20 +20,26 @@ class VectorListTest {
     @Test
     fun testFillConstructor() {
         val size = 30
-        val vec = assertDoesNotThrow{ VectorList(size) { 0 } }
+        val value = 1
+
+        val vec = assertDoesNotThrow{ VectorList(size) { value } }
 
         assertEquals(size, vec.size)
-        assertLessEqual(size, vec.capacity)
-        assertTrue(vec.all(0::equals))
+        assertEquals(size, vec.capacity)
+        assertTrue(vec.all(value::equals))
     }
 
     @Test
     fun testVectorListOf() {
         val vec1 = assertDoesNotThrow{ vectorListOf<Int>() }
-        val vec2 = assertDoesNotThrow{ vectorListOf(1, 2, 3) }
+        val vec2 = assertDoesNotThrow{ vectorListOf(7, 6, 9) }
 
         assertEquals(0, vec1.size)
         assertEquals(3, vec2.size)
+
+        assertEquals(7, vec2[0])
+        assertEquals(6, vec2[1])
+        assertEquals(9, vec2[2])
     }
 
     @Test

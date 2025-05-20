@@ -11,13 +11,13 @@ fun testIsRandomAccess(list: List<Int>, expected: Boolean) {
     assertEquals(expected, success)
 }
 
-fun testWithIndex(list: List<*>) {
+fun testWithIndex(list: List<Int>) {
     for (index in list.indices) {
         testIterationWithIndex(list, index)
     }
 }
 
-private fun testIterationWithIndex(list: List<*>, startIndex: Int) {
+private fun testIterationWithIndex(list: List<Int>, startIndex: Int) {
     val indexed = assertDoesNotThrow{ list.withIndex(startIndex) }
 
     for ((index, item) in indexed) {
