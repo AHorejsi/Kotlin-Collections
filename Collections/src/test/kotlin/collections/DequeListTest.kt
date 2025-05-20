@@ -2,6 +2,7 @@ package collections
 
 import asserts.assertLessEqual
 import org.junit.jupiter.api.assertDoesNotThrow
+import reusable.*
 import kotlin.test.*
 
 class DequeListTest {
@@ -14,26 +15,60 @@ class DequeListTest {
     @Test
     fun testFillConstructor() {
         val size = 30
-        val vec = assertDoesNotThrow{ DequeList(size) { 0 } }
+        val value = 1
 
-        assertEquals(size, vec.size)
-        assertLessEqual(size, vec.capacity)
-        assertTrue(vec.all(0::equals))
+        val deque = assertDoesNotThrow{ DequeList(size) { value } }
+
+        assertEquals(size, deque.size)
+        assertEquals(size, deque.capacity)
+        assertTrue(deque.all(value::equals))
     }
 
     @Test
     fun testDequeListOf() {
-        TODO()
+        val deque1 = dequeListOf<Int>()
+        val deque2 = dequeListOf(3, 0, 2, 6)
+
+        assertEquals(0, deque1.size)
+        assertEquals(4, deque2.size)
+
+        println(deque1)
+        println(deque2)
+
+        assertEquals(3, deque2[0])
+        assertEquals(0, deque2[1])
+        assertEquals(2, deque2[2])
+        assertEquals(6, deque2[3])
     }
 
     @Test
     fun testToDequeList() {
-        TODO()
+        val set = hashSetOf(8, 4, 1, 6, 3, 0, 5, 1, -1)
+        val seq = sequenceOf(0, 5, 2, -2, 7, -3)
+        val iter = (-3 until 17 step 4).asIterable()
+        val array = arrayOf(7, -6, 2, 0, -3, 9, 0)
+
+        val dequeFromSet = assertDoesNotThrow{ set.toDequeList() }
+        val dequeFromSeq = assertDoesNotThrow{ seq.toDequeList() }
+        val dequeFromIter = assertDoesNotThrow{ iter.toDequeList() }
+        val dequeFromArray = assertDoesNotThrow{ array.toDequeList() }
+
+        testIteratorEquality(set.iterator(), dequeFromSet.iterator())
+        testIteratorEquality(seq.iterator(), dequeFromSeq.iterator())
+        testIteratorEquality(iter.iterator(), dequeFromIter.iterator())
+        testIteratorEquality(array.iterator(), dequeFromArray.iterator())
+
+        assertLessEqual(set.size, dequeFromSet.capacity)
+        assertLessEqual(seq.count(), dequeFromSeq.capacity)
+        assertLessEqual(iter.count(), dequeFromIter.capacity)
+        assertLessEqual(array.size, dequeFromArray.capacity)
     }
 
     @Test
     fun testIsRandomAccess() {
-        TODO()
+        val deque = dequeListOf<Int>()
+
+        testIsRandomAccess(deque, true)
     }
 
     @Test
@@ -58,7 +93,8 @@ class DequeListTest {
 
     @Test
     fun testSize() {
-        TODO()    }
+        TODO()
+    }
 
     @Test
     fun testIsEmpty() {

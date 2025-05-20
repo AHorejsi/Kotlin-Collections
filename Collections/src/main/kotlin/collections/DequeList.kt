@@ -97,7 +97,7 @@ class DequeList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TElem
     }
 
     private fun shiftForInsertion(index: Int, amountToAdd: Int) {
-        if (index > this.size / 2) {
+        if (index >= this.size / 2) {
             this.shiftRightForInsertion(index, amountToAdd)
         }
         else {

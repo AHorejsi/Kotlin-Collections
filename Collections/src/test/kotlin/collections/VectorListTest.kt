@@ -54,10 +54,10 @@ class VectorListTest {
         val vecFromIter = assertDoesNotThrow{ iter.toVectorList() }
         val vecFromArray = assertDoesNotThrow{ array.toVectorList() }
 
-        this.testForEquality(vecFromSet.iterator(), set.iterator())
-        this.testForEquality(vecFromIter.iterator(), iter.iterator())
-        this.testForEquality(vecFromSeq.iterator(), seq.iterator())
-        this.testForEquality(vecFromArray.iterator(), array.iterator())
+        testIteratorEquality(set.iterator(), vecFromSet.iterator())
+        testIteratorEquality(seq.iterator(), vecFromSeq.iterator())
+        testIteratorEquality(iter.iterator(), vecFromIter.iterator())
+        testIteratorEquality(array.iterator(), vecFromArray.iterator())
 
         assertLessEqual(set.size, vecFromSet.capacity)
         assertLessEqual(seq.count(), vecFromSeq.capacity)
