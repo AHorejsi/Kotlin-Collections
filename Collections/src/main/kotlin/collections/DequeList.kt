@@ -126,11 +126,11 @@ class DequeList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TElem
     }
 
     private fun insertElements(elements: Collection<TElement>, index: Int) {
-        var insertIndex = index
+        var insertIndex = this.actualIndex(index)
 
         for (item in elements) {
             this.data[insertIndex] = item
-            insertIndex = (insertIndex + 1).mod(this.capacity)
+            insertIndex = this.actualIndex(insertIndex + 1)
         }
     }
 
@@ -158,6 +158,7 @@ class DequeList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TElem
     fun removeFromBack(amount: Int): Int {
         if (amount >= this.size) {
             val oldSize = this.size
+            
             this.clear()
 
             return oldSize
@@ -182,7 +183,7 @@ class DequeList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TElem
     }
 
     private fun shiftForRemoval(index: Int) {
-        if (index > this.size / 2) {
+        if (index >= this.size / 2) {
             this.shiftFromRightForRemoval(index)
         }
         else {

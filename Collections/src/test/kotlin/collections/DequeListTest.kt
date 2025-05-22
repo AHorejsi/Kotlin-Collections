@@ -156,7 +156,29 @@ class DequeListTest {
 
     @Test
     fun testGet() {
-        TODO()
+        val deques = this.createDeques()
+
+        for (deq in deques) {
+            testGetDuringIteration(deq)
+
+            testGetAfterAdding(deq, -1)
+            testGetAfterAdding(deq, -2)
+
+            testGetAt(deq, deq.size - 2, -1)
+
+            testGetAfterAddingAt(deq, 0, -3)
+            testGetAfterAddingAt(deq, deq.size, -4)
+            testGetAfterAddingAt(deq, deq.size / 2, -5)
+
+            testGetAfterRemovingAt(deq, 0)
+            testGetAfterRemovingAt(deq, deq.size / 4)
+            testGetAfterRemovingAt(deq, 3 * deq.size / 4)
+            testGetAfterRemovingAt(deq, deq.lastIndex)
+
+            testGetDuringIteration(deq)
+
+            testGetOutOfBounds(deq)
+        }
     }
 
     @Test
@@ -387,6 +409,36 @@ class DequeListTest {
     @Test
     fun testToString() {
         TODO()
+    }
+
+    private fun createDeques(): List<DequeList<Int>> {
+        // Create a deque that has its elements arranged like a VectorList
+        val deque1 = (1 .. 100).toDequeList()
+
+        // Create a deque that has its elements in the center of the underlying and empty slots on the edges
+        val deque2 = deque1.toDequeList()
+
+        repeat(10) {
+            deque2.removeFirst()
+        }
+        repeat(20) {
+            deque2.removeLast()
+        }
+
+        // Create a deque that has its elements arranged with a cross-over from the end to the beginning of the underlying array
+        val deque3 = deque1.toDequeList()
+
+        repeat(15) {
+            deque3.removeFirst()
+        }
+        repeat(10) {
+            deque3.removeLast()
+        }
+        repeat(5) {
+            deque3.addFirst(it)
+        }
+
+        return listOf(deque1, deque2, deque3)
     }
 }
 
