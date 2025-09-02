@@ -1,7 +1,24 @@
 package collections
 
 fun <TElement> Iterable<TElement>.withIndex(startIndex: Int): Iterable<IndexedValue<TElement>> =
-    this.asSequence().withIndex(startIndex).asIterable()
+    object : Iterable<IndexedValue<TElement>> {
+        override fun iterator(): Iterator<IndexedValue<TElement>> = object : Iterator<IndexedValue<TElement>> {
+            private var index = startIndex
+            private val iter = this@withIndex.iterator()
+
+            override fun hasNext(): Boolean =
+                this.iter.hasNext()
+
+            override fun next(): IndexedValue<TElement> {
+                val element = this.iter.next()
+                val currentIndex = this.index
+
+                ++(this.index)
+
+                return IndexedValue(currentIndex, element)
+            }
+        }
+    }
 
 fun Iterable<*>.atLeast(size: Int): Boolean {
     val found =
