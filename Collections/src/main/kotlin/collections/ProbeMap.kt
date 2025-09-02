@@ -114,7 +114,7 @@ class ProbeMap<TKey, TValue>(
             --(this.size)
             ++(super.modCount)
 
-            return@let value
+            return value
         }
 
     override fun clear() {

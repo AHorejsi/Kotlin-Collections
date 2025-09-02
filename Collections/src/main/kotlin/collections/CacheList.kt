@@ -12,7 +12,7 @@ class CacheList<TElement>(private val cacheSize: Int) : AbstractLinkedList<TElem
         this.fillCache()
     }
 
-    private val nodeCache: MutableList<MutableLinkedListNode<TElement?>> = ArrayList(this.cacheSize)
+    private val nodeCache: MutableList<MutableLinkedListNode<TElement?>> = VectorList(this.cacheSize)
 
     private fun getNewNode(element: TElement): MutableLinkedListNode<TElement> {
         if (this.nodeCache.isEmpty()) {
