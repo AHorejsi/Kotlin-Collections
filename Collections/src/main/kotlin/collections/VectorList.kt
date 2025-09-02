@@ -1,6 +1,7 @@
 package collections
 
 import java.io.Serializable
+import java.util.function.Supplier
 import kotlin.math.ceil
 import kotlin.math.max
 
@@ -26,7 +27,7 @@ class VectorList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TEle
         this.data = arrayOfNulls(actualCapacity)
     }
 
-    constructor(size: Int, provider: Provider<TElement>) : this(size) {
+    constructor(size: Int, provider: () -> TElement) : this(size) {
         for (index in 0 until size) {
             this.data[index] = provider()
         }
