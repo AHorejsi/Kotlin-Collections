@@ -26,7 +26,7 @@ class DequeList<TElement>(initialCapacity: Int) : AbstractRandomAccessList<TElem
         this.data = arrayOfNulls(actualCapacity)
     }
 
-    constructor(size: Int, provider: Provider<TElement>) : this(size) {
+    constructor(size: Int, provider: () -> TElement) : this(size) {
         for (index in 0 until size) {
             this.data[index] = provider()
         }
