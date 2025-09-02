@@ -68,6 +68,7 @@ class BinaryHeap<TElement>(
         val item = this.peek()
 
         this.data[0] = this.data[this.data.lastIndex]
+
         this.heapifyForRemoval()
         this.data.removeLast()
 
