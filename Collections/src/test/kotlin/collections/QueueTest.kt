@@ -151,20 +151,20 @@ class QueueTest {
 
     @Test
     fun testEnqueue_And_TryDequeue_And_TryFront() {
-        val vector = VectorQueue<Int>()
-        val linked = LinkedQueue<Int>()
+        val vector = VectorQueue<Int?>()
+        val linked = LinkedQueue<Int?>()
 
         this.testEnqueue_And_TryDequeue_And_TryFront_Helper(vector)
         this.testEnqueue_And_TryDequeue_And_TryFront_Helper(linked)
     }
 
-    private fun testEnqueue_And_TryDequeue_And_TryFront_Helper(queue: Queue<Int>) {
+    private fun testEnqueue_And_TryDequeue_And_TryFront_Helper(queue: Queue<Int?>) {
         this.testTry(queue)
 
         val total = 100
 
         repeat(total) {
-            assertDoesNotThrow{ queue.enqueue(0) }
+            assertDoesNotThrow{ queue.enqueue(null) }
         }
 
         repeat(total) {
@@ -178,7 +178,7 @@ class QueueTest {
         this.testTry(queue)
     }
 
-    private fun testTry(queue: Queue<Int>) {
+    private fun testTry(queue: Queue<Int?>) {
         val frontResult = assertDoesNotThrow{ queue.tryFront() }
         val dequeuedResult = assertDoesNotThrow{ queue.tryDequeue() }
 

@@ -166,7 +166,7 @@ class StackTest {
         val total = 100
 
         repeat(total) {
-            assertDoesNotThrow{ stack.push(0) }
+            assertDoesNotThrow{ stack.push(null) }
         }
 
         repeat(total) {
