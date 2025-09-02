@@ -1,7 +1,6 @@
 package collections
 
 import java.io.Serializable
-import java.util.function.Supplier
 import kotlin.math.ceil
 import kotlin.math.max
 
