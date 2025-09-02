@@ -143,9 +143,10 @@ class SequentialList<TElement> : AbstractList<TElement>(), Serializable {
             this.tail = this.tail!!.prev
             this.tail!!.next = null
         }
-
-        node.next?.prev = node.prev
-        node.prev?.next = node.next
+        else {
+            node.next?.prev = node.prev
+            node.prev?.next = node.next
+        }
 
         --(this.size)
         ++(super.modCount)
