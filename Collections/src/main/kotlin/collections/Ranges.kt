@@ -6,7 +6,7 @@ fun IntRange.count(): Int =
     this.last - this.first + 1
 
 fun LongRange.count(): Long =
-    this.last - this.first + 1
+    this.last - this.first + 1L
 
 fun IntProgression.count(): Int {
     if (this is IntRange) {
