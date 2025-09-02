@@ -747,7 +747,7 @@ private fun testSizeAfterIntersperse(list: MutableList<Int>, oldSize: Int) {
     val newSize = list.size
     val expectedSize = if (0 == oldSize) 0 else 2 * oldSize - 1
 
-    assertEquals(newSize, expectedSize)
+    assertEquals(expectedSize, newSize)
 }
 
 private fun testElementsAfterIntersperse(list: MutableList<Int>, copy: Iterator<Int>, separator: Int) {

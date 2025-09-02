@@ -335,12 +335,14 @@ fun <TElement> MutableList<TElement>.intersperse(separator: TElement) {
 
     val iter = this.listIterator()
 
-    iter.next()
-
     while (iter.hasNext()) {
         iter.next()
+
+        if (!iter.hasNext()) {
+            break
+        }
+
         iter.add(separator)
-        iter.next()
     }
 }
 
